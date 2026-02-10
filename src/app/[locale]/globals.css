@@ -1,0 +1,49 @@
+/* Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap");
+
+/* Tailwind */
+@import "tailwindcss";
+
+/* --------------------------------------------------
+   CodeVivo – Global Styles
+   Typography: Montserrat (brand) + Roboto Mono (body)
+   Color system driven by CSS variables for theming
+-------------------------------------------------- */
+
+:root {
+  /* Brand palette */
+  --color-blue: #2E92D5;
+  --color-gold: #E2A64D;
+  --color-ash: #B8C5B0;
+  --color-honeydew: #FAFCFC;
+  --color-shadow: #1D1D1F;
+
+  /* Semantic tokens */
+  --background: var(--color-honeydew);
+  --foreground: var(--color-shadow);
+
+  /* Typography */
+  --font-sans: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Dark theme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: var(--color-shadow);
+    --foreground: var(--color-honeydew);
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility helpers */
+.code {
+  font-family: var(--font-mono);
+}

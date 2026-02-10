@@ -1,0 +1,11 @@
+{
+  "home": {
+    "title": "Benvenuto in CodeVivo",
+    "subtitle": "Creiamo strumenti digitali essenziali e curati"
+  },
+  "not-found": {
+    "title": "Pagina non trovata",
+    "description": "Spiacenti, la pagina che stai cercando non esiste o è stata spostata.",
+    "homeLink": "Torna alla home"
+  }
+}
