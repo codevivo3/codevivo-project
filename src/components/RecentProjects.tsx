@@ -18,7 +18,7 @@ export default function RecentProjects() {
   const items = (t.raw('items') as ProjectItem[] | undefined) ?? [];
 
   return (
-    <section id="projects" className="border-b border-[color:var(--color-ash)]/30">
+    <section id="projects" className="section-flow">
       <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
         <h2 className="text-center text-xl font-semibold sm:text-2xl">
           {t('title')}

@@ -1,0 +1,144 @@
+/* File: src/app/globals.css */
+
+/* Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap");
+
+/* Tailwind v4 */
+@import "tailwindcss";
+
+/* --------------------------------------------------
+   CodeVivo – Global Styles
+   - Brand tokens (HEX source of truth)
+   - Tailwind theme tokens via @theme
+   - Typography variables
+   - Global UI utilities
+-------------------------------------------------- */
+
+/* ------------------------------
+   Brand Tokens (HEX)
+------------------------------ */
+:root {
+  --brand-blue: #2e92d5;
+  --brand-gold: #e2a64d;
+  --brand-ash: #b8c5b0;
+  --brand-honeydew: #fafcfc;
+  --brand-shadow: #1d1d1f;
+
+  --font-sans: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ------------------------------
+   Tailwind Theme Tokens
+   Generates bg-*, text-*, border-* utilities
+------------------------------ */
+@theme {
+  --color-bg: var(--brand-honeydew);
+  --color-fg: var(--brand-shadow);
+  --color-surface: var(--brand-honeydew);
+  --color-border: var(--brand-ash);
+  --color-primary: var(--brand-blue);
+  --color-accent: var(--brand-gold);
+}
+
+/* ------------------------------
+   Dark Mode (prefers-color-scheme)
+------------------------------ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: var(--brand-shadow);
+    --color-fg: var(--brand-honeydew);
+    --color-surface: #141414;
+    --color-border: #2a2a2a;
+  }
+}
+
+/* ------------------------------
+   Base Layout Styles
+------------------------------ */
+body {
+  background-color: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Monospace Utility */
+.code {
+  font-family: var(--font-mono);
+}
+
+/* ------------------------------
+   Scrollbar (theme-aware)
+------------------------------ */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary);
+  border-radius: 999px;
+}
+
+/* ------------------------------
+   Logo 3D Utilities
+------------------------------ */
+.logo-3d-wrapper {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+
+.logo-3d {
+  transform-style: preserve-3d;
+  transition: transform 300ms ease-out;
+  will-change: transform;
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.logo-float {
+  animation: logoFloat 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-float {
+    animation: none;
+  }
+
+  .logo-3d {
+    transition: none;
+  }
+}
+
+/* ------------------------------
+   Section Gradient Flow
+------------------------------ */
+.section-flow {
+  background: linear-gradient(
+    to bottom,
+    var(--color-bg),
+    var(--color-bg),
+    color-mix(
+      in srgb,
+      var(--color-bg) 98%,
+      var(--color-fg) 2%
+    )
+  );
+}

@@ -23,16 +23,16 @@ export default async function NotFound() {
 
   return (
     <main className='min-h-screen flex flex-col items-center justify-center px-4 py-16 text-center'>
-      <h1 className='text-5xl font-bold mb-4 text-red-500'>
+      <h1 className='text-5xl font-bold mb-4 text-accent'>
         {t('not-found.title')}
       </h1>
-      <p className='text-base md:text-lg text-gray-500 mb-6'>
+      <p className='text-base md:text-lg text-fg/70 mb-6'>
         {t('not-found.description')}
       </p>
       {/* Link back to the localized homepage */}
       <Link
         href={`/${locale}`}
-        className='text-sm font-medium border border-gray-300 px-4 py-2 rounded hover:bg-[var(--color-blue)] hover:text-[var(--color-honeydew)] transition hover:font-bold'
+        className='text-sm font-medium border border-border px-4 py-2 rounded hover:bg-primary hover:text-fg transition hover:font-bold'
       >
         {t('not-found.homeLink')}
       </Link>

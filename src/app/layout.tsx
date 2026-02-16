@@ -4,18 +4,18 @@
 // Importing Google Fonts (Montserrat and Roboto Mono) using next/font
 import { Montserrat, Roboto_Mono } from 'next/font/google';
 // Importing global styles from the locale-specific folder
-import './[locale]/globals.css';
+import './globals.css'; // keep as-is if globals.css is inside [locale]; otherwise change to './globals.css' only if file is moved
 
 // Configure Montserrat font with CSS variable for usage in the layout
 const montserrat = Montserrat({
-  variable: '--font-montserrat',
+  variable: '--font-sans',
   subsets: ['latin'],
   display: 'swap',
 });
 
 // Configure Roboto Mono font with CSS variable for usage in the layout
 const robotoMono = Roboto_Mono({
-  variable: '--font-roboto-mono',
+  variable: '--font-mono',
   subsets: ['latin'],
   display: 'swap',
 });
@@ -31,7 +31,7 @@ export default function RootLayout({
     <html lang="en">
       {/* Apply font variables and antialiasing to body */}
       <body
-        className={`${montserrat.variable} ${robotoMono.variable} antialiased`}
+        className={`${montserrat.variable} ${robotoMono.variable} font-sans antialiased`}
       >
         {children}
       </body>

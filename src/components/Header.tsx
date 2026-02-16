@@ -1,40 +1,48 @@
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Header() {
   const t = useTranslations('header');
 
   return (
-    <header className="border-b border-[color:var(--color-ash)]/40 bg-[color:var(--background)]">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <header className='bg-bg text-fg'>
+      <div className='mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 font-mono '>
         <Link
-          href="/"
-          className="text-base font-semibold tracking-tight text-[color:var(--foreground)] sm:text-lg"
+          href='/'
+          className='text-base font-semibold tracking-tight text-fg sm:text-lg'
         >
-          {t('brand')}
+          <Image
+            src='/logos/codevivo-logo-text-white.svg'
+            alt='Codevivo logo'
+            width={160}
+            height={40}
+            className='h-auto w-28 sm:w-36 md:w-40 lg:w-44'
+            priority
+          />
         </Link>
-        <nav className="flex flex-wrap items-center justify-center gap-4 text-xs sm:justify-end sm:text-sm">
+        <nav className='flex flex-wrap items-center justify-center gap-4 text-xs sm:justify-end sm:text-sm'>
           <a
-            href="#about"
-            className="text-[color:var(--foreground)] hover:text-[color:var(--color-blue)]"
+            href='#about'
+            className='text-fg hover:text-primary'
           >
             {t('nav.about')}
           </a>
           <a
-            href="#projects"
-            className="text-[color:var(--foreground)] hover:text-[color:var(--color-blue)]"
+            href='#projects'
+            className='text-fg hover:text-primary'
           >
             {t('nav.projects')}
           </a>
           <a
-            href="#tools"
-            className="text-[color:var(--foreground)] hover:text-[color:var(--color-blue)]"
+            href='#tools'
+            className='text-fg hover:text-primary'
           >
             {t('nav.tools')}
           </a>
           <a
-            href="#contact"
-            className="text-[color:var(--foreground)] hover:text-[color:var(--color-blue)]"
+            href='#contact'
+            className='text-fg hover:text-primary'
           >
             {t('nav.contact')}
           </a>

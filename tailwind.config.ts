@@ -7,17 +7,9 @@ const config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['var(--font-montserrat)'],
-        mono: ['var(--font-roboto-mono)'],
-      },
-      colors: {
-        background: 'var(--background)',
-        foreground: 'var(--foreground)',
-        blue: 'var(--color-blue)',
-        gold: 'var(--color-gold)',
-        ash: 'var(--color-ash)',
-        honeydew: 'var(--color-honeydew)',
-        shadow: 'var(--color-shadow)',
+        // Typography tokens (wired to CSS variables in globals.css)
+        sans: ['var(--font-sans)'],
+        mono: ['var(--font-mono)'],
       },
     },
   },
