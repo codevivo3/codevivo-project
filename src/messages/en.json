@@ -1,7 +1,78 @@
 {
-  "home": {
-    "title": "Welcome to CodeVivo",
-    "subtitle": "Building sleek, minimal digital tools"
+  "header": {
+    "brand": "codevivo",
+    "nav": {
+      "about": "About",
+      "projects": "Projects",
+      "tools": "Tools",
+      "contact": "Contact"
+    }
+  },
+  "hero": {
+    "eyebrow": "Portfolio",
+    "title": "Hi, I'm Francesco",
+    "subtitle": "I build modern web apps and tools for financial freedom and beyond.",
+    "cta": "View My Projects"
+  },
+  "techStack": {
+    "title": "Tech Stack",
+    "items": ["Next.js", "TypeScript", "Tailwind", "Node.js", "PostgreSQL"]
+  },
+  "projects": {
+    "title": "Recent Projects",
+    "primaryAction": "View Project",
+    "secondaryAction": "GitHub",
+    "items": [
+      {
+        "id": "project-1",
+        "title": "Project Title",
+        "description": "Short description of the project.",
+        "tags": [
+          { "id": "nextjs", "label": "Next.js" },
+          { "id": "typescript", "label": "TypeScript" },
+          { "id": "tailwind", "label": "Tailwind CSS" }
+        ]
+      },
+      {
+        "id": "project-2",
+        "title": "Project Title",
+        "description": "Short description of the project.",
+        "tags": [
+          { "id": "react", "label": "React" },
+          { "id": "nodejs", "label": "Node.js" },
+          { "id": "postgresql", "label": "PostgreSQL" }
+        ]
+      },
+      {
+        "id": "project-3",
+        "title": "Project Title",
+        "description": "Short description of the project.",
+        "tags": [
+          { "id": "nextjs", "label": "Next.js" },
+          { "id": "typescript", "label": "TypeScript" },
+          { "id": "prisma", "label": "Prisma" }
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "About Me",
+    "body": "Brief introduction about yourself and your background as a developer. Mention your experience, areas of focus, and any notable projects or achievements.",
+    "cta": "View My Projects"
+  },
+  "contact": {
+    "title": "Get In Touch",
+    "name": "Your Name",
+    "email": "Your Email",
+    "message": "Your Message",
+    "namePlaceholder": "Your name",
+    "emailPlaceholder": "you@email.com",
+    "messagePlaceholder": "Tell me about your project",
+    "cta": "Send Message"
+  },
+  "footer": {
+    "brand": "codevivo",
+    "copyright": "© 2026 Codevivo · All rights reserved."
   },
   "not-found": {
     "title": "Page Not Found",

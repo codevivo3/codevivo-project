@@ -1,3 +1,5 @@
+/* File: src/app/[locale]/globals.css */
+
 /* Google Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap");
 
@@ -6,8 +8,11 @@
 
 /* --------------------------------------------------
    CodeVivo – Global Styles
-   Typography: Montserrat (brand) + Roboto Mono (body)
-   Color system driven by CSS variables for theming
+   File: src/app/[locale]/globals.css
+   Purpose: Define root-level variables for color, typography, and theming.
+            Includes Tailwind setup and Google Fonts.
+   Typography: Montserrat (headings, brand) + Roboto Mono (code, body)
+   Theming: CSS custom properties with dark mode support.
 -------------------------------------------------- */
 
 :root {
@@ -35,6 +40,7 @@
   }
 }
 
+/* Global base styles */
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -43,7 +49,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Utility helpers */
+/* Utility class for monospace code blocks */
 .code {
   font-family: var(--font-mono);
 }

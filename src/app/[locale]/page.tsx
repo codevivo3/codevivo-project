@@ -1,12 +1,23 @@
-import { useTranslations } from 'next-intl';
+import Header from '@/components/Header';
+import Hero from '@/components/Hero';
+import TechStack from '@/components/TechStack';
+import RecentProjects from '@/components/RecentProjects';
+import About from '@/components/About';
+import ContactForm from '@/components/ContactForm';
+import Footer from '@/components/Footer';
 
 export default function HomePage() {
-  const t = useTranslations('home');
-  
   return (
-    <main>
-      <h1>{t('title')}</h1>
-      <p>{t('subtitle')}</p>
-    </main>
+    <>
+      <Header />
+      <main className="bg-[color:var(--background)] text-[color:var(--foreground)]">
+        <Hero />
+        <TechStack />
+        <RecentProjects />
+        <About />
+        <ContactForm />
+      </main>
+      <Footer />
+    </>
   );
 }

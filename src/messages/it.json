@@ -1,7 +1,78 @@
 {
-  "home": {
-    "title": "Benvenuto in CodeVivo",
-    "subtitle": "Creiamo strumenti digitali essenziali e curati"
+  "header": {
+    "brand": "codevivo",
+    "nav": {
+      "about": "Chi sono",
+      "projects": "Progetti",
+      "tools": "Strumenti",
+      "contact": "Contatti"
+    }
+  },
+  "hero": {
+    "eyebrow": "Portfolio",
+    "title": "Ciao, sono Francesco",
+    "subtitle": "Creo web app moderne e strumenti per la libertà finanziaria e oltre.",
+    "cta": "Vedi i miei progetti"
+  },
+  "techStack": {
+    "title": "Tech Stack",
+    "items": ["Next.js", "TypeScript", "Tailwind", "Node.js", "PostgreSQL"]
+  },
+  "projects": {
+    "title": "Progetti recenti",
+    "primaryAction": "Vedi progetto",
+    "secondaryAction": "GitHub",
+    "items": [
+      {
+        "id": "project-1",
+        "title": "Titolo progetto",
+        "description": "Breve descrizione del progetto.",
+        "tags": [
+          { "id": "nextjs", "label": "Next.js" },
+          { "id": "typescript", "label": "TypeScript" },
+          { "id": "tailwind", "label": "Tailwind" }
+        ]
+      },
+      {
+        "id": "project-2",
+        "title": "Titolo progetto",
+        "description": "Breve descrizione del progetto.",
+        "tags": [
+          { "id": "node", "label": "Node.js" },
+          { "id": "postgres", "label": "PostgreSQL" },
+          { "id": "api", "label": "REST API" }
+        ]
+      },
+      {
+        "id": "project-3",
+        "title": "Titolo progetto",
+        "description": "Breve descrizione del progetto.",
+        "tags": [
+          { "id": "design", "label": "UI Design" },
+          { "id": "i18n", "label": "Internationalization" },
+          { "id": "performance", "label": "Performance" }
+        ]
+      }
+    ]
+  },
+  "about": {
+    "title": "Su di me",
+    "body": "Breve introduzione su di te e sul tuo background da sviluppatore. Cita la tua esperienza, aree di focus e progetti rilevanti.",
+    "cta": "Vedi i miei progetti"
+  },
+  "contact": {
+    "title": "Contattami",
+    "name": "Il tuo nome",
+    "email": "La tua email",
+    "message": "Il tuo messaggio",
+    "namePlaceholder": "Il tuo nome",
+    "emailPlaceholder": "nome@email.com",
+    "messagePlaceholder": "Parliamo del tuo progetto",
+    "cta": "Invia messaggio"
+  },
+  "footer": {
+    "brand": "codevivo",
+    "copyright": "© 2026 Codevivo · Tutti i diritti riservati."
   },
   "not-found": {
     "title": "Pagina non trovata",
