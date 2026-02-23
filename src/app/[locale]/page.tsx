@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <>
       <Header />
-      <main className='bg-bg text-fg'>
+      <main className='text-fg'>
         <Hero />
         <TechStack />
         <RecentProjects />

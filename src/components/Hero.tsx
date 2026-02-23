@@ -5,10 +5,10 @@ export default function Hero() {
   const t = useTranslations('hero');
 
   return (
-    <section className='section-flow'>
+    <section>
       <div className='mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6 md:flex-row md:items-center md:justify-between md:py-16'>
         <div className='max-w-xl text-center md:text-left'>
-          <p className='mb-3 text-xs uppercase tracking-[0.2em] text-fg/70'>
+          <p className='mb-3 text-xs uppercase tracking-[0.2em] text-fg/70 font-mono-var'>
             {t('eyebrow')}
           </p>
           <h1 className='text-[clamp(2rem,4.5vw,3.5rem)] font-semibold leading-tight'>

@@ -5,13 +5,7 @@
 const config = {
   content: ['./src/**/*.{js,ts,jsx,tsx,mdx}'],
   theme: {
-    extend: {
-      fontFamily: {
-        // Typography tokens (wired to CSS variables in globals.css)
-        sans: ['var(--font-sans)'],
-        mono: ['var(--font-mono)'],
-      },
-    },
+    extend: {},
   },
   plugins: [],
 };

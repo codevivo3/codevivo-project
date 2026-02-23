@@ -15,10 +15,12 @@
     "cta": "View My Projects"
   },
   "techStack": {
+    "overline": "Tools",
     "title": "Tech Stack",
     "items": ["Next.js", "TypeScript", "Tailwind", "Node.js", "PostgreSQL"]
   },
   "projects": {
+    "overline": "Projects",
     "title": "Recent Projects",
     "primaryAction": "View Project",
     "secondaryAction": "GitHub",
@@ -56,11 +58,13 @@
     ]
   },
   "about": {
+    "overline": "About",
     "title": "About Me",
     "body": "Brief introduction about yourself and your background as a developer. Mention your experience, areas of focus, and any notable projects or achievements.",
     "cta": "View My Projects"
   },
   "contact": {
+    "overline": "Contact",
     "title": "Get In Touch",
     "name": "Your Name",
     "email": "Your Email",
@@ -72,6 +76,12 @@
   },
   "footer": {
     "brand": "codevivo",
+    "nav": {
+      "about": "About",
+      "projects": "Projects",
+      "tools": "Tools",
+      "contact": "Contact"
+    },
     "copyright": "© 2026 Codevivo · All rights reserved."
   },
   "not-found": {

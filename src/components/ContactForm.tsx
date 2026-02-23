@@ -4,8 +4,14 @@ export default function ContactForm() {
   const t = useTranslations('contact');
 
   return (
-    <section id="contact" className="section-flow">
+    <section id="contact">
       <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
+        <div className="mb-4 flex flex-col items-center">
+          <p className="text-center font-mono-var text-[11px] uppercase tracking-[0.22em] text-fg/60">
+            {t('overline')}
+          </p>
+          <span className="mt-2 h-px w-10 bg-primary/70"></span>
+        </div>
         <h2 className="text-center text-xl font-semibold sm:text-2xl">
           {t('title')}
         </h2>

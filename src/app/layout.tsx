@@ -31,7 +31,7 @@ export default function RootLayout({
     <html lang="en">
       {/* Apply font variables and antialiasing to body */}
       <body
-        className={`${montserrat.variable} ${robotoMono.variable} font-sans antialiased`}
+        className={`${montserrat.variable} ${robotoMono.variable} antialiased`}
       >
         {children}
       </body>
