@@ -27,7 +27,7 @@
     "items": [
       {
         "id": "project-1",
-        "title": "Titolo progetto",
+        "title": "Titolo progetto 1",
         "description": "Breve descrizione del progetto.",
         "tags": [
           { "id": "nextjs", "label": "Next.js" },
@@ -37,7 +37,7 @@
       },
       {
         "id": "project-2",
-        "title": "Titolo progetto",
+        "title": "Titolo progetto 2",
         "description": "Breve descrizione del progetto.",
         "tags": [
           { "id": "node", "label": "Node.js" },
@@ -47,7 +47,7 @@
       },
       {
         "id": "project-3",
-        "title": "Titolo progetto",
+        "title": "Titolo progetto 3",
         "description": "Breve descrizione del progetto.",
         "tags": [
           { "id": "design", "label": "UI Design" },

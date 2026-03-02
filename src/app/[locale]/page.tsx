@@ -1,7 +1,7 @@
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import TechStack from '@/components/TechStack';
-import RecentProjects from '@/components/RecentProjects';
+import FeaturedProjectsPinned from '@/components/pinned/projects/FeaturedProjects';
 import About from '@/components/About';
 import ContactForm from '@/components/ContactForm';
 import Footer from '@/components/Footer';
@@ -13,7 +13,7 @@ export default function HomePage() {
       <main className='text-fg'>
         <Hero />
         <TechStack />
-        <RecentProjects />
+        <FeaturedProjectsPinned />
         <About />
         <ContactForm />
       </main>

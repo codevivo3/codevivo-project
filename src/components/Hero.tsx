@@ -5,8 +5,8 @@ export default function Hero() {
   const t = useTranslations('hero');
 
   return (
-    <section>
-      <div className='mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6 md:flex-row md:items-center md:justify-between md:py-16'>
+    <section className='min-h-screen flex items-center'>
+      <div className='mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 sm:px-6 md:flex-row md:items-center md:justify-between -translate-y-6'>
         <div className='max-w-xl text-center md:text-left'>
           <p className='mb-3 text-xs uppercase tracking-[0.2em] text-fg/70 font-mono-var'>
             {t('eyebrow')}

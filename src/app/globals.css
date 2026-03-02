@@ -57,11 +57,22 @@
    Base Layout Styles
 ------------------------------ */
 body {
-  background-color: var(--brand-shadow);
+  background-color: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ------------------------------
+   Light Theme (class-based)
+------------------------------ */
+:root.light {
+  --brand-shadow: #fafcfc;
+  --color-bg: #fafcfc;
+  --color-fg: #1d1d1f;
+  --color-surface: #ffffff;
+  --color-border: #dcdcdc;
 }
 
 /* Monospace Utility */
