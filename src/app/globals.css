@@ -23,10 +23,26 @@
   --brand-ash: #b8c5b0;
   --brand-honeydew: #fafcfc;
   --brand-shadow: #1d1d1f;
+  --surface-main: var(--brand-shadow);
 
   --font-sans: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
+
+/* Tech brand color reference (for hover states)
+
+React       #61DAFB
+TypeScript  #3178C6
+Tailwind    #06B6D4
+Docker      #2496ED
+Node        #5FA04E
+PostgreSQL  #4169E1
+HTML        #E34F26
+JavaScript  #F7DF1E
+GitHub      #181717
+Sanity      #0D0E12
+
+*/
 
 /* ------------------------------
    Tailwind Theme Tokens
@@ -57,7 +73,7 @@
    Base Layout Styles
 ------------------------------ */
 body {
-  background-color: var(--color-bg);
+  background: var(--surface-main);
   color: var(--color-fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -68,8 +84,9 @@ body {
    Light Theme (class-based)
 ------------------------------ */
 :root.light {
-  --brand-shadow: #fafcfc;
-  --color-bg: #fafcfc;
+  --brand-shadow: var(--brand-ash);
+  --color-bg: var(--brand-ash);
+  --surface-main: color-mix(in srgb, var(--brand-ash) 30%, white);
   --color-fg: #1d1d1f;
   --color-surface: #ffffff;
   --color-border: #dcdcdc;
@@ -118,6 +135,22 @@ html {
   transform-style: preserve-3d;
 }
 
+/* ------------------------------
+   Tech stack icons
+------------------------------ */
+.tech-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-block;
+  background-color: var(--color-fg);
+  transition: background-color 0.25s ease, transform 0.2s ease;
+}
+
+/* subtle motion */
+.tech-icon:hover {
+  transform: translateY(-2px) scale(1.05);
+}
+
 .logo-3d {
   transform-style: preserve-3d;
   transition: transform 300ms ease-out;
@@ -152,4 +185,57 @@ html {
 ------------------------------ */
 .section-flow {
   background: transparent;
+}
+
+/* ------------------------------
+   Surface Cards + Section Blocks
+------------------------------ */
+.surface-card {
+  border-width: 1px;
+  border-style: solid;
+}
+
+html.light .surface-card {
+  border-color: var(--brand-blue);
+}
+
+html:not(.light) .surface-card {
+  border-color: var(--brand-gold);
+}
+
+.section-block {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ------------------------------
+   Brand Border Helpers
+------------------------------ */
+.brand-border {
+  border-color: var(--brand-gold);
+
+}
+
+html.light .brand-border {
+  border-color: var(--brand-blue);
+}
+
+/* -------------------------------- */
+/* CodeVivo logo theme switching    */
+/* -------------------------------- */
+
+/* Default state (dark theme assumption) */
+.logo-black {
+  display: none;
+}
+
+/* Light theme overrides */
+html.light .logo-white {
+  display: none;
+}
+
+html.light .logo-black {
+  display: block;
 }

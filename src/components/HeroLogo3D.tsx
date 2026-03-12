@@ -8,8 +8,6 @@ import * as THREE from 'three';
 function LogoModel() {
   const { scene } = useGLTF('/models/3D-logo-color.glb');
 
-  console.log('Raw scene:', scene);
-
   return (
     <primitive
       object={scene}

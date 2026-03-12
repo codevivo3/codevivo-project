@@ -3,6 +3,7 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 import { getMessages } from 'next-intl/server';
+import ClientShell from '@/components/layout/ClientShell';
 
 // Metadata can live here for locale-aware routes
 export const metadata: Metadata = {
@@ -18,7 +19,7 @@ export const metadata: Metadata = {
 
 // Pre-generate static paths for supported locales
 export function generateStaticParams() {
-  return routing.locales.map((locale) => ({ locale }));
+  return [{ locale: 'en' }, { locale: 'it' }];
 }
 
 // Locale layout (NO html/body here — root layout handles that)
@@ -39,7 +40,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      {children}
+      <ClientShell>{children}</ClientShell>
     </NextIntlClientProvider>
   );
 }

@@ -29,7 +29,7 @@ function StaticProjectCard({
   secondaryLabel: string;
 }) {
   return (
-    <article className='mx-auto w-full max-w-3xl rounded-xl bg-surface p-10 text-center'>
+    <article className='surface-card mx-auto w-full max-w-3xl rounded-xl bg-surface p-10 text-center'>
       <p className='text-[11px] uppercase tracking-[0.22em] text-fg/60 font-mono-var'>
         {overline}
       </p>
@@ -68,10 +68,10 @@ export default function FeaturedProjects() {
   });
 
   return (
-    <section id='projects' className='relative'>
+    <section id='projects' className='section-block relative'>
       <div className='relative'>
         <div ref={sectionRef} className='relative hidden h-[300vh] md:block'>
-          <div className='sticky top-0 flex h-screen flex-col items-center justify-start overflow-hidden pt-10'>
+          <div className='sticky top-10 flex h-screen flex-col items-center justify-start overflow-hidden pt-10'>
             <div className='mx-auto w-full max-w-5xl px-4 sm:px-6'>
               <div className='mb-4 flex flex-col items-center'>
                 <p className='text-center font-mono-var text-[11px] uppercase tracking-[0.22em] text-fg/60'>

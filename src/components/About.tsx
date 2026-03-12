@@ -4,7 +4,7 @@ export default function About() {
   const t = useTranslations('about');
 
   return (
-    <section id="about">
+    <section id="about" className="section-block">
       <div className="mx-auto w-full max-w-3xl px-4 py-10 text-center sm:px-6">
         <div className="mb-4 flex flex-col items-center">
           <p className="text-center font-mono-var text-[11px] uppercase tracking-[0.22em] text-fg/60">

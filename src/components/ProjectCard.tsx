@@ -14,7 +14,7 @@ export default function ProjectCard({
   secondaryLabel,
 }: ProjectCardProps) {
   return (
-    <article className="rounded-xl border border-border/40 bg-surface/60 p-4 shadow-sm sm:p-5">
+    <article className="surface-card rounded-xl bg-surface/60 p-4 shadow-sm sm:p-5">
       <h3 className="text-lg font-semibold">{title}</h3>
       <p className="mt-2 text-sm text-fg/70">
         {description}

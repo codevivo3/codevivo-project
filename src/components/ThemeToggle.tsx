@@ -1,39 +1,68 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
+
+import { LightbulbIcon, LightbulbFilamentIcon } from '@phosphor-icons/react';
 
 export default function ThemeToggle() {
-  // useState stores UI state between renders.
-  const [isLight, setIsLight] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    const storedTheme = localStorage.getItem('theme');
-    return storedTheme === 'light';
-  });
+  const [isLight, setIsLight] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    if (isLight) {
-      document.documentElement.classList.add('light');
-    } else {
-      document.documentElement.classList.remove('light');
-    }
-  }, [isLight]);
+useEffect(() => {
+  const root = document.documentElement;
+
+  requestAnimationFrame(() => {
+    setMounted(true);
+    setIsLight(root.classList.contains('light'));
+  });
+}, []);
 
   const handleToggle = () => {
-    setIsLight((prev) => {
-      const next = !prev;
-      document.documentElement.classList.toggle('light', next);
-      localStorage.setItem('theme', next ? 'light' : 'dark');
-      return next;
-    });
+    const root = document.documentElement;
+    const next = !root.classList.contains('light');
+
+    root.classList.toggle('light', next);
+    localStorage.setItem('theme', next ? 'light' : 'dark');
+
+    setIsLight(next);
   };
+
+  const DarkIcon = (
+    <LightbulbIcon
+      size={18}
+      className='text-accent transition-colors'
+      weight='fill'
+    />
+  );
+
+  const LightIcon = (
+    <LightbulbFilamentIcon
+      size={18}
+      className='text-primary transition-colors'
+      weight='duotone'
+    />
+  );
+
+  if (!mounted) {
+    return (
+      <button
+        type='button'
+        className='h-8 w-8 rounded-md surface-card flex items-center justify-center text-sm font-mono'
+        aria-label='Toggle theme'
+        title='Toggle theme'
+      />
+    );
+  }
 
   return (
     <button
-      type="button"
-      className="rounded-md border border-border px-2 py-1 text-sm font-mono-var"
+      type='button'
+      className='h-8 w-8 rounded-md surface-card flex items-center justify-center text-sm font-mono cursor-pointer'
       onClick={handleToggle}
+      aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
+      title={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
     >
-      {isLight ? '💡 ON' : '💡 OFF'}
+      {isLight ? LightIcon : DarkIcon}
     </button>
   );
 }

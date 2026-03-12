@@ -1,10 +1,11 @@
 import { useTranslations } from 'next-intl';
+import ButtonBlue from '@/components/buttons/ButtonBlue';
 
 export default function ContactForm() {
   const t = useTranslations('contact');
 
   return (
-    <section id="contact">
+    <section id="contact" className="section-block">
       <div className="mx-auto w-full max-w-3xl px-4 py-10 sm:px-6">
         <div className="mb-4 flex flex-col items-center">
           <p className="text-center font-mono-var text-[11px] uppercase tracking-[0.22em] text-fg/60">
@@ -15,40 +16,35 @@ export default function ContactForm() {
         <h2 className="text-center text-xl font-semibold sm:text-2xl">
           {t('title')}
         </h2>
-        <form className="mt-6 rounded-xl border border-border/40 bg-surface/60 p-4 shadow-sm sm:mt-8 sm:p-6">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-2 text-xs uppercase tracking-wide text-fg/70">
+        <form className="mt-6 rounded-xl surface-card bg-surface/60 p-6 sm:mt-8 sm:p-8">
+          <div className="grid gap-6 sm:grid-cols-2">
+            <label className="flex flex-col gap-2 text-[11px] uppercase tracking-[0.2em] text-fg/60 font-mono-var">
               {t('name')}
               <input
                 type="text"
-                className="rounded-md border border-border/60 bg-transparent px-3 py-2 text-sm text-fg focus:border-primary focus:outline-none"
+                className="brand-border border-b bg-transparent px-1 py-2 text-sm text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 placeholder={t('namePlaceholder')}
               />
             </label>
-            <label className="flex flex-col gap-2 text-xs uppercase tracking-wide text-fg/70">
+            <label className="flex flex-col gap-2 text-[11px] uppercase tracking-[0.2em] text-fg/60 font-mono-var">
               {t('email')}
               <input
                 type="email"
-                className="rounded-md border border-border/60 bg-transparent px-3 py-2 text-sm text-fg focus:border-primary focus:outline-none"
+                className="brand-border border-b bg-transparent px-1 py-2 text-sm text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 placeholder={t('emailPlaceholder')}
               />
             </label>
           </div>
-          <label className="mt-4 flex flex-col gap-2 text-xs uppercase tracking-wide text-fg/70">
+          <label className="mt-6 flex flex-col gap-2 text-[11px] uppercase tracking-[0.2em] text-fg/60 font-mono-var">
             {t('message')}
             <textarea
-              rows={4}
-              className="rounded-md border border-border/60 bg-transparent px-3 py-2 text-sm text-fg focus:border-primary focus:outline-none"
+              rows={6}
+              className="brand-border min-h-[160px] border-b bg-transparent px-1 py-2 text-sm text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               placeholder={t('messagePlaceholder')}
             />
           </label>
-          <div className="mt-6 flex justify-center">
-            <button
-              type="button"
-              className="w-full rounded-md border border-primary bg-primary px-6 py-2 text-xs font-medium text-fg transition hover:bg-surface hover:text-fg sm:w-auto"
-            >
-              {t('cta')}
-            </button>
+          <div className="mt-8 flex justify-end">
+            <ButtonBlue type="button">{t('cta')}</ButtonBlue>
           </div>
         </form>
       </div>

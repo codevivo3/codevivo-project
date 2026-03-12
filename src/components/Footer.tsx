@@ -14,23 +14,27 @@ export default function Footer() {
             href={`/${locale}#hero`}
             className='text-base font-semibold tracking-tight text-fg sm:text-lg'
           >
-            <Image
-              src='/logos/codevivo-col-logo-white-text.svg'
-              alt='Codevivo logo'
-              width={160}
-              height={40}
-              className='h-auto w-28 sm:w-36 md:w-40 lg:w-44'
-              priority
-            />
+            <div className='relative h-auto w-24 sm:w-32 md:w-36 lg:w-40'>
+              <Image
+                src='/logos/codevivo-col-logo-white-text.svg'
+                alt='Codevivo logo'
+                width={160}
+                height={40}
+                className='logo-white transition-transform duration-500 ease-out hover:scale-105'
+                priority
+              />
+              <Image
+                src='/logos/codevivo-col-logo-black-text.svg'
+                alt='Codevivo logo'
+                width={160}
+                height={40}
+                className='logo-black transition-transform duration-500 ease-out hover:scale-105'
+                priority
+              />
+            </div>
           </Link>
         </span>
         <nav className='flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm'>
-          <Link
-            href={`/${locale}#about`}
-            className='text-fg/70 hover:text-primary font-mono-var'
-          >
-            {t('nav.about')}
-          </Link>
           <Link
             href={`/${locale}#projects`}
             className='text-fg/70 hover:text-primary font-mono-var'
@@ -42,6 +46,12 @@ export default function Footer() {
             className='text-fg/70 hover:text-primary font-mono-var'
           >
             {t('nav.tools')}
+          </Link>
+          <Link
+            href={`/${locale}#about`}
+            className='text-fg/70 hover:text-primary font-mono-var'
+          >
+            {t('nav.about')}
           </Link>
           <Link
             href={`/${locale}#contact`}

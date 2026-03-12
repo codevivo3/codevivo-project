@@ -28,7 +28,23 @@ export default function RootLayout({
 }) {
   return (
     // Set default language attribute and wrap the page content
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       {/* Apply font variables and antialiasing to body */}
       <body
         className={`${montserrat.variable} ${robotoMono.variable} antialiased`}

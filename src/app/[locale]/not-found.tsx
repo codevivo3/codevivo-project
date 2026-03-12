@@ -4,13 +4,14 @@
 // Description: Custom 404 page that displays when a route is not found.
 // Localized with next-intl and rendered statically per locale.
 // -------------------------------
+import ButtonBlue from '@/components/buttons/ButtonBlue';
 import { getTranslations } from 'next-intl/server';
 
 import { getLocale } from 'next-intl/server';
-import Link from 'next/link';
+
 
 // Force this route to be statically rendered per locale
-export const dynamic = 'force-static';
+// export const dynamic = 'force-static';
 
 // The main NotFound component fetches the user's locale and translation messages,
 // then displays a localized error message with a link back to the homepage.
@@ -23,19 +24,16 @@ export default async function NotFound() {
 
   return (
     <main className='min-h-screen flex flex-col items-center justify-center px-4 py-16 text-center'>
-      <h1 className='text-5xl font-bold mb-4 text-accent'>
-        {t('not-found.title')}
-      </h1>
-      <p className='text-base md:text-lg text-fg/70 mb-6'>
-        {t('not-found.description')}
-      </p>
-      {/* Link back to the localized homepage */}
-      <Link
-        href={`/${locale}`}
-        className='text-sm font-medium border border-border px-4 py-2 rounded hover:bg-primary hover:text-fg transition hover:font-bold'
-      >
-        {t('not-found.homeLink')}
-      </Link>
+      <div className='surface-card p-10 rounded-2xl'>
+        <h1 className='text-5xl font-bold mb-4 text-accent'>
+          {t('not-found.title')}
+        </h1>
+        <p className='text-base md:text-lg text-fg/70 mb-6'>
+          {t('not-found.description')}
+        </p>
+        {/* Link back to the localized homepage */}
+        <ButtonBlue href={`/${locale}`}>{t('not-found.homeLink')}</ButtonBlue>
+      </div>
     </main>
   );
 }

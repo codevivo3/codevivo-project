@@ -18,12 +18,10 @@
         "name": "next"
       }
     ],
-    "baseUrl": "./src",
-    "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["*"],
-      "@i18n/*": ["app/i18n/*"],
-      "@messages/*": ["messages/*"]
+      "@/*": ["./src/*"],
+      "@i18n/*": ["./src/app/i18n/*"],
+      "@messages/*": ["./src/messages/*"]
     }
   },
   "include": [

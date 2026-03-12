@@ -9,15 +9,13 @@ import Footer from '@/components/Footer';
 export default function HomePage() {
   return (
     <>
-      <Header />
       <main className='text-fg'>
         <Hero />
-        <TechStack />
         <FeaturedProjectsPinned />
+        <TechStack />
         <About />
         <ContactForm />
       </main>
-      <Footer />
     </>
   );
 }
