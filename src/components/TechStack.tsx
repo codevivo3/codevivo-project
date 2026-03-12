@@ -18,11 +18,11 @@ export default function TechStack() {
         <h2 className='text-center text-xl font-semibold sm:text-2xl'>
           {t('title')}
         </h2>
-        <div className='mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:grid-cols-3 md:grid-cols-5'>
+        <div className='mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:grid-cols-4 md:grid-cols-4 justify-items-center'>
           {techStack.map((tech) => (
             <div
               key={tech.name}
-              className='surface-card flex flex-col items-center justify-center gap-2 rounded-lg bg-surface/50 px-3 py-3 text-center text-xs sm:text-sm transition-transform duration-200 hover:-translate-y-0.5'
+              className='surface-card flex h-[90px] w-full max-w-[180px] flex-col items-center justify-center gap-2 rounded-lg bg-surface/50 px-3 py-3 text-center text-xs sm:text-sm transition-transform duration-200 hover:-translate-y-0.5'
             >
               <span
                 aria-label={tech.name}

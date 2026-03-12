@@ -34,7 +34,7 @@ export default function Footer() {
             </div>
           </Link>
         </span>
-        <nav className='flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm'>
+        <nav className='flex flex-col items-center justify-center gap-4 text-xs sm:text-sm'>
           <Link
             href={`/${locale}#projects`}
             className='text-fg/70 hover:text-primary font-mono-var'

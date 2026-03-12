@@ -23,29 +23,25 @@ export default function LanguageToggle() {
     'relative flex h-full flex-col items-center justify-center px-1.5 text-[11px] font-mono-var uppercase tracking-[0.2em] transition-colors duration-200 hover:text-fg/80';
 
   return (
-    <div className="surface-card inline-flex h-8 items-center gap-2 rounded-md bg-surface/40 px-2 text-xs font-mono-var">
+    <div className='surface-card inline-flex h-8 items-center gap-2 rounded-md bg-surface/40 px-2 text-xs font-mono-var'>
       <button
-        type="button"
+        type='button'
         aria-pressed={locale === 'en'}
         className={`${baseButton} ${locale === 'en' ? 'text-fg' : 'text-fg/40'}`}
         onClick={() => switchLocale('en')}
       >
         EN
-        {locale === 'en' && (
-          <span className="mt-0.5 h-[2px] w-4 bg-primary" />
-        )}
+        {locale === 'en' && <span className=' h-[1px] w-4 bg-primary' />}
       </button>
-      <span className="text-fg/30">|</span>
+      <span className='text-fg/30'>|</span>
       <button
-        type="button"
+        type='button'
         aria-pressed={locale === 'it'}
         className={`${baseButton} ${locale === 'it' ? 'text-fg' : 'text-fg/40'}`}
         onClick={() => switchLocale('it')}
       >
         IT
-        {locale === 'it' && (
-          <span className="mt-0.5 h-[2px] w-4 bg-primary" />
-        )}
+        {locale === 'it' && <span className=' h-[1px] w-4 bg-primary' />}
       </button>
     </div>
   );
