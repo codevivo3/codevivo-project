@@ -11,8 +11,8 @@ export default function HomePage() {
     <>
       <main className='text-fg'>
         <Hero />
-        <FeaturedProjectsPinned />
         <TechStack />
+        <FeaturedProjectsPinned />
         <About />
         <ContactForm />
       </main>

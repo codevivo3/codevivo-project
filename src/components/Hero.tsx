@@ -2,7 +2,7 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 
 // import HeroLogo3D from './HeroLogo3D';
-import ButtonBlue from './buttons/ButtonBlue';
+import Button from '@/components/ui/Button';
 
 export default function Hero() {
   const t = useTranslations('hero');
@@ -21,13 +21,13 @@ export default function Hero() {
             {t('subtitle')}
           </p>
           <div className='mt-8 flex justify-center md:justify-start'>
-            <ButtonBlue href='/projects'>{t('cta')}</ButtonBlue>
+            <Button href='/projects'>{t('cta')}</Button>
           </div>
         </div>
         <div className='flex items-center justify-center'>
           {/* <HeroLogo3D /> */}
           <Image
-            src='/logos/codevivo-icon-color.svg'
+            src='/logos/codevivo/codevivo-icon-color.svg'
             alt='Hero Logo'
             width={300}
             height={300}

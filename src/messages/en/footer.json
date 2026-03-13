@@ -1,0 +1,10 @@
+{
+  "brand": "codevivo",
+  "nav": {
+    "about": "About",
+    "projects": "Projects",
+    "tools": "Tools",
+    "contact": "Contact"
+  },
+  "copyright": "© 2026 Codevivo · All rights reserved."
+}

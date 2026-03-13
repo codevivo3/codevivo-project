@@ -1,7 +1,15 @@
 import { useTranslations } from 'next-intl';
 
-import { techStack } from '@/content/techStack';
+import TechIcon from '@/components/ui/TechIcon';
+import { techStackEntries } from '@/data/techStack';
 
+/**
+ * TechStack
+ *
+ * Section component used to present the technologies in the stack.
+ * Technology metadata comes from src/data/techStack.ts, while icon
+ * rendering is delegated to the shared TechIcon UI component.
+ */
 
 export default function TechStack() {
   const t = useTranslations('techStack');
@@ -18,28 +26,14 @@ export default function TechStack() {
         <h2 className='text-center text-xl font-semibold sm:text-2xl'>
           {t('title')}
         </h2>
-        <div className='mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:grid-cols-4 md:grid-cols-4 justify-items-center'>
-          {techStack.map((tech) => (
+        <div className='mt-6 grid grid-cols-2 gap-16 sm:mt-8 sm:grid-cols-4 place-items-center p-8'>
+          {techStackEntries.map(([id, tech]) => (
             <div
-              key={tech.name}
-              className='surface-card flex h-[90px] w-full max-w-[180px] flex-col items-center justify-center gap-2 rounded-lg bg-surface/50 px-3 py-3 text-center text-xs sm:text-sm transition-transform duration-200 hover:-translate-y-0.5'
+              key={id}
+              className='flex flex-col items-center justify-center gap-3 text-center text-xs sm:text-sm transition-transform duration-200 hover:-translate-y-0.5'
             >
-              <span
-                aria-label={tech.name}
-                role='img'
-                className={`tech-icon tech-${tech.name.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
-                style={{
-                  WebkitMaskImage: `url(${tech.icon})`,
-                  maskImage: `url(${tech.icon})`,
-                  WebkitMaskRepeat: 'no-repeat',
-                  maskRepeat: 'no-repeat',
-                  WebkitMaskPosition: 'center',
-                  maskPosition: 'center',
-                  WebkitMaskSize: 'contain',
-                  maskSize: 'contain',
-                }}
-              />
-              <span>{tech.name}</span>
+              <TechIcon id={id} size='md' />
+              <span>{tech.label}</span>
             </div>
           ))}
         </div>

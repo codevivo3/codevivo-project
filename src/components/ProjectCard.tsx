@@ -1,9 +1,28 @@
+import Button from '@/components/ui/Button';
+import TechIcon from '@/components/ui/TechIcon';
+import { type TechId } from '@/data/techStack';
+
+/**
+ * ProjectCard
+ *
+ * Presentational component used to display a project entry.
+ * Tech stack icons are rendered through the TechIcon UI component,
+ * ensuring a single source of truth for icon rendering.
+ */
+
+const cardClassName =
+  'surface-card mx-auto w-full max-w-3xl rounded-xl bg-surface/60 p-10 text-center';
+const tagsClassName = 'mt-6 flex flex-wrap justify-center gap-4';
+const tagClassName = 'group flex items-center justify-center';
+
 type ProjectCardProps = {
   title: string;
   description: string;
-  tags: { id: string; label: string }[];
+  tags: TechId[];
   primaryLabel: string;
   secondaryLabel: string;
+  projectUrl: string;
+  githubUrl: string;
 };
 
 export default function ProjectCard({
@@ -12,30 +31,31 @@ export default function ProjectCard({
   tags,
   primaryLabel,
   secondaryLabel,
+  projectUrl,
+  githubUrl,
 }: ProjectCardProps) {
   return (
-    <article className="surface-card rounded-xl bg-surface/60 p-4 shadow-sm sm:p-5">
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <p className="mt-2 text-sm text-fg/70">
-        {description}
-      </p>
-      <div className="mt-4 flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <span
-            key={tag.id}
-            className="rounded-full border border-border/50 px-2 py-0.5 text-xs text-fg/70"
-          >
-            {tag.label}
-          </span>
-        ))}
-      </div>
-      <div className="mt-5 flex flex-wrap gap-3">
-        <button className="w-full rounded-md border border-primary bg-primary px-3 py-1.5 text-xs font-medium text-fg transition hover:bg-surface hover:text-fg sm:w-auto">
+    <article className={cardClassName}>
+      <h3 className='text-2xl font-semibold'>{title}</h3>
+      <p className='mt-4 text-sm text-fg/70'>{description}</p>
+      <ul className={tagsClassName} aria-label={`${title} tech stack`}>
+        {tags.map((tagId) => {
+          return (
+            <li key={tagId} className={tagClassName}>
+              <span className='transition-transform duration-150 group-hover:scale-110'>
+                <TechIcon id={tagId} size='sm' />
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      <div className={tagsClassName}>
+        <Button href={projectUrl} variant='primary'>
           {primaryLabel}
-        </button>
-        <button className="w-full rounded-md border border-border px-3 py-1.5 text-xs font-medium text-fg/70 transition hover:bg-surface sm:w-auto">
+        </Button>
+        <Button href={githubUrl} variant='accent'>
           {secondaryLabel}
-        </button>
+        </Button>
       </div>
     </article>
   );

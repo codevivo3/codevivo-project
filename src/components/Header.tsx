@@ -19,7 +19,7 @@ export default function Header() {
         >
           <div className='relative h-auto w-24 sm:w-32 md:w-36 lg:w-40'>
             <Image
-              src='/logos/codevivo-col-logo-white-text.svg'
+              src='/logos/codevivo/codevivo-col-logo-white-text.svg'
               alt='Codevivo logo'
               width={160}
               height={40}
@@ -27,7 +27,7 @@ export default function Header() {
               priority
             />
             <Image
-              src='/logos/codevivo-col-logo-black-text.svg'
+              src='/logos/codevivo/codevivo-col-logo-black-text.svg'
               alt='Codevivo logo'
               width={160}
               height={40}
@@ -38,16 +38,16 @@ export default function Header() {
         </Link>
         <nav className='flex items-center gap-4 font-mono-var text-sm'>
           <Link
-            href={`/projects`}
-            className='text-fg hover:text-primary transition-colors duration-300'
-          >
-            {t('nav.projects')}
-          </Link>
-          <Link
             href={`/${locale}#tools`}
             className='text-fg hover:text-primary transition-colors duration-300'
           >
             {t('nav.tools')}
+          </Link>
+          <Link
+            href={`/projects`}
+            className='text-fg hover:text-primary transition-colors duration-300'
+          >
+            {t('nav.projects')}
           </Link>
           <Link
             href={`/${locale}#about`}

@@ -1,0 +1,11 @@
+{
+  "overline": "Contatto",
+  "title": "Restiamo in contatto",
+  "name": "Il tuo nome",
+  "email": "La tua email",
+  "message": "Il tuo messaggio",
+  "namePlaceholder": "Il tuo nome",
+  "emailPlaceholder": "tu@email.com",
+  "messagePlaceholder": "Parlami del tuo progetto",
+  "cta": "Invia il messaggio"
+}

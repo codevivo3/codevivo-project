@@ -1,4 +1,14 @@
-/* File: src/app/globals.css */
+/* ==================================================
+   File: src/app/globals.css
+   Project: CodeVivo
+   Purpose: Global design tokens, theme rules,
+   base styles, and shared UI utilities
+   ================================================== */
+
+
+/* ==================================================
+   1. Imports
+   ================================================== */
 
 /* Google Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap");
@@ -6,60 +16,50 @@
 /* Tailwind v4 */
 @import "tailwindcss";
 
-/* --------------------------------------------------
-   CodeVivo – Global Styles
-   - Brand tokens (HEX source of truth)
-   - Tailwind theme tokens via @theme
-   - Typography variables
-   - Global UI utilities
--------------------------------------------------- */
 
-/* ------------------------------
-   Brand Tokens (HEX)
------------------------------- */
+/* ==================================================
+   2. Brand Tokens (HEX source of truth)
+   These values define the design language of CodeVivo.
+   ================================================== */
+
 :root {
   --brand-blue: #2e92d5;
   --brand-gold: #e2a64d;
   --brand-ash: #b8c5b0;
   --brand-honeydew: #fafcfc;
   --brand-shadow: #1d1d1f;
+
+  /* Surface background used by the layout */
   --surface-main: var(--brand-shadow);
 
+  /* Typography */
   --font-sans: "Montserrat", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* Tech brand color reference (for hover states)
 
-React       #61DAFB
-TypeScript  #3178C6
-Tailwind    #06B6D4
-Docker      #2496ED
-Node        #5FA04E
-PostgreSQL  #4169E1
-HTML        #E34F26
-JavaScript  #F7DF1E
-GitHub      #181717
-Sanity      #0D0E12
+/* ==================================================
+   3. Tailwind Theme Tokens
+   These variables generate Tailwind utilities like:
+   bg-*, text-*, border-* via Tailwind v4 @theme
+   ================================================== */
 
-*/
-
-/* ------------------------------
-   Tailwind Theme Tokens
-   Generates bg-*, text-*, border-* utilities
------------------------------- */
 @theme {
   --color-bg: var(--brand-shadow);
   --color-fg: var(--brand-honeydew);
   --color-surface: #141414;
   --color-border: #2a2a2a;
+
   --color-primary: var(--brand-blue);
   --color-accent: var(--brand-gold);
 }
 
-/* ------------------------------
-   Dark Mode (prefers-color-scheme)
------------------------------- */
+
+/* ==================================================
+   4. System Dark Mode (fallback)
+   Used when the OS prefers dark mode.
+   ================================================== */
+
 @media (prefers-color-scheme: dark) {
   :root {
     --color-bg: var(--brand-shadow);
@@ -69,30 +69,42 @@ Sanity      #0D0E12
   }
 }
 
-/* ------------------------------
-   Base Layout Styles
------------------------------- */
-body {
-  background: var(--surface-main);
-  color: var(--color-fg);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
 
-/* ------------------------------
-   Light Theme (class-based)
------------------------------- */
+/* ==================================================
+   5. Light Theme Override (class-based)
+   Triggered when <html class="light"> is applied
+   ================================================== */
+
 :root.light {
   --brand-shadow: var(--brand-ash);
   --color-bg: var(--brand-ash);
+
   --surface-main: color-mix(in srgb, var(--brand-ash) 30%, white);
+
   --color-fg: #1d1d1f;
   --color-surface: #ffffff;
   --color-border: #dcdcdc;
 }
 
-/* Monospace Utility */
+
+/* ==================================================
+   6. Base Layout Styles
+   ================================================== */
+
+body {
+  background: var(--surface-main);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+/* ==================================================
+   7. Typography Utilities
+   ================================================== */
+
 .code {
   font-family: var(--font-mono);
 }
@@ -105,9 +117,11 @@ body {
   font-family: var(--font-mono);
 }
 
-/* ------------------------------
-   Scrollbar (theme-aware)
------------------------------- */
+
+/* ==================================================
+   8. Scrollbar Styling
+   ================================================== */
+
 html {
   scrollbar-width: thin;
   scrollbar-color: var(--color-primary) transparent;
@@ -127,28 +141,63 @@ html {
   border-radius: 999px;
 }
 
-/* ------------------------------
-   Logo 3D Utilities
------------------------------- */
+
+/* ==================================================
+   9. Layout Sections
+   Used for vertical flow sections (hero, projects, etc.)
+   ================================================== */
+
+.section-block {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.section-flow {
+  background: transparent;
+}
+
+
+/* ==================================================
+   10. Surface Components (Cards, Panels)
+   ================================================== */
+
+.surface-card {
+  border-width: 1px;
+  border-style: solid;
+}
+
+html.light .surface-card {
+  border-color: var(--brand-blue);
+}
+
+html:not(.light) .surface-card {
+  border-color: var(--brand-gold);
+}
+
+
+/* ==================================================
+   11. Brand Border Helpers
+   Used by inputs and interactive UI elements
+   ================================================== */
+
+.brand-border {
+  border-color: var(--brand-gold);
+}
+
+html.light .brand-border {
+  border-color: var(--brand-blue);
+}
+
+
+/* ==================================================
+   12. Logo Utilities
+   ================================================== */
+
 .logo-3d-wrapper {
   perspective: 1000px;
   transform-style: preserve-3d;
-}
-
-/* ------------------------------
-   Tech stack icons
------------------------------- */
-.tech-icon {
-  width: 32px;
-  height: 32px;
-  display: inline-block;
-  background-color: var(--color-fg);
-  transition: background-color 0.25s ease, transform 0.2s ease;
-}
-
-/* subtle motion */
-.tech-icon:hover {
-  transform: translateY(-2px) scale(1.05);
 }
 
 .logo-3d {
@@ -156,6 +205,12 @@ html {
   transition: transform 300ms ease-out;
   will-change: transform;
 }
+
+
+/* ==================================================
+   13. Floating Animation
+   Used by hero logo
+   ================================================== */
 
 @keyframes logoFloat {
   0%, 100% {
@@ -180,58 +235,16 @@ html {
   }
 }
 
-/* ------------------------------
-   Section Background (disabled)
------------------------------- */
-.section-flow {
-  background: transparent;
-}
 
-/* ------------------------------
-   Surface Cards + Section Blocks
------------------------------- */
-.surface-card {
-  border-width: 1px;
-  border-style: solid;
-}
+/* ==================================================
+   16. Logo Theme Switching
+   Handles light/dark logo variants
+   ================================================== */
 
-html.light .surface-card {
-  border-color: var(--brand-blue);
-}
-
-html:not(.light) .surface-card {
-  border-color: var(--brand-gold);
-}
-
-.section-block {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* ------------------------------
-   Brand Border Helpers
------------------------------- */
-.brand-border {
-  border-color: var(--brand-gold);
-
-}
-
-html.light .brand-border {
-  border-color: var(--brand-blue);
-}
-
-/* -------------------------------- */
-/* CodeVivo logo theme switching    */
-/* -------------------------------- */
-
-/* Default state (dark theme assumption) */
 .logo-black {
   display: none;
 }
 
-/* Light theme overrides */
 html.light .logo-white {
   display: none;
 }

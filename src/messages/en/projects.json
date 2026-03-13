@@ -1,0 +1,32 @@
+{
+  "overline": "Projects",
+  "title": "Recent Projects",
+  "primaryAction": "View Project",
+  "secondaryAction": "Source",
+  "items": [
+    {
+      "id": "project-001",
+      "title": "The Paguro Journey",
+      "description": "The Paguro Journey is a modern web platform for travel stories, destinations, and video-led content.",
+      "projectUrl": "https://thepagurojourney.com",
+      "githubUrl": "https://github.com/codevivo3/the_paguro_journey",
+      "tags": ["nextjs", "typescript", "tailwind", "vercel"]
+    },
+    {
+      "id": "project-002",
+      "title": "Project 2",
+      "description": "Short description of the project.",
+      "projectUrl": "#",
+      "githubUrl": "#",
+      "tags": ["react", "nodejs", "github"]
+    },
+    {
+      "id": "project-003",
+      "title": "Project 3",
+      "description": "Short description of the project.",
+      "projectUrl": "#",
+      "githubUrl": "#",
+      "tags": ["nextjs", "typescript", "vercel"]
+    }
+  ]
+}
