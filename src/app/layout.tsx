@@ -23,7 +23,10 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'CodeVivo — Web Development & Digital Projects',
+  title: {
+    default: 'CodeVivo — Modern Web Development',
+    template: '%s | CodeVivo',
+  },
   description:
     'CodeVivo is the portfolio of Francesco De Vivo, focused on modern web development using React, Next.js, and TypeScript.',
   metadataBase: new URL('https://codevivo.dev'),
@@ -31,13 +34,13 @@ export const metadata: Metadata = {
     title: 'CodeVivo — Modern Web Development with React & Next.js',
     description:
       'Portfolio of Francesco De Vivo — building modern web applications with React, Next.js and TypeScript.',
-    url: 'https://codevivo.dev/og/codevivo-og.png',
+    url: 'https://codevivo.dev',
     siteName: 'CodeVivo',
     locale: 'en_US',
     type: 'website',
     images: [
       {
-        url: '/og/codevivo-og.png',
+        url: 'https://codevivo.dev/og/codevivo-og.png',
         width: 1200,
         height: 630,
         alt: 'CodeVivo Portfolio',
@@ -49,7 +52,7 @@ export const metadata: Metadata = {
     title: 'CodeVivo',
     description:
       'Portfolio of Francesco De Vivo — modern web development with React and Next.js.',
-    images: ['/og/codevivo-og.png'],
+    images: ['https://codevivo.dev/og/codevivo-og.png'],
   },
 };
 
