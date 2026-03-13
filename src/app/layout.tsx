@@ -28,10 +28,10 @@ export const metadata: Metadata = {
     'CodeVivo is the portfolio of Francesco De Vivo, focused on modern web development using React, Next.js, and TypeScript.',
   metadataBase: new URL('https://codevivo.dev'),
   openGraph: {
-    title: 'CodeVivo',
+    title: 'CodeVivo — Modern Web Development with React & Next.js',
     description:
-      'Portfolio of Francesco De Vivo — modern web development with React and Next.js.',
-    url: 'https://codevivo.dev',
+      'Portfolio of Francesco De Vivo — building modern web applications with React, Next.js and TypeScript.',
+    url: 'https://codevivo.dev/og/codevivo-og.png',
     siteName: 'CodeVivo',
     locale: 'en_US',
     type: 'website',
