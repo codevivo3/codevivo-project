@@ -38,31 +38,32 @@ function isExternalHref(href: string) {
   return /^(?:[a-z][a-z\d+\-.]*:)?\/\//i.test(href) || /^[a-z][a-z\d+\-.]*:/i.test(href);
 }
 
-export default function Button({
-  children,
-  className,
-  href,
-  onClick,
-  type = 'button',
-  variant = 'primary',
-  ...props
-}: ButtonProps) {
+export default function Button(props: ButtonProps) {
+  const {
+    children,
+    className,
+    variant = 'primary'
+  } = props;
+
   const resolvedClassName = joinClassNames(
     baseClassName,
     variantClassNames[variant],
     className,
   );
 
-  if (href) {
+  // LINK VARIANT
+  if ('href' in props && props.href) {
+    const { href, onClick, ...rest } = props as LinkButtonProps;
+
     if (isExternalHref(href)) {
       return (
         <a
           href={href}
           className={resolvedClassName}
-          target='_blank'
-          rel='noopener noreferrer'
+          target="_blank"
+          rel="noopener noreferrer"
           onClick={onClick}
-          {...props}
+          {...rest}
         >
           {children}
         </a>
@@ -74,19 +75,22 @@ export default function Button({
         href={href}
         className={resolvedClassName}
         onClick={onClick}
-        {...props}
+        {...rest}
       >
         {children}
       </Link>
     );
   }
 
+  // BUTTON VARIANT
+  const { onClick, type = 'button', ...rest } = props as NativeButtonProps;
+
   return (
     <button
       type={type}
       className={resolvedClassName}
       onClick={onClick}
-      {...props}
+      {...rest}
     >
       {children}
     </button>

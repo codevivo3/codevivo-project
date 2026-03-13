@@ -1,6 +1,7 @@
 // File: src/app/layout.tsx
 // Purpose: Root layout file for the application. Sets global fonts and wraps all pages with shared HTML and body tags.
 
+import type { Metadata } from 'next';
 // Importing Google Fonts (Montserrat and Roboto Mono) using next/font
 import { Montserrat, Roboto_Mono } from 'next/font/google';
 // Importing global styles from the locale-specific folder
@@ -19,6 +20,28 @@ const robotoMono = Roboto_Mono({
   subsets: ['latin'],
   display: 'swap',
 });
+
+export const metadata: Metadata = {
+  title: 'CodeVivo — Web Development & Digital Projects',
+  description:
+    'CodeVivo is the portfolio of Francesco De Vivo, focused on modern web development using React, Next.js, and TypeScript.',
+  metadataBase: new URL('https://codevivo.dev'),
+  openGraph: {
+    title: 'CodeVivo',
+    description:
+      'Portfolio of Francesco De Vivo — modern web development with React and Next.js.',
+    url: 'https://codevivo.dev',
+    siteName: 'CodeVivo',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'CodeVivo',
+    description:
+      'Portfolio of Francesco De Vivo — modern web development with React and Next.js.',
+  },
+};
 
 // RootLayout component wraps the app with base HTML structure and font classes
 export default function RootLayout({

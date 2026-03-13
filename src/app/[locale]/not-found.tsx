@@ -4,10 +4,54 @@
 // Description: Custom 404 page that displays when a route is not found.
 // Localized with next-intl and rendered statically per locale.
 // -------------------------------
+import type { Metadata } from 'next';
 import Button from '@/components/ui/Button';
 import { getTranslations } from 'next-intl/server';
-
 import { getLocale } from 'next-intl/server';
+
+const notFoundMetadata = {
+  en: {
+    title: 'Page Not Found | CodeVivo',
+    description:
+      'The page you are looking for does not exist on CodeVivo or may have been moved.',
+    url: 'https://codevivo.dev',
+    locale: 'en_US',
+  },
+  it: {
+    title: 'Pagina non trovata | CodeVivo',
+    description:
+      'La pagina che stai cercando su CodeVivo non esiste oppure e stata spostata.',
+    url: 'https://codevivo.dev/it',
+    locale: 'it_IT',
+  },
+} as const;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
+  const currentLocale = locale === 'it' ? notFoundMetadata.it : notFoundMetadata.en;
+
+  return {
+    title: currentLocale.title,
+    description: currentLocale.description,
+    robots: {
+      index: false,
+      follow: false,
+    },
+    openGraph: {
+      title: currentLocale.title,
+      description: currentLocale.description,
+      url: currentLocale.url,
+      siteName: 'CodeVivo',
+      locale: currentLocale.locale,
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: currentLocale.title,
+      description: currentLocale.description,
+    },
+  };
+}
 
 
 // Force this route to be statically rendered per locale

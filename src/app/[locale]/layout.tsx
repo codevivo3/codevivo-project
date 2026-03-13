@@ -5,17 +5,47 @@ import { notFound } from 'next/navigation';
 import { getMessages } from 'next-intl/server';
 import ClientShell from '@/components/layout/ClientShell';
 
-// Metadata can live here for locale-aware routes
-export const metadata: Metadata = {
-  title: 'codevivo.dev',
-  description: 'Personal Portfolio of Francesco De Vivo',
-  icons: {
-    icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: 'any' },
-    ],
+const localeMetadata = {
+  en: {
+    canonical: 'https://codevivo.dev',
+    openGraphLocale: 'en_US',
   },
-};
+  it: {
+    canonical: 'https://codevivo.dev/it',
+    openGraphLocale: 'it_IT',
+  },
+} as const;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const resolvedLocale = hasLocale(routing.locales, locale)
+    ? locale
+    : routing.defaultLocale;
+  const currentLocale = localeMetadata[resolvedLocale];
+
+  return {
+    alternates: {
+      canonical: currentLocale.canonical,
+      languages: {
+        en: 'https://codevivo.dev',
+        it: 'https://codevivo.dev/it',
+      },
+    },
+    openGraph: {
+      locale: currentLocale.openGraphLocale,
+    },
+    icons: {
+      icon: [
+        { url: '/favicon.svg', type: 'image/svg+xml' },
+        { url: '/favicon.ico', sizes: 'any' },
+      ],
+    },
+  };
+}
 
 // Pre-generate static paths for supported locales
 export function generateStaticParams() {
