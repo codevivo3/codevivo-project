@@ -5,6 +5,40 @@ import { notFound } from 'next/navigation';
 import { getMessages } from 'next-intl/server';
 import ClientShell from '@/components/layout/ClientShell';
 
+export const metadata: Metadata = {
+  title: {
+    default: 'CodeVivo — Modern Web Development',
+    template: '%s | CodeVivo',
+  },
+  description:
+    'CodeVivo is the portfolio of Francesco De Vivo, focused on modern web development using React, Next.js, and TypeScript.',
+
+  openGraph: {
+    title: 'CodeVivo — Modern Web Development with React & Next.js',
+    description:
+      'Portfolio of Francesco De Vivo — building modern web applications with React, Next.js and TypeScript.',
+    url: 'https://codevivo.dev',
+    siteName: 'CodeVivo',
+    type: 'website',
+    images: [
+      {
+        url: 'https://codevivo.dev/og/codevivo-og.png',
+        width: 1200,
+        height: 630,
+        alt: 'CodeVivo Portfolio',
+      },
+    ],
+  },
+
+  twitter: {
+    card: 'summary_large_image',
+    title: 'CodeVivo',
+    description:
+      'Portfolio of Francesco De Vivo — modern web development with React and Next.js.',
+    images: ['https://codevivo.dev/og/codevivo-og.png'],
+  },
+};
+
 const localeMetadata = {
   en: {
     canonical: 'https://codevivo.dev',
