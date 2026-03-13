@@ -6,6 +6,7 @@ import type { Metadata } from 'next';
 import { Montserrat, Roboto_Mono } from 'next/font/google';
 // Importing global styles from the locale-specific folder
 import './globals.css'; // keep as-is if globals.css is inside [locale]; otherwise change to './globals.css' only if file is moved
+import { Analytics } from '@vercel/analytics/react';
 
 // Configure Montserrat font with CSS variable for usage in the layout
 const montserrat = Montserrat({
@@ -34,12 +35,21 @@ export const metadata: Metadata = {
     siteName: 'CodeVivo',
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: '/og/codevivo-og.png',
+        width: 1200,
+        height: 630,
+        alt: 'CodeVivo Portfolio',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'CodeVivo',
     description:
       'Portfolio of Francesco De Vivo — modern web development with React and Next.js.',
+    images: ['/og/codevivo-og.png'],
   },
 };
 
@@ -51,7 +61,7 @@ export default function RootLayout({
 }) {
   return (
     // Set default language attribute and wrap the page content
-    <html lang="en" suppressHydrationWarning>
+    <html lang='en' suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -73,6 +83,7 @@ export default function RootLayout({
         className={`${montserrat.variable} ${robotoMono.variable} antialiased`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
