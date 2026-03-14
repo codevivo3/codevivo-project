@@ -7,6 +7,7 @@ import { Montserrat, Roboto_Mono } from 'next/font/google';
 // Importing global styles from the locale-specific folder
 import './globals.css'; // keep as-is if globals.css is inside [locale]; otherwise change to './globals.css' only if file is moved
 import { Analytics } from '@vercel/analytics/react';
+import Script from 'next/script';
 
 // Configure Montserrat font with CSS variable for usage in the layout
 const montserrat = Montserrat({
@@ -69,20 +70,18 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} ${robotoMono.variable} antialiased`}
       >
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var theme = localStorage.getItem('theme');
-                  if (theme === 'light') {
-                    document.documentElement.classList.add('light');
-                  }
-                } catch (e) {}
-              })();
-            `,
-          }}
-        />
+        <Script id='theme-init' strategy='beforeInteractive'>
+          {`
+  (function() {
+    try {
+      var theme = localStorage.getItem('theme');
+      if (theme === 'light') {
+        document.documentElement.classList.add('light');
+      }
+    } catch (e) {}
+  })();
+`}
+        </Script>
         {children}
         <Analytics />
       </body>
