@@ -16,61 +16,6 @@ const localeMetadata = {
   },
 } as const;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const resolvedLocale = hasLocale(routing.locales, locale)
-    ? locale
-    : routing.defaultLocale;
-  const currentLocale = localeMetadata[resolvedLocale];
-
-  return {
-    title: {
-      default: 'CodeVivo — Modern Web Development',
-      template: '%s | CodeVivo',
-    },
-    description:
-      'CodeVivo is the portfolio of Francesco De Vivo, focused on modern web development using React, Next.js, and TypeScript.',
-
-    alternates: {
-      canonical: currentLocale.canonical,
-      languages: {
-        en: 'https://codevivo.dev',
-        it: 'https://codevivo.dev/it',
-      },
-    },
-
-    openGraph: {
-      title: 'CodeVivo — Modern Web Development with React & Next.js',
-      description:
-        'Portfolio of Francesco De Vivo — building modern web applications with React, Next.js and TypeScript.',
-      url: 'https://codevivo.dev',
-      siteName: 'CodeVivo',
-      type: 'website',
-      locale: currentLocale.openGraphLocale,
-      images: ['https://codevivo.dev/og/codevivo-og.png'],
-    },
-
-    twitter: {
-      card: 'summary_large_image',
-      title: 'CodeVivo',
-      description:
-        'Portfolio of Francesco De Vivo — modern web development with React and Next.js.',
-      images: ['https://codevivo.dev/og/codevivo-og.png'],
-    },
-
-    icons: {
-      icon: [
-        { url: '/favicon.svg', type: 'image/svg+xml' },
-        { url: '/favicon.ico', sizes: 'any' },
-      ],
-    },
-  };
-}
-
 // Pre-generate static paths for supported locales
 export function generateStaticParams() {
   return [{ locale: 'en' }, { locale: 'it' }];
