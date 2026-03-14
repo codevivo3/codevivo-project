@@ -51,14 +51,7 @@ export async function generateMetadata({
       siteName: 'CodeVivo',
       type: 'website',
       locale: currentLocale.openGraphLocale,
-      images: [
-        {
-          url: 'https://codevivo.dev/og/codevivo-og.png',
-          width: 1200,
-          height: 630,
-          alt: 'CodeVivo Portfolio',
-        },
-      ],
+      images: ['https://codevivo.dev/og/codevivo-og.png'],
     },
 
     twitter: {
