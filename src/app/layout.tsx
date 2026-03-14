@@ -39,21 +39,12 @@ export const metadata: Metadata = {
     siteName: 'CodeVivo',
     locale: 'en_US',
     type: 'website',
-    images: [
-      {
-        url: 'https://codevivo.dev/og/codevivo-og.png',
-        width: 1200,
-        height: 630,
-        alt: 'CodeVivo Portfolio',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'CodeVivo',
     description:
       'Portfolio of Francesco De Vivo — modern web development with React and Next.js.',
-    images: ['https://codevivo.dev/og/codevivo-og.png'],
   },
 };
 

@@ -4,7 +4,7 @@
 // Description: Custom 404 page that displays when a route is not found.
 // Localized with next-intl and rendered statically per locale.
 // -------------------------------
-import type { Metadata } from 'next';
+import type { Metadata, ResolvingMetadata } from 'next';
 import Button from '@/components/ui/Button';
 import { getTranslations } from 'next-intl/server';
 import { getLocale } from 'next-intl/server';
@@ -26,9 +26,13 @@ const notFoundMetadata = {
   },
 } as const;
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata(
+  _props: never,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
   const locale = await getLocale();
   const currentLocale = locale === 'it' ? notFoundMetadata.it : notFoundMetadata.en;
+  const parentMetadata = await parent;
 
   return {
     title: currentLocale.title,
@@ -44,11 +48,13 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'CodeVivo',
       locale: currentLocale.locale,
       type: 'website',
+      images: parentMetadata.openGraph?.images,
     },
     twitter: {
       card: 'summary_large_image',
       title: currentLocale.title,
       description: currentLocale.description,
+      images: parentMetadata.twitter?.images,
     },
   };
 }

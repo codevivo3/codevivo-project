@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, ResolvingMetadata } from 'next';
 import Hero from '@/components/Hero';
 import TechStack from '@/components/TechStack';
 import FeaturedProjectsPinned from '@/components/pinned/projects/FeaturedProjects';
@@ -30,9 +30,10 @@ export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
+}, parent: ResolvingMetadata): Promise<Metadata> {
   const { locale } = await params;
   const currentLocale = locale === 'it' ? homeMetadata.it : homeMetadata.en;
+  const parentMetadata = await parent;
 
   return {
     title: currentLocale.title,
@@ -44,11 +45,13 @@ export async function generateMetadata({
       siteName: 'CodeVivo',
       locale: currentLocale.locale,
       type: 'website',
+      images: parentMetadata.openGraph?.images,
     },
     twitter: {
       card: 'summary_large_image',
       title: 'CodeVivo',
       description: currentLocale.openGraphDescription,
+      images: parentMetadata.twitter?.images,
     },
   };
 }
