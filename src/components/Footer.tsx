@@ -9,7 +9,7 @@ export default function Footer() {
   const locale = useLocale();
 
   return (
-    <footer className='relative text-fg bg-[var(--brand-shadow)]'>
+    <footer className='relative text-fg'>
       {/* Footer accent lines */}
 
       <div className='mx-auto relative grid w-full max-w-5xl grid-cols-1 md:grid-cols-3 items-center gap-6 px-4 py-6 text-center text-xs text-fg/70 sm:px-6 md:text-left'>

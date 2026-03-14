@@ -7,5 +7,8 @@
   "namePlaceholder": "Il tuo nome",
   "emailPlaceholder": "tu@email.com",
   "messagePlaceholder": "Parlami del tuo progetto",
-  "cta": "Invia il messaggio"
+  "cta": "Invia il messaggio",
+  "sending": "Invio in corso...",
+  "success": "Messaggio inviato con successo.",
+  "error": "Invio del messaggio non riuscito."
 }

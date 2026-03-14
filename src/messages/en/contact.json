@@ -7,5 +7,8 @@
   "namePlaceholder": "Your name",
   "emailPlaceholder": "you@email.com",
   "messagePlaceholder": "Tell me about your project",
-  "cta": "Send Message"
+  "cta": "Send Message",
+  "sending": "Sending...",
+  "success": "Message sent successfully.",
+  "error": "Failed to send message."
 }

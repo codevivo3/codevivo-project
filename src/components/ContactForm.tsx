@@ -1,10 +1,10 @@
 'use client';
 
-import type { FormEvent } from 'react';
-
+import { useActionState } from 'react';
 import { useTranslations } from 'next-intl';
 
 import Button from '@/components/ui/Button';
+import { sendContactEmail } from '@/app/contact/actions';
 
 /**
  * ContactForm
@@ -15,18 +15,14 @@ import Button from '@/components/ui/Button';
 
 export default function ContactForm() {
   const t = useTranslations('contact');
-
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    const formData = new FormData(event.currentTarget);
-    const websiteValue = formData.get('website');
-
-    if (typeof websiteValue === 'string' && websiteValue.trim().length > 0) {
-      event.preventDefault();
-      return;
-    }
-
-    event.preventDefault();
-  }
+  const initialContactFormState = {
+    success: false,
+    error: null,
+  };
+  const [state, formAction, isPending] = useActionState(
+    sendContactEmail,
+    initialContactFormState,
+  );
 
   return (
     <section id="contact" className="section-block">
@@ -42,7 +38,7 @@ export default function ContactForm() {
         </h2>
         <form
           className="mt-6 rounded-xl surface-card bg-surface/60 p-6 sm:mt-8 sm:p-8"
-          onSubmit={handleSubmit}
+          action={formAction}
         >
           <input
             type="text"
@@ -97,8 +93,16 @@ export default function ContactForm() {
               placeholder={t('messagePlaceholder')}
             />
           </label>
+          {state.error ? (
+            <p className="mt-4 text-sm text-red-400">{t('error')}</p>
+          ) : null}
+          {state.success ? (
+            <p className="mt-4 text-sm text-primary">{t('success')}</p>
+          ) : null}
           <div className="mt-8 flex justify-end">
-            <Button type="submit">{t('cta')}</Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? t('sending') : t('cta')}
+            </Button>
           </div>
         </form>
       </div>
