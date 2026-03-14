@@ -85,7 +85,7 @@ export default function ProjectPanel({
 
   return (
     <motion.div
-      className='absolute inset-0 flex items-start justify-center pt-24 overflow-hidden'
+      className='absolute inset-0 flex items-start justify-center pt-10 overflow-hidden'
       style={{
         zIndex: total - index,
         opacity,

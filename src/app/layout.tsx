@@ -7,6 +7,7 @@ import { Montserrat, Roboto_Mono } from 'next/font/google';
 // Importing global styles from the locale-specific folder
 import './globals.css'; // keep as-is if globals.css is inside [locale]; otherwise change to './globals.css' only if file is moved
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import Script from 'next/script';
 
 // Configure Montserrat font with CSS variable for usage in the layout
@@ -75,6 +76,7 @@ export default function RootLayout({
         </Script>
         {children}
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

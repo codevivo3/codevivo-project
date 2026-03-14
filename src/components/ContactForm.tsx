@@ -1,7 +1,8 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import { track } from '@vercel/analytics';
 
 import Button from '@/components/ui/Button';
 import { sendContactEmail } from '@/app/contact/actions';
@@ -23,6 +24,16 @@ export default function ContactForm() {
     sendContactEmail,
     initialContactFormState,
   );
+
+  useEffect(() => {
+    track('contact_form_viewed');
+  }, []);
+
+  useEffect(() => {
+    if (state.success) {
+      track('contact_form_submitted');
+    }
+  }, [state.success]);
 
   return (
     <section id="contact" className="section-block">
