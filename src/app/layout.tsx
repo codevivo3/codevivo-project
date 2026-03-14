@@ -65,7 +65,10 @@ export default function RootLayout({
   return (
     // Set default language attribute and wrap the page content
     <html lang='en' suppressHydrationWarning>
-      <head>
+      {/* Apply font variables and antialiasing to body */}
+      <body
+        className={`${montserrat.variable} ${robotoMono.variable} antialiased`}
+      >
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -80,11 +83,6 @@ export default function RootLayout({
             `,
           }}
         />
-      </head>
-      {/* Apply font variables and antialiasing to body */}
-      <body
-        className={`${montserrat.variable} ${robotoMono.variable} antialiased`}
-      >
         {children}
         <Analytics />
       </body>
