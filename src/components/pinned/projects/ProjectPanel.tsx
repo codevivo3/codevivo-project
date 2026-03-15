@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, useTransform, type MotionValue } from 'framer-motion';
 import ProjectCard from '@/components/ProjectCard';
+import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
 
 
@@ -13,6 +14,7 @@ export type ProjectItem = {
   tags: TechId[];
   projectUrl: string;
   githubUrl: string;
+  previewType?: PreviewType;
 };
 
 type ProjectPanelProps = {
@@ -105,6 +107,7 @@ export default function ProjectPanel({
           tags={item.tags}
           projectUrl={item.projectUrl}
           githubUrl={item.githubUrl}
+          previewType={item.previewType}
           primaryLabel={primaryLabel}
           secondaryLabel={secondaryLabel}
         />

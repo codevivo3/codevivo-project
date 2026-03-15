@@ -92,12 +92,33 @@
    ================================================== */
 
 body {
+  position: relative;
+  isolation: isolate;
   background: var(--surface-main);
   color: var(--color-fg);
   font-family: var(--font-sans);
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("/patterns/codevivo-tile-dark.svg");
+  background-repeat: repeat;
+  background-size: 1550px;
+  background-position: 0 calc(var(--pattern-offset, 0px) * 1.55);
+  opacity: 0.1;
+  will-change: background-position;
+  z-index: -1;
+}
+
+html.light body::before {
+  background-image: url("/patterns/codevivo-tile-light.svg");
+  opacity: 0.18;
 }
 
 
@@ -218,6 +239,26 @@ html.light .brand-border {
   }
   50% {
     transform: translateY(-3px);
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

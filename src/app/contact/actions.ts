@@ -12,6 +12,7 @@
 import { Resend } from 'resend';
 import { headers } from 'next/headers';
 import { ratelimit } from '@/lib/rate-limit';
+import ContactEmail from '@/emails/ContactEmail';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -25,9 +26,9 @@ export async function sendContactEmail(
 ): Promise<{ success: boolean; error: string | null }> {
   try {
     const website = formData.get('website')?.toString();
-    const name = formData.get('name')?.toString();
-    const email = formData.get('email')?.toString();
-    const message = formData.get('message')?.toString();
+    const name = formData.get('name')?.toString().trim();
+    const email = formData.get('email')?.toString().trim();
+    const message = formData.get('message')?.toString().trim();
 
     if (website) {
       return {
@@ -39,7 +40,7 @@ export async function sendContactEmail(
     const h = await headers();
 
     const ip =
-      h.get('x-forwarded-for') ??
+      h.get('x-forwarded-for')?.split(',')[0] ??
       h.get('x-real-ip') ??
       'anonymous';
 
@@ -71,7 +72,14 @@ export async function sendContactEmail(
       to: ['hello@codevivo.dev'],
       replyTo: email,
       subject: 'New message from CodeVivo contact form',
-      text: `Name: ${name}
+      react: ContactEmail({
+        name,
+        email,
+        message,
+      }),
+      text: `New message from CodeVivo contact form
+
+Name: ${name}
 Email: ${email}
 
 Message:

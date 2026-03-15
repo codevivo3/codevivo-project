@@ -10,7 +10,8 @@
       "description": "The Paguro Journey is a modern web platform for travel stories, destinations, and video-led content.",
       "projectUrl": "https://thepagurojourney.com",
       "githubUrl": "https://github.com/codevivo3/the_paguro_journey",
-      "tags": ["nextjs", "typescript", "tailwind", "vercel"]
+      "tags": ["nextjs", "typescript", "tailwind", "vercel"],
+      "previewType": "desktop"
     },
     {
       "id": "project-002",
@@ -26,7 +27,8 @@
       "description": "Short description of the project.",
       "projectUrl": "#",
       "githubUrl": "#",
-      "tags": ["nextjs", "typescript", "vercel"]
+      "tags": ["nextjs", "typescript", "vercel"],
+      "previewType": "mobile"
     }
   ]
 }

@@ -4,6 +4,7 @@ import { useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useScroll } from 'framer-motion';
 import ProjectCard from '@/components/ProjectCard';
+import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
 import ProjectPanel from './ProjectPanel';
 
@@ -14,6 +15,7 @@ type RawProjectItem = {
   tags: TechId[];
   projectUrl: string;
   githubUrl: string;
+  previewType?: PreviewType;
 };
 
 export default function FeaturedProjects() {
@@ -46,7 +48,7 @@ export default function FeaturedProjects() {
               </h2>
             </div>
 
-            <div className='relative flex-1 w-full'>
+            <div className='relative mt-12 flex-1 w-full'>
               {featured.map((item, index) => (
                 <ProjectPanel
                   key={item.id ?? `${item.title}-${index}`}
@@ -62,7 +64,7 @@ export default function FeaturedProjects() {
           </div>
         </div>
 
-        <div className='mx-auto w-full max-w-5xl space-y-16 px-4 pb-10 sm:px-6 md:hidden'>
+        <div className='mx-auto mt-12 flex w-full max-w-5xl flex-col gap-10 px-4 pb-10 sm:px-6 md:hidden'>
           {featured.map((item, index) => (
             <ProjectCard
               key={item.id ?? `${item.title}-${index}`}
@@ -71,6 +73,7 @@ export default function FeaturedProjects() {
               tags={item.tags}
               projectUrl={item.projectUrl}
               githubUrl={item.githubUrl}
+              previewType={item.previewType}
               primaryLabel={t('primaryAction')}
               secondaryLabel={t('secondaryAction')}
             />
