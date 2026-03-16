@@ -20,15 +20,27 @@ export default function ContactEmail({ name, email, message }: Props) {
     <Html>
       <Head />
       <Preview>New message from {name} via CodeVivo contact form</Preview>
-      <Body style={{ backgroundColor: '#0b0b0b', fontFamily: 'Arial' }}>
-        <Container style={{ padding: '32px', color: '#eaeaea' }}>
-          <Heading style={{ color: '#4F8EF7' }}>New CodeVivo Contact</Heading>
+      <Body style={{ backgroundColor: '#f6f7fb', fontFamily: 'Arial, sans-serif' }}>
+        <Container
+          style={{
+            padding: '32px',
+            backgroundColor: '#ffffff',
+            borderRadius: '8px',
+            color: '#1a1a1a',
+            maxWidth: '560px',
+            margin: '40px auto',
+            border: '1px solid #e5e7eb',
+          }}
+        >
+          <Heading style={{ color: '#4F8EF7', marginBottom: '24px' }}>
+            New CodeVivo Contact
+          </Heading>
 
           <Section>
-            <Text>
+            <Text style={{ lineHeight: '1.6' }}>
               <strong>Name:</strong> {name}
             </Text>
-            <Text>
+            <Text style={{ lineHeight: '1.6' }}>
               <strong>Email:</strong> {email}
             </Text>
           </Section>
@@ -37,7 +49,7 @@ export default function ContactEmail({ name, email, message }: Props) {
             <Text>
               <strong>Message:</strong>
             </Text>
-            <Text>{message}</Text>
+            <Text style={{ lineHeight: '1.7', marginTop: '8px' }}>{message}</Text>
           </Section>
         </Container>
       </Body>
