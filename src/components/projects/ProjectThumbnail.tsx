@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import ProjectPreviewModal from '@/components/projects/ProjectPreviewModal';
+import IphoneMockup from '@/components/ui/IphoneMockup';
+import MacbookMockup from '@/components/ui/MacbookMockup';
 
 export type PreviewType = 'desktop' | 'mobile';
 
@@ -33,9 +35,6 @@ export default function ProjectThumbnail({
   const leftSrc = previewImageLeft ?? imageSrc;
   const centerSrc = previewImageCenter ?? imageSrc;
   const rightSrc = previewImageRight ?? imageSrc;
-  const phoneClassName =
-    'relative flex items-start justify-center rounded-3xl bg-neutral-900 shadow-xl';
-
   return (
     <>
       <div
@@ -53,56 +52,16 @@ export default function ProjectThumbnail({
       >
         {isMobilePreview ? (
           imageSrc ? (
-            <div className='relative flex h-full items-center justify-center pt-6 pb-6 transition-transform duration-300 group-hover:scale-[1.03]'>
-              <div
-                className={`${phoneClassName} absolute left-[12%] h-[243px] w-[140px] p-[6px] opacity-85 scale-[0.97]`}
-              >
-                <div className='absolute top-[10px] left-1/2 -translate-x-1/2 h-[12px] w-[44px] rounded-full bg-black z-20' />
-                <div className='relative h-full w-full overflow-hidden rounded-2xl bg-black'>
-                  <Image
-                    key={leftSrc}
-                    src={leftSrc}
-                    alt={`${title} mobile preview left`}
-                    fill
-                    sizes='200px'
-                    className='object-cover object-top'
-                    loading='lazy'
-                    unoptimized
-                  />
-                </div>
-              </div>
-              <div
-                className={`${phoneClassName} relative z-10 h-[270px] w-[135px] p-[6px]`}
-              >
-                <div className='absolute top-[10px] left-1/2 -translate-x-1/2 h-[13px] w-[54px] rounded-full bg-black z-20' />
-                <div className='relative h-full w-full overflow-hidden rounded-2xl bg-black'>
-                  <Image
-                    key={centerSrc}
-                    src={centerSrc}
-                    alt={`${title} mobile preview`}
-                    fill
-                    sizes='200px'
-                    className='object-cover object-top'
-                    loading='lazy'
-                    unoptimized
-                  />
-                </div>
-              </div>
-              <div
-                className={`${phoneClassName} absolute right-[12%] h-[243px] w-[140px] p-[6px] opacity-85 scale-[0.97]`}
-              >
-                <div className='absolute top-[10px] left-1/2 -translate-x-1/2 h-[12px] w-[44px] rounded-full bg-black z-20' />
-                <div className='relative h-full w-full overflow-hidden rounded-2xl bg-black'>
-                  <Image
-                    key={rightSrc}
-                    src={rightSrc}
-                    alt={`${title} mobile preview right`}
-                    fill
-                    sizes='200px'
-                    className='object-cover object-top'
-                    loading='lazy'
-                    unoptimized
-                  />
+            <div className='relative flex h-full items-center justify-center transition-transform duration-300 group-hover:scale-[1.02]'>
+              <div className="flex items-center justify-center h-full w-full">
+                <div className="flex items-center justify-center gap-15 scale-[0.6] origin-center h-full">
+                  {[leftSrc, centerSrc, rightSrc].map((src, index) => (
+                    <IphoneMockup
+                      key={index}
+                      src={src}
+                      alt={`${title} mobile preview ${index}`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
@@ -112,33 +71,21 @@ export default function ProjectThumbnail({
             </div>
           )
         ) : (
-          <div className='absolute inset-x-[1.5%] bottom-[2%] top-[1.5%] rounded-t-[1rem] border border-border bg-surface p-[2.5%] transition-transform duration-300 group-hover:scale-[1.03]'>
-            <div className='absolute left-1/2 top-[1.25%] h-1 w-12 -translate-x-1/2 rounded-full bg-border/80' />
-            <div className='relative h-full overflow-hidden rounded-[0.6rem] border border-border bg-black/10'>
-              {previewUrl ||
-              (typeof fullPreview === 'string' &&
-                fullPreview.startsWith('http')) ? (
-                <iframe
-                  src={previewUrl ?? fullPreview}
-                  title={`${title} preview`}
-                  className='absolute inset-0 h-full w-full border-0'
-                  loading='lazy'
-                />
-              ) : imageSrc ? (
-                <Image
-                  src={imageSrc}
-                  alt={`${title} preview`}
-                  fill
-                  sizes='(max-width: 768px) 100vw, 768px'
-                  className='object-cover object-top'
-                  loading='lazy'
-                />
-              ) : (
-                <div className='flex h-full w-full items-center justify-center text-xs text-muted'>
-                  Preview unavailable
+          <div className='flex h-full w-full items-center justify-center p-4'>
+            {imageSrc ? (
+              <div className='h-full flex items-center justify-center'>
+                <div className='h-full max-h-[85%] flex items-center justify-center [&>*]:h-full [&>*]:w-auto'>
+                  <MacbookMockup
+                    src={imageSrc}
+                    alt={`${title} preview`}
+                  />
                 </div>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className='flex h-full w-full items-center justify-center text-xs text-muted'>
+                Preview unavailable
+              </div>
+            )}
           </div>
         )}
       </div>

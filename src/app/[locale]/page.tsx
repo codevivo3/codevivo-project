@@ -2,6 +2,8 @@ import type { Metadata, ResolvingMetadata } from 'next';
 import Hero from '@/components/Hero';
 import TechStack from '@/components/TechStack';
 import FeaturedProjectsPinned from '@/components/pinned/projects/FeaturedProjects';
+import WhatIDo from '@/components/WhatIDo';
+import WorkWithMe from '@/components/WorkWithMe';
 import About from '@/components/About';
 import ContactForm from '@/components/ContactForm';
 
@@ -61,8 +63,10 @@ export default function HomePage() {
     <>
       <main className='text-fg'>
         <Hero />
+        <WhatIDo />
         <TechStack />
         <FeaturedProjectsPinned />
+        <WorkWithMe />
         <About />
         <ContactForm />
       </main>

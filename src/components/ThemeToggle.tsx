@@ -47,7 +47,7 @@ useEffect(() => {
     return (
       <button
         type='button'
-        className='h-8 w-8 rounded-md surface-card flex items-center justify-center text-sm font-mono'
+        className='surface-card flex h-8 w-8 items-center justify-center rounded-lg bg-surface/60 text-sm font-mono backdrop-blur-md'
         aria-label='Toggle theme'
         title='Toggle theme'
       />
@@ -57,7 +57,7 @@ useEffect(() => {
   return (
     <button
       type='button'
-      className='h-8 w-8 rounded-md surface-card flex items-center justify-center text-sm font-mono cursor-pointer'
+      className='surface-card flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-surface/60 text-sm font-mono backdrop-blur-md'
       onClick={handleToggle}
       aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
       title={isLight ? 'Switch to dark mode' : 'Switch to light mode'}

@@ -23,7 +23,7 @@ export default function LanguageToggle() {
     'relative flex h-full flex-col items-center justify-center px-1.5 text-[11px] font-mono-var uppercase tracking-[0.2em] transition-colors duration-200 hover:text-fg/80';
 
   return (
-    <div className='surface-card inline-flex h-8 items-center gap-2 rounded-md bg-surface/40 px-2 text-xs font-mono-var'>
+    <div className='surface-card inline-flex h-8 items-center gap-2 rounded-lg bg-surface/60 px-2 text-xs font-mono-var backdrop-blur-md'>
       <button
         type='button'
         aria-pressed={locale === 'en'}

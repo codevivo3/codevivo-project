@@ -1,13 +1,14 @@
 {
   "overline": "Projects",
   "title": "Recent Projects",
+  "intro": "A selection of products and tools I am actively shaping. Each project focuses on a concrete problem, a clear audience, and careful interface decisions.",
   "primaryAction": "View Project",
   "secondaryAction": "Source",
   "items": [
     {
       "id": "project-001",
       "title": "The Paguro Journey",
-      "description": "The Paguro Journey is a modern web platform for travel stories, destinations, and video-led content.",
+      "description": "A travel platform for publishing destination guides, stories, and video-led content in a cleaner, more structured way. Built for independent travelers and travel-focused creators. In Development.",
       "projectUrl": "https://thepagurojourney.com",
       "githubUrl": "https://github.com/codevivo3/the_paguro_journey",
       "tags": ["nextjs", "typescript", "tailwind", "vercel"],
@@ -15,16 +16,16 @@
     },
     {
       "id": "project-002",
-      "title": "Project 2",
-      "description": "Short description of the project.",
+      "title": "Position Size Calculator",
+      "description": "A focused tool for calculating risk and position sizing quickly before entering a trade. Built for retail investors and traders who want clearer decisions without spreadsheet friction. In Development.",
       "projectUrl": "#",
       "githubUrl": "#",
       "tags": ["react", "nodejs", "github"]
     },
     {
       "id": "project-003",
-      "title": "Project 3",
-      "description": "Short description of the project.",
+      "title": "Recipe Planner",
+      "description": "A planning interface for organizing recipes, ingredients, and weekly meal decisions with less clutter. Built for people who want a simpler way to plan meals and keep ideas structured. In Development.",
       "projectUrl": "#",
       "githubUrl": "#",
       "tags": ["nextjs", "typescript", "vercel"],

@@ -74,13 +74,17 @@ export default function Footer() {
           </div>
         </nav>
         <div className='flex flex-col items-center md:items-end gap-5'>
-          <Link
+          <a
             href='mailto:hello@codevivo.dev'
+            onClick={(e) => {
+              e.preventDefault();
+              window.open('mailto:hello@codevivo.dev');
+            }}
             className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
           >
             <Mail className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-xs sm:text-sm'>Email me</span>
-          </Link>
+          </a>
 
           <Link
             href='https://calendly.com/'

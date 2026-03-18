@@ -1,0 +1,10 @@
+{
+  "overline": "What I Do",
+  "title": "What I Do",
+  "intro": "I work on the parts that make a product useful early: structure, interface clarity, and functional implementation.",
+  "items": [
+    "Build web apps with React and Next.js",
+    "Design clean and structured interfaces",
+    "Turn ideas into functional digital products"
+  ]
+}

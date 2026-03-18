@@ -1,9 +1,14 @@
+'use client';
+
 import Button from '@/components/ui/Button';
 import ProjectThumbnail, {
   type PreviewType,
 } from '@/components/projects/ProjectThumbnail';
 import TechIcon from '@/components/ui/TechIcon';
 import { type TechId } from '@/data/techStack';
+import { useLocale } from 'next-intl';
+import { useEffect, useState } from 'react';
+import { getProjectImageSources } from '@/lib/getProjectImage';
 
 /**
  * ProjectCard
@@ -14,7 +19,7 @@ import { type TechId } from '@/data/techStack';
  */
 
 const cardClassName =
-  'surface-card mx-auto w-[48rem] max-w-full rounded-xl backdrop-blur-md bg-surface/60 p-4';
+  'surface-card mx-auto w-full max-w-4xl rounded-xl backdrop-blur-md backdrop-saturate-150 bg-surface/70 p-4';
 const tagsClassName = 'flex items-center gap-3';
 const tagClassName = 'group flex items-center justify-center';
 const buttonsClassName = 'flex items-center gap-4';
@@ -40,56 +45,102 @@ export default function ProjectCard({
   githubUrl,
   previewType = 'desktop',
 }: ProjectCardProps) {
-  const projectSlug = title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/(^-|-$)/g, '');
-  const previewPaths =
-    projectSlug === 'the-paguro-journey'
-      ? {
-          previewImage: '/projects/paguro/preview.png',
-          previewImageLeft: '/projects/paguro/mobile-left.png',
-          previewImageCenter: '/projects/paguro/mobile-center.png',
-          previewImageRight: '/projects/paguro/mobile-right.png',
-          fullPreview: '/projects/paguro/full.png',
-        }
-      : projectSlug === 'project-2'
-        ? {
-            previewImage: '/projects/project-2/preview.png',
-            previewImageLeft: undefined,
-            previewImageCenter: undefined,
-            previewImageRight: undefined,
-            fullPreview: `/projects/${projectSlug}-full.png`,
-          }
-        : projectSlug === 'project-3'
-          ? {
-              previewImage: '/projects/project-3/mobile-center.png',
-              previewImageLeft: '/projects/project-3/mobile-left.png',
-              previewImageCenter: '/projects/project-3/mobile-center.png',
-              previewImageRight: '/projects/project-3/mobile-right.png',
-              fullPreview: `/projects/${projectSlug}-full.png`,
-            }
-          : {
-              previewImage: `/projects/${projectSlug}-preview.png`,
-              previewImageLeft: undefined,
-              previewImageCenter: undefined,
-              previewImageRight: undefined,
-              fullPreview: `/projects/${projectSlug}-full.png`,
-            };
+  const locale = useLocale();
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const normalizedLocale: 'it' | 'en' = locale.startsWith('it') ? 'it' : 'en';
+  const projectSlug = (() => {
+    try {
+      const hostname = new URL(projectUrl).hostname.replace(/^www\./, '');
+
+      if (hostname === 'thepagurojourney.com') {
+        return 'paguro';
+      }
+    } catch {
+      // Ignore placeholder or invalid URLs and fall back to title-based slugs.
+    }
+
+    const projectNumber = title.match(/\d+/)?.[0];
+
+    if (projectNumber) {
+      return `project-${projectNumber}`;
+    }
+
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+  })();
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setTheme(
+        document.documentElement.classList.contains('light') ? 'light' : 'dark'
+      );
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  const previewImage = getProjectImageSources({
+    slug: projectSlug,
+    type: 'preview',
+    theme,
+    locale: normalizedLocale,
+  }).at(-1);
+
+  const previewImageLeft = getProjectImageSources({
+    slug: projectSlug,
+    type: 'mobile-left',
+    theme,
+    locale: normalizedLocale,
+  }).at(-1);
+
+  const previewImageCenter = getProjectImageSources({
+    slug: projectSlug,
+    type: 'mobile-center',
+    theme,
+    locale: normalizedLocale,
+  }).at(-1);
+
+  const previewImageRight = getProjectImageSources({
+    slug: projectSlug,
+    type: 'mobile-right',
+    theme,
+    locale: normalizedLocale,
+  }).at(-1);
+
+  const fullPreview =
+    getProjectImageSources({
+      slug: projectSlug,
+      type: 'full',
+      theme,
+      locale: normalizedLocale,
+    })[0] ??
+    previewImageCenter ??
+    previewImage ??
+    '';
+
+  const resolvedPreviewImage = previewImage ?? previewImageCenter ?? fullPreview;
 
   return (
-    <article className={cardClassName}>
-      <div className='grid h-[260px] grid-cols-[1.1fr_420px] items-stretch gap-6'>
-        <div className='flex h-full flex-col justify-between py-4'>
-          <div>
-            <h3 className='text-2xl font-semibold'>{title}</h3>
-            <div className='mt-3'>
-              <p className='text-sm leading-relaxed text-fg/70'>
-                {description}
-              </p>
-            </div>
+    <article className={`${cardClassName} project-card-reveal`}>
+      <div className='grid h-[276px] grid-cols-[1.1fr_420px] items-stretch gap-6'>
+        <div className='flex h-full flex-col justify-between px-2 py-4'>
+          <div className='space-y-3'>
+            <h3 className='text-xl font-semibold'>{title}</h3>
+            <p className='text-sm leading-5 text-fg/72'>{description}</p>
           </div>
-          <div>
+          <div className='space-y-4 pt-2'>
             <ul className={tagsClassName} aria-label={`${title} tech stack`}>
               {tags.map((tagId) => {
                 return (
@@ -101,7 +152,7 @@ export default function ProjectCard({
                 );
               })}
             </ul>
-            <div className={`${buttonsClassName} mt-6`}>
+            <div className={buttonsClassName}>
               <Button href={projectUrl} variant='primary'>
                 {primaryLabel}
               </Button>
@@ -115,11 +166,11 @@ export default function ProjectCard({
           <div className='aspect-[16/9] w-full max-w-[420px] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02]'>
             <ProjectThumbnail
               title={title}
-              previewImage={previewPaths.previewImage}
-              previewImageLeft={previewPaths.previewImageLeft}
-              previewImageCenter={previewPaths.previewImageCenter}
-              previewImageRight={previewPaths.previewImageRight}
-              fullPreview={previewPaths.fullPreview}
+              previewImage={resolvedPreviewImage}
+              previewImageLeft={previewImageLeft}
+              previewImageCenter={previewImageCenter}
+              previewImageRight={previewImageRight}
+              fullPreview={fullPreview}
               previewType={previewType}
             />
           </div>

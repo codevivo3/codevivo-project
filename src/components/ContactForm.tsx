@@ -37,7 +37,10 @@ export default function ContactForm() {
 
   return (
     <section id='contact' className='section-block'>
-      <div className='mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 '>
+      <div
+        className='section-reveal mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 '
+        style={{ ['--reveal-delay' as string]: '180ms' }}
+      >
         <div className='mb-4 flex flex-col items-center'>
           <p className='text-center font-mono-var text-[11px] uppercase tracking-[0.22em] text-fg/60'>
             {t('overline')}
@@ -47,8 +50,11 @@ export default function ContactForm() {
         <h2 className='text-center text-xl font-semibold sm:text-2xl'>
           {t('title')}
         </h2>
+        <p className='mx-auto mt-4 max-w-2xl text-center text-sm leading-snug text-fg/72 sm:text-base'>
+          {t('intro')}
+        </p>
         <form
-          className='mt-6 rounded-xl surface-card bg-surface/60 backdrop-blur-md p-6 sm:mt-8 sm:p-8'
+          className='mt-5 rounded-xl surface-card bg-surface/60 backdrop-blur-md p-5 sm:mt-6 sm:p-6'
           action={formAction}
         >
           <input
@@ -59,7 +65,7 @@ export default function ContactForm() {
             autoComplete='off'
             aria-hidden='true'
           />
-          <div className='grid gap-6 sm:grid-cols-2'>
+          <div className='grid gap-4 sm:grid-cols-2'>
             <label
               htmlFor='name'
               className='flex flex-col gap-2 text-[11px] uppercase tracking-[0.2em] text-fg/60 font-mono-var'
@@ -91,16 +97,16 @@ export default function ContactForm() {
           </div>
           <label
             htmlFor='message'
-            className='mt-6 flex flex-col gap-2 text-[11px] uppercase tracking-[0.2em] text-fg/60 font-mono-var'
+            className='mt-4 flex flex-col gap-2 text-[11px] uppercase tracking-[0.2em] text-fg/60 font-mono-var'
           >
             {t('message')}
             <textarea
               id='message'
               name='message'
-              rows={6}
+              rows={5}
               required
               minLength={20}
-              className='brand-border min-h-[160px] border-b bg-transparent px-1 py-2 text-sm text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+              className='brand-border min-h-[140px] border-b bg-transparent px-1 py-2 text-sm text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
               placeholder={t('messagePlaceholder')}
             />
           </label>
@@ -110,7 +116,7 @@ export default function ContactForm() {
           {state.success ? (
             <p className='mt-4 text-sm text-primary'>{t('success')}</p>
           ) : null}
-          <div className='mt-8 flex justify-end'>
+          <div className='mt-6 flex justify-end'>
             <Button type='submit' disabled={isPending}>
               {isPending ? t('sending') : t('cta')}
             </Button>

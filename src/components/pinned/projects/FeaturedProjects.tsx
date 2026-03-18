@@ -32,7 +32,10 @@ export default function FeaturedProjects() {
 
   return (
     <section id='projects' className='section-block relative'>
-      <div className='relative'>
+      <div
+        className='section-reveal relative'
+        style={{ ['--reveal-delay' as string]: '120ms' }}
+      >
         <div ref={sectionRef} className='relative hidden h-[300vh] md:block'>
           <div className='sticky top-10 flex h-screen flex-col items-center justify-start overflow-hidden pt-10'>
             <div className='mx-auto w-full max-w-5xl px-4 sm:px-6'>
@@ -46,6 +49,9 @@ export default function FeaturedProjects() {
               <h2 className='text-center text-xl font-semibold sm:text-2xl'>
                 {t('title')}
               </h2>
+              <p className='mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-fg/72 sm:text-base'>
+                {t('intro')}
+              </p>
             </div>
 
             <div className='relative mt-12 flex-1 w-full'>
@@ -66,17 +72,22 @@ export default function FeaturedProjects() {
 
         <div className='mx-auto mt-12 flex w-full max-w-5xl flex-col gap-10 px-4 pb-10 sm:px-6 md:hidden'>
           {featured.map((item, index) => (
-            <ProjectCard
+            <div
               key={item.id ?? `${item.title}-${index}`}
-              title={item.title}
-              description={item.description}
-              tags={item.tags}
-              projectUrl={item.projectUrl}
-              githubUrl={item.githubUrl}
-              previewType={item.previewType}
-              primaryLabel={t('primaryAction')}
-              secondaryLabel={t('secondaryAction')}
-            />
+              className='section-reveal'
+              style={{ ['--reveal-delay' as string]: `${index * 70}ms` }}
+            >
+              <ProjectCard
+                title={item.title}
+                description={item.description}
+                tags={item.tags}
+                projectUrl={item.projectUrl}
+                githubUrl={item.githubUrl}
+                previewType={item.previewType}
+                primaryLabel={t('primaryAction')}
+                secondaryLabel={t('secondaryAction')}
+              />
+            </div>
           ))}
         </div>
       </div>

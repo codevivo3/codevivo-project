@@ -28,6 +28,7 @@
   --brand-ash: #b8c5b0;
   --brand-honeydew: #fafcfc;
   --brand-shadow: #1d1d1f;
+  --shadow-device: 0 20px 60px rgba(255, 255, 255, 0.12), 0 0 20px rgba(255, 255, 255, 0.08);
 
   /* Surface background used by the layout */
   --surface-main: var(--brand-shadow);
@@ -77,6 +78,7 @@
 
 :root.light {
   --brand-shadow: var(--brand-ash);
+  --shadow-device: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 20px rgba(0, 0, 0, 0.12);
   --color-bg: var(--brand-ash);
 
   --surface-main: color-mix(in srgb, var(--brand-ash) 30%, white);
@@ -262,6 +264,17 @@ html.light .brand-border {
   }
 }
 
+@keyframes sectionReveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .logo-float {
   animation: logoFloat 6s ease-in-out infinite;
 }
@@ -292,4 +305,28 @@ html.light .logo-white {
 
 html.light .logo-black {
   display: block;
+}
+
+@layer utilities {
+  .shadow-device {
+    box-shadow: var(--shadow-device);
+    transform: translateZ(0);
+  }
+
+  .section-reveal {
+    animation: sectionReveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+
+  .project-card-reveal {
+    animation: sectionReveal 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-reveal,
+  .project-card-reveal {
+    animation: none;
+  }
 }

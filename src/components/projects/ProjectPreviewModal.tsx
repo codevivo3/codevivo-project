@@ -69,7 +69,7 @@ export default function ProjectPreviewModal({
                   height={1800}
                   className='h-auto w-full object-top'
                   priority
-                />
+                />\
               </div>
             </div>
           </div>
