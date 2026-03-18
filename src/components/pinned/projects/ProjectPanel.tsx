@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion, useTransform, type MotionValue } from 'framer-motion';
+import { motion, useTransform, type MotionValue, type Variants } from 'framer-motion';
 import ProjectCard from '@/components/ProjectCard';
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
@@ -26,7 +26,7 @@ type ProjectPanelProps = {
   secondaryLabel: string;
 };
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: {
     opacity: 0,
     y: 18,
@@ -36,7 +36,7 @@ const containerVariants = {
     y: 0,
     transition: {
       duration: 0.55,
-      ease: [0.22, 1, 0.36, 1] as const,
+      ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
     },
   },
 };
