@@ -1,3 +1,5 @@
+'use client';
+
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -7,6 +9,26 @@ import LanguageToggle from '@/components/LanguageToggle';
 export default function Footer() {
   const t = useTranslations('footer');
   const locale = useLocale();
+
+  const handleCalendlyClick = () => {
+    const gtag = (
+      window as Window & {
+        gtag?: (
+          command: 'event',
+          eventName: string,
+          params: {
+            event_category: string;
+            event_label: string;
+          }
+        ) => void;
+      }
+    ).gtag;
+
+    gtag?.('event', 'book_call_click', {
+      event_category: 'engagement',
+      event_label: 'Calendly CTA',
+    });
+  };
 
   return (
     <footer className='relative text-fg backdrop-blur-md'>
@@ -76,59 +98,60 @@ export default function Footer() {
         <div className='flex flex-col items-center md:items-end gap-5'>
           <a
             href='mailto:hello@codevivo.dev'
-            onClick={(e) => {
-              e.preventDefault();
-              window.open('mailto:hello@codevivo.dev');
-            }}
             className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
           >
             <Mail className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-xs sm:text-sm'>Email me</span>
           </a>
 
-          <Link
-            href='https://calendly.com/'
+          <a
+            href='https://calendly.com/codevivo/intro-call'
             target='_blank'
+            rel="noopener noreferrer"
+            onClick={handleCalendlyClick}
             className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
           >
             <Calendar className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-xs sm:text-sm'>
               Schedule a call
             </span>
-          </Link>
+          </a>
 
-          <Link
+          <a
             href='https://github.com/codevivo3'
             target='_blank'
+            rel="noopener noreferrer"
             className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
           >
             <Github className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-xs sm:text-sm'>
               View my GitHub
             </span>
-          </Link>
+          </a>
 
-          <Link
+          <a
             href='https://linkedin.com'
             target='_blank'
+            rel="noopener noreferrer"
             className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
           >
             <Linkedin className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-xs sm:text-sm'>
               Connect on LinkedIn
             </span>
-          </Link>
+          </a>
 
-          <Link
+          <a
             href='https://dribbble.com/francescodvf'
             target='_blank'
+            rel="noopener noreferrer"
             className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
           >
             <Dribbble className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-xs sm:text-sm'>
               See my designs
             </span>
-          </Link>
+          </a>
         </div>
       </div>
     </footer>

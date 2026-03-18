@@ -2,6 +2,7 @@
 // Purpose: Root layout file for the application. Sets global fonts and wraps all pages with shared HTML and body tags.
 
 import type { Metadata } from 'next';
+import { GoogleAnalytics } from '@next/third-parties/google';
 // Importing Google Fonts (Montserrat and Roboto Mono) using next/font
 import { Montserrat, Roboto_Mono } from 'next/font/google';
 // Importing global styles from the locale-specific folder
@@ -75,6 +76,7 @@ export default function RootLayout({
 `}
         </Script>
         {children}
+        <GoogleAnalytics gaId='G-9PQ705W0XS' />
         <Analytics />
         <SpeedInsights />
       </body>
