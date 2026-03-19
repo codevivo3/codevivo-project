@@ -1,6 +1,22 @@
 import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode } from 'react';
 import Link from 'next/link';
 
+/**
+ * Button
+ *
+ * Purpose:
+ * Shared action component that renders either a native button or a link.
+ *
+ * Behavior:
+ * - Large screens: keeps the same visual style and interaction model
+ * - Medium screens: preserves sizing and responsive width behavior
+ * - Mobile: stays visible immediately and does not depend on animation state
+ *
+ * Notes:
+ * - This component does not manage motion
+ * - External links automatically receive secure target and rel attributes
+ */
+
 type ButtonVariant = 'primary' | 'accent';
 
 type SharedProps = {
@@ -39,6 +55,7 @@ function isExternalHref(href: string) {
 }
 
 export default function Button(props: ButtonProps) {
+  // Derived values
   const {
     children,
     className,
@@ -51,7 +68,7 @@ export default function Button(props: ButtonProps) {
     className,
   );
 
-  // LINK VARIANT
+  // Render
   if ('href' in props && props.href) {
     const { href, onClick, ...rest } = props as LinkButtonProps;
 
@@ -82,7 +99,6 @@ export default function Button(props: ButtonProps) {
     );
   }
 
-  // BUTTON VARIANT
   const { onClick, type = 'button', ...rest } = props as NativeButtonProps;
 
   return (

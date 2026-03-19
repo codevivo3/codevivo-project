@@ -2,12 +2,29 @@
 
 import Image from 'next/image';
 
+/**
+ * IphoneMockup
+ *
+ * Purpose:
+ * Renders a mobile screenshot inside an iPhone-style device frame.
+ *
+ * Behavior:
+ * - Large screens: shows the same framed mobile preview inside larger layouts
+ * - Medium screens: keeps the same markup with responsive parent sizing
+ * - Mobile: remains visible when rendered and does not depend on external triggers
+ *
+ * Notes:
+ * - This component does not manage animation timing
+ * - The screenshot is intentionally clipped only by the phone screen mask
+ */
+
 type Props = {
   src: string;
   alt?: string;
 };
 
 export default function IphoneMockup({ src, alt = 'iPhone mockup preview' }: Props) {
+  // Render
   return (
     <div className='flex items-center justify-center h-full scale-[1.08]'>
       <div className='relative h-[390px] w-[180px] rounded-[37px] bg-zinc-900 border border-white/30 p-[4px] shadow-device'>

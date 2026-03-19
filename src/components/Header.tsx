@@ -2,39 +2,48 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
-import Image from 'next/image';
 import LanguageToggle from './LanguageToggle';
 import ThemeToggle from './ThemeToggle';
+import Logo from './ui/Logo';
+
+/**
+ * Header
+ *
+ * Purpose:
+ * Renders the site header with brand navigation and locale/theme controls.
+ *
+ * Behavior:
+ * - Large screens: stays sticky and spreads navigation horizontally
+ * - Medium screens: keeps the same controls with responsive spacing
+ * - Mobile: remains visible on first render with stacked layout and no hidden state
+ *
+ * Notes:
+ * - This component does not own animation timing
+ * - The hero shortcut scroll is client-driven but does not affect layout visibility
+ */
 
 export default function Header() {
+  // Derived values
   const t = useTranslations('header');
   const locale = useLocale();
 
+  // Render
   return (
     <header className='sticky top-0 z-50 text-fg relative bg-[linear-gradient(to_bottom,var(--surface-main)_0%,var(--surface-main)_57%,transparent_100%)]'>
       <div className='mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-6'>
         <Link
-          href={`/${locale}#hero`}
+          href={`/${locale}`}
+          scroll={true}
           className='text-base font-semibold tracking-tight text-fg sm:text-lg'
+          onClick={(e) => {
+            const el = document.getElementById('hero');
+            if (el) {
+              e.preventDefault();
+              el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }}
         >
-          <div className='relative h-auto w-24 sm:w-32 md:w-36 lg:w-40'>
-            <Image
-              src='/logos/codevivo/codevivo-col-logo-white-text.svg'
-              alt='Codevivo logo'
-              width={160}
-              height={40}
-              className='logo-white transition-transform duration-500 ease-out hover:scale-105'
-              priority
-            />
-            <Image
-              src='/logos/codevivo/codevivo-col-logo-black-text.svg'
-              alt='Codevivo logo'
-              width={160}
-              height={40}
-              className='logo-black transition-transform duration-500 ease-out hover:scale-105'
-              priority
-            />
-          </div>
+          <Logo priority />
         </Link>
         <nav className='flex items-center gap-4 font-mono-var text-sm'>
           <Link

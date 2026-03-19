@@ -1,10 +1,28 @@
+/**
+ * ProjectThumbnail
+ *
+ * Purpose:
+ * Renders a clickable project preview thumbnail that opens a modal with a larger preview.
+ * Supports both desktop (Macbook mockup) and mobile (iPhone mockups) presentations.
+ *
+ * Behavior:
+ * - Desktop: Displays a Macbook mockup with the preview image centered and scaled.
+ * - Mobile: Displays three iPhone mockups (left/center/right) using provided images or fallbacks.
+ * - Interaction: Click or keyboard (Enter/Space) opens ProjectPreviewModal.
+ *
+ * Notes:
+ * - This component is purely visual and does not manage animations.
+ * - It must not clip shadows (uses overflow-visible on container).
+ * - Mobile rendering is static-safe (no dependency on external animation triggers).
+ */
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import ProjectPreviewModal from '@/components/projects/ProjectPreviewModal';
 import IphoneMockup from '@/components/ui/IphoneMockup';
 import MacbookMockup from '@/components/ui/MacbookMockup';
+
+// Types
 
 export type PreviewType = 'desktop' | 'mobile';
 
@@ -14,10 +32,11 @@ type Props = {
   previewImageLeft?: string;
   previewImageCenter?: string;
   previewImageRight?: string;
-  previewUrl?: string;
   fullPreview: string;
   previewType?: PreviewType;
 };
+
+// Component
 
 export default function ProjectThumbnail({
   title,
@@ -25,16 +44,20 @@ export default function ProjectThumbnail({
   previewImageLeft,
   previewImageCenter,
   previewImageRight,
-  previewUrl,
   fullPreview,
   previewType = 'desktop',
 }: Props) {
+  // State
   const [open, setOpen] = useState(false);
+
+  // Derived values
   const isMobilePreview = previewType === 'mobile';
   const imageSrc = previewImage ?? fullPreview;
   const leftSrc = previewImageLeft ?? imageSrc;
   const centerSrc = previewImageCenter ?? imageSrc;
   const rightSrc = previewImageRight ?? imageSrc;
+
+  // Render
   return (
     <>
       <div
@@ -50,6 +73,7 @@ export default function ProjectThumbnail({
         tabIndex={0}
         aria-label={`Open ${title} preview`}
       >
+        {/* Responsive preview rendering (mobile vs desktop) */}
         {isMobilePreview ? (
           imageSrc ? (
             <div className='relative flex h-full items-center justify-center transition-transform duration-300 group-hover:scale-[1.02]'>
@@ -90,6 +114,7 @@ export default function ProjectThumbnail({
         )}
       </div>
 
+      {/* Modal preview */}
       <ProjectPreviewModal
         open={open}
         onClose={() => setOpen(false)}

@@ -1,10 +1,17 @@
 /**
  * TechIcon
  *
- * Reusable UI component used to render technology stack icons.
- * Icons are defined in src/data/techStack.ts and rendered here
- * using CSS mask-image so their color adapts automatically
- * to the current theme (light/dark).
+ * Purpose:
+ * Renders a technology icon from the shared tech stack registry.
+ *
+ * Behavior:
+ * - Large screens: uses the requested icon size in static UI layouts
+ * - Medium screens: preserves the same rendering behavior
+ * - Mobile: stays visible on first render with no animation dependency
+ *
+ * Notes:
+ * - This component does not manage motion
+ * - CSS masks are used so icon color follows the current theme automatically
  */
 
 import type { CSSProperties } from 'react';
@@ -22,6 +29,7 @@ const sizeClassName: Record<NonNullable<TechIconProps['size']>, string> = {
 };
 
 export default function TechIcon({ id, size = 'md' }: TechIconProps) {
+  // Derived values
   const tech = techStack[id];
 
   if (!tech) return null;
@@ -37,6 +45,7 @@ export default function TechIcon({ id, size = 'md' }: TechIconProps) {
     maskSize: 'contain',
   } satisfies CSSProperties;
 
+  // Render
   return (
     <span
       role='img'

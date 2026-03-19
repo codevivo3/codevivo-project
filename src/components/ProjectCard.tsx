@@ -8,23 +8,33 @@ import TechIcon from '@/components/ui/TechIcon';
 import { type TechId } from '@/data/techStack';
 import { useLocale } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { getProjectImageSources } from '@/lib/getProjectImage';
 
 /**
  * ProjectCard
  *
- * Presentational component used to display a project entry.
- * Tech stack icons are rendered through the TechIcon UI component,
- * ensuring a single source of truth for icon rendering.
+ * Displays a single project entry with title, description, tech stack,
+ * primary actions, and a preview thumbnail.
+ *
+ * Behavior:
+ * - Large screens: content animation is controlled by the parent via `animateIn`
+ * - Medium/small screens: each content block reveals with its own while-in-view motion
+ *
+ * Notes:
+ * - Large-screen layout stays fixed; only the animation trigger changes responsively
+ * - Medium/small screens must never depend on `animateIn` to become visible
+ * - Thumbnail wrappers keep overflow visible so shadows and scaled previews are not clipped
  */
 
 const cardClassName =
-  'surface-card mx-auto w-full max-w-4xl rounded-xl backdrop-blur-md backdrop-saturate-150 bg-surface/70 p-4';
+  'glass-effect surface-card mx-auto w-full max-w-4xl rounded-xl bg-[var(--panel-bg)] p-4';
 const tagsClassName = 'flex items-center gap-3';
 const tagClassName = 'group flex items-center justify-center';
 const buttonsClassName = 'flex items-center gap-4';
 
 type ProjectCardProps = {
+  animateIn?: boolean;
   title: string;
   description: string;
   tags: TechId[];
@@ -36,6 +46,7 @@ type ProjectCardProps = {
 };
 
 export default function ProjectCard({
+  animateIn = true,
   title,
   description,
   tags,
@@ -45,8 +56,12 @@ export default function ProjectCard({
   githubUrl,
   previewType = 'desktop',
 }: ProjectCardProps) {
+  // State
   const locale = useLocale();
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+  // Responsive content selection
   const normalizedLocale: 'it' | 'en' = locale.startsWith('it') ? 'it' : 'en';
   const projectSlug = (() => {
     try {
@@ -71,6 +86,7 @@ export default function ProjectCard({
       .replace(/(^-|-$)/g, '');
   })();
 
+  // Effects
   useEffect(() => {
     const updateTheme = () => {
       setTheme(
@@ -91,6 +107,31 @@ export default function ProjectCard({
     };
   }, []);
 
+  useEffect(() => {
+    const checkScreen = () => {
+      setIsLargeScreen(window.innerHeight > 900);
+    };
+
+    checkScreen();
+    window.addEventListener('resize', checkScreen);
+
+    return () => {
+      window.removeEventListener('resize', checkScreen);
+    };
+  }, []);
+
+  // Animation variants
+  const contentVariants = {
+    hidden: { y: 30, opacity: 0 },
+    visible: { y: 0, opacity: 1 },
+  };
+
+  // Responsive animation config
+  const viewportConfig = isLargeScreen
+    ? { once: true, margin: '-20% 0px -60% 0px' }
+    : { once: true, amount: 0.6, margin: '0px 0px -20% 0px' };
+
+  // Derived preview sources
   const previewImage = getProjectImageSources({
     slug: projectSlug,
     type: 'preview',
@@ -132,50 +173,142 @@ export default function ProjectCard({
 
   const resolvedPreviewImage = previewImage ?? previewImageCenter ?? fullPreview;
 
+  // Render
   return (
-    <article className={`${cardClassName} project-card-reveal`}>
+    <motion.article className={cardClassName}>
       <div className='grid h-[276px] grid-cols-[1.1fr_420px] items-stretch gap-6'>
-        <div className='flex h-full flex-col justify-between px-2 py-4'>
-          <div className='space-y-3'>
-            <h3 className='text-xl font-semibold'>{title}</h3>
-            <p className='text-sm leading-5 text-fg/72'>{description}</p>
-          </div>
-          <div className='space-y-4 pt-2'>
-            <ul className={tagsClassName} aria-label={`${title} tech stack`}>
-              {tags.map((tagId) => {
-                return (
-                  <li key={tagId} className={tagClassName}>
-                    <span className='transition-transform duration-150 group-hover:scale-110'>
-                      <TechIcon id={tagId} size='sm' />
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-            <div className={buttonsClassName}>
-              <Button href={projectUrl} variant='primary'>
-                {primaryLabel}
-              </Button>
-              <Button href={githubUrl} variant='accent'>
-                {secondaryLabel}
-              </Button>
+        {isLargeScreen ? (
+          <motion.div
+            className='flex h-full flex-col justify-between px-2 py-4'
+            variants={contentVariants}
+            initial='hidden'
+            animate={animateIn ? 'visible' : 'hidden'}
+            transition={{
+              type: 'spring',
+              stiffness: 90,
+              damping: 18,
+            }}
+          >
+            <div className='space-y-3'>
+              <h3 className='text-xl font-semibold'>{title}</h3>
+              <p className='text-sm leading-5 text-fg/72'>{description}</p>
             </div>
-          </div>
-        </div>
-        <div className='flex h-full items-center justify-center'>
-          <div className='aspect-[16/9] w-full max-w-[420px] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02]'>
-            <ProjectThumbnail
-              title={title}
-              previewImage={resolvedPreviewImage}
-              previewImageLeft={previewImageLeft}
-              previewImageCenter={previewImageCenter}
-              previewImageRight={previewImageRight}
-              fullPreview={fullPreview}
-              previewType={previewType}
-            />
-          </div>
-        </div>
+            <div className='space-y-4 pt-2'>
+              <ul className={tagsClassName} aria-label={`${title} tech stack`}>
+                {tags.map((tagId) => {
+                  return (
+                    <li key={tagId} className={tagClassName}>
+                      <span className='transition-transform duration-150 group-hover:scale-110'>
+                        <TechIcon id={tagId} size='sm' />
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className={buttonsClassName}>
+                <Button href={projectUrl} variant='primary'>
+                  {primaryLabel}
+                </Button>
+                <Button href={githubUrl} variant='accent'>
+                  {secondaryLabel}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            className='flex h-full flex-col justify-between px-2 py-4'
+            variants={contentVariants}
+            initial='hidden'
+            whileInView='visible'
+            // Mobile and tablet remain self-contained and must not depend on parent triggers.
+            viewport={viewportConfig}
+            transition={{
+              duration: 1.0,
+              delay: 0,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            <div className='space-y-3'>
+              <h3 className='text-xl font-semibold'>{title}</h3>
+              <p className='text-sm leading-5 text-fg/72'>{description}</p>
+            </div>
+            <div className='space-y-4 pt-2'>
+              <ul className={tagsClassName} aria-label={`${title} tech stack`}>
+                {tags.map((tagId) => {
+                  return (
+                    <li key={tagId} className={tagClassName}>
+                      <span className='transition-transform duration-150 group-hover:scale-110'>
+                        <TechIcon id={tagId} size='sm' />
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+              <div className={buttonsClassName}>
+                <Button href={projectUrl} variant='primary'>
+                  {primaryLabel}
+                </Button>
+                <Button href={githubUrl} variant='accent'>
+                  {secondaryLabel}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+        {isLargeScreen ? (
+          <motion.div
+            className='flex h-full items-center justify-center'
+            variants={contentVariants}
+            initial='hidden'
+            animate={animateIn ? 'visible' : 'hidden'}
+            transition={{
+              type: 'spring',
+              stiffness: 90,
+              damping: 18,
+              delay: 0.04,
+            }}
+          >
+            <div className='aspect-[16/9] w-full max-w-[420px] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02]'>
+              <ProjectThumbnail
+                title={title}
+                previewImage={resolvedPreviewImage}
+                previewImageLeft={previewImageLeft}
+                previewImageCenter={previewImageCenter}
+                previewImageRight={previewImageRight}
+                fullPreview={fullPreview}
+                previewType={previewType}
+              />
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            className='flex h-full items-center justify-center'
+            variants={contentVariants}
+            initial='hidden'
+            whileInView='visible'
+            // Mobile and tablet remain self-contained and must not depend on parent triggers.
+            viewport={viewportConfig}
+            transition={{
+              duration: 1.05,
+              delay: 0.15,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            <div className='aspect-[16/9] w-full max-w-[420px] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02]'>
+              <ProjectThumbnail
+                title={title}
+                previewImage={resolvedPreviewImage}
+                previewImageLeft={previewImageLeft}
+                previewImageCenter={previewImageCenter}
+                previewImageRight={previewImageRight}
+                fullPreview={fullPreview}
+                previewType={previewType}
+              />
+            </div>
+          </motion.div>
+        )}
       </div>
-    </article>
+    </motion.article>
   );
 }

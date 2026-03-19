@@ -2,6 +2,22 @@
 
 import Image from 'next/image';
 
+/**
+ * MacbookMockup
+ *
+ * Purpose:
+ * Renders a desktop screenshot inside a MacBook-style device frame.
+ *
+ * Behavior:
+ * - Large screens: shows the full mockup at its intended desktop size
+ * - Medium screens: scales within its parent container
+ * - Mobile: remains visible immediately when rendered and does not depend on parent motion state
+ *
+ * Notes:
+ * - This component does not manage animation timing
+ * - The screenshot is clipped only within the mockup screen, not by outer layout wrappers
+ */
+
 type Props = {
   src: string;
   alt?: string;
@@ -11,6 +27,7 @@ export default function MacbookMockup({
   src,
   alt = 'MacBook mockup preview',
 }: Props) {
+  // Render
   return (
     <div className='flex items-center justify-center'>
       <div className='flex flex-col items-center'>

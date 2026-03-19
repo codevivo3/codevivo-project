@@ -6,16 +6,26 @@ import { techStackEntries } from '@/data/techStack';
 /**
  * TechStack
  *
- * Section component used to present the technologies in the stack.
- * Technology metadata comes from src/data/techStack.ts, while icon
- * rendering is delegated to the shared TechIcon UI component.
+ * Purpose:
+ * Renders the technology stack section using shared icon metadata.
+ *
+ * Behavior:
+ * - Large screens: displays a multi-column static icon grid
+ * - Medium screens: keeps the same content with responsive column changes
+ * - Mobile: remains fully visible on first render with no hidden state
+ *
+ * Notes:
+ * - This component does not manage motion directly
+ * - Technology metadata comes from `src/data/techStack.ts`
  */
 
 export default function TechStack() {
+  // Derived values
   const t = useTranslations('techStack');
   const overline = t.has('overline') ? t('overline') : t('title');
   const intro = t.has('intro') ? t('intro') : '';
 
+  // Render
   return (
     <section id='tools' className='section-block'>
       <div

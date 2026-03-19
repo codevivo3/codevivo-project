@@ -1,12 +1,30 @@
 import { useTranslations } from 'next-intl';
 
+/**
+ * WhatIDo
+ *
+ * Purpose:
+ * Renders the services summary section as a simple responsive card grid.
+ *
+ * Behavior:
+ * - Large screens: displays the grid in multiple columns with static content
+ * - Medium screens: keeps the same items with responsive wrapping
+ * - Mobile: content is fully visible on first render with no trigger dependency
+ *
+ * Notes:
+ * - This component does not manage animation directly
+ * - Copy is translation-driven and safely falls back when optional fields are missing
+ */
+
 export default function WhatIDo() {
+  // Derived values
   const t = useTranslations('whatIDo');
   const rawItems = t.raw('items');
   const items = Array.isArray(rawItems) ? rawItems : [];
   const overline = t.has('overline') ? t('overline') : t('title');
   const intro = t.has('intro') ? t('intro') : '';
 
+  // Render
   return (
     <section id='what-i-do' className='section-block'>
       <div
@@ -31,7 +49,7 @@ export default function WhatIDo() {
           {items.map((item) => (
             <div
               key={item}
-              className='surface-card rounded-xl bg-surface/60 px-5 py-6 text-center backdrop-blur-md'
+              className='glass-effect surface-card rounded-xl bg-[var(--panel-bg)] px-5 py-6 text-center'
             >
               <p className='text-sm leading-relaxed text-fg/78 sm:text-base'>
                 {item}

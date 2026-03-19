@@ -1,3 +1,20 @@
+/**
+ * ProjectPreviewModal
+ *
+ * Purpose:
+ * Displays a full-screen modal with an enlarged project preview image.
+ *
+ * Behavior:
+ * - Large screens: opens a centered dialog with scrollable preview content
+ * - Medium screens: keeps the same dialog with responsive bounds
+ * - Mobile: remains self-contained once opened and never depends on parent animation state
+ *
+ * Notes:
+ * - Uses `createPortal` to render outside the normal DOM hierarchy
+ * - Animation is handled via CSS keyframes, not Framer Motion
+ * - Returns `null` when closed so no hidden modal state remains mounted
+ */
+
 'use client';
 
 import Image from 'next/image';
@@ -20,8 +37,10 @@ export default function ProjectPreviewModal({
   fullPreview,
   previewType = 'desktop',
 }: Props) {
+  // Derived values
   const isMobilePreview = previewType === 'mobile';
 
+  // Effects
   useEffect(() => {
     if (!open) return;
 
@@ -42,6 +61,7 @@ export default function ProjectPreviewModal({
     return null;
   }
 
+  // Render
   return createPortal(
     <div
       className='fixed inset-0 z-[9999] bg-black/70 backdrop-blur-md flex items-center justify-center p-6 animate-[modalFadeIn_180ms_ease-out]'
@@ -57,6 +77,8 @@ export default function ProjectPreviewModal({
       >
         <h3 className='text-xl font-semibold'>{title}</h3>
 
+        {/* Responsive preview layout (mobile vs desktop) */}
+
         {isMobilePreview ? (
           <div className='mt-4 flex flex-1 items-center justify-center overflow-hidden rounded-lg border border-border bg-black/40 p-6'>
             <div className='mx-auto h-[640px] w-[320px] overflow-y-auto rounded-[48px] border-[12px] border-black bg-black shadow-2xl'>
@@ -69,7 +91,7 @@ export default function ProjectPreviewModal({
                   height={1800}
                   className='h-auto w-full object-top'
                   priority
-                />\
+                />
               </div>
             </div>
           </div>

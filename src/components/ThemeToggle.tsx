@@ -1,22 +1,40 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-
 import { LightbulbIcon, LightbulbFilamentIcon } from '@phosphor-icons/react';
 
+/**
+ * ThemeToggle
+ *
+ * Purpose:
+ * Toggles the document theme between light and dark modes.
+ *
+ * Behavior:
+ * - Large screens: renders the same compact toggle button
+ * - Medium screens: preserves the same control and interaction
+ * - Mobile: shows a stable placeholder before hydration to avoid empty UI
+ *
+ * Notes:
+ * - This component does not manage motion timing
+ * - The placeholder keeps layout stable until client theme state is available
+ */
+
 export default function ThemeToggle() {
+  // State
   const [isLight, setIsLight] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-useEffect(() => {
-  const root = document.documentElement;
+  // Effects
+  useEffect(() => {
+    const root = document.documentElement;
 
-  requestAnimationFrame(() => {
-    setMounted(true);
-    setIsLight(root.classList.contains('light'));
-  });
-}, []);
+    requestAnimationFrame(() => {
+      setMounted(true);
+      setIsLight(root.classList.contains('light'));
+    });
+  }, []);
 
+  // Event handlers
   const handleToggle = () => {
     const root = document.documentElement;
     const next = !root.classList.contains('light');
@@ -43,6 +61,7 @@ useEffect(() => {
     />
   );
 
+  // Render
   if (!mounted) {
     return (
       <button

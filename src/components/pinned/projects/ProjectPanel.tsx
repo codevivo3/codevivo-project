@@ -1,11 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { motion, useTransform, type MotionValue, type Variants } from 'framer-motion';
+import { motion, useTransform, useSpring, type MotionValue, type Variants } from 'framer-motion';
+import { useEffect, useState, useRef } from 'react';
 import ProjectCard from '@/components/ProjectCard';
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
 
+/**
+ * ProjectPanel
+ *
+ * Wraps a single pinned project card inside the desktop sticky-scroll stage.
+ *
+ * Behavior:
+ * - Large screens: scroll progress drives panel opacity, scale, and vertical movement
+ * - Medium/small screens: this component is not used; `FeaturedProjects` renders static cards instead
+ *
+ * Notes:
+ * - `showContent` is derived from the panel's existing opacity motion value
+ * - The parent panel remains responsible for the outer fade/position transforms
+ * - The inner card must keep its own layout intact; this file should not introduce clipping hacks
+ */
 
 export type ProjectItem = {
   id: string;
@@ -29,13 +43,13 @@ type ProjectPanelProps = {
 const containerVariants: Variants = {
   hidden: {
     opacity: 0,
-    y: 18,
+    y: 30,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.55,
+      duration: 0.6,
       ease: [0.22, 1, 0.36, 1] as [number, number, number, number],
     },
   },
@@ -66,7 +80,11 @@ export default function ProjectPanel({
   primaryLabel,
   secondaryLabel,
 }: ProjectPanelProps) {
-  const [hasAnimated, setHasAnimated] = useState(false);
+  // State & refs
+  const [showContent, setShowContent] = useState(false);
+  const hasTriggeredRef = useRef(false);
+
+  // Responsive scroll mapping
   const isLast = index === total - 1;
   const { inputRange, opacityRange, scaleRange, yRange } = getPanelScrollRange(
     index,
@@ -74,23 +92,35 @@ export default function ProjectPanel({
     isLast,
   );
 
-  const opacity = useTransform(scrollYProgress, inputRange, opacityRange);
+  // Animation values
+  const rawOpacity = useTransform(scrollYProgress, inputRange, opacityRange);
+
+  // Effects
+  useEffect(() => {
+    const unsubscribe = rawOpacity.on('change', (value) => {
+      if (value > 0.6 && !hasTriggeredRef.current) {
+        hasTriggeredRef.current = true;
+
+        requestAnimationFrame(() => {
+          setShowContent(true);
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, [rawOpacity]);
+
+  const opacity = useSpring(rawOpacity, {
+    stiffness: 200,
+    damping: 25,
+  });
   const pointerEvents = useTransform(opacity, (o) =>
     o > 0.5 ? 'auto' : 'none',
   );
   const scale = useTransform(scrollYProgress, inputRange, scaleRange);
   const y = useTransform(scrollYProgress, inputRange, yRange);
 
-  useEffect(() => {
-    const unsubscribe = opacity.on('change', (value) => {
-      if (value > 0.9 && !hasAnimated) {
-        setHasAnimated(true);
-      }
-    });
-
-    return () => unsubscribe();
-  }, [opacity, hasAnimated]);
-
+  // Render
   return (
     <motion.div
       className='absolute inset-0 flex items-start justify-center pt-10 overflow-hidden'
@@ -105,9 +135,10 @@ export default function ProjectPanel({
       <motion.div
         variants={containerVariants}
         initial='hidden'
-        animate={hasAnimated ? 'visible' : 'hidden'}
+        animate='visible'
       >
         <ProjectCard
+          animateIn={showContent}
           title={item.title}
           description={item.description}
           tags={item.tags}

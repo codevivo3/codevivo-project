@@ -10,11 +10,21 @@ import { sendContactEmail } from '@/app/contact/actions';
 /**
  * ContactForm
  *
- * Contact section form with native validation, accessible field
- * associations, and a hidden honeypot field to reduce spam.
+ * Purpose:
+ * Renders the contact section form with validation, analytics, and submission state.
+ *
+ * Behavior:
+ * - Large screens: uses the same static form layout with responsive spacing
+ * - Medium screens: keeps the same form structure without animation state dependencies
+ * - Mobile: remains fully visible on first render and does not depend on parent triggers
+ *
+ * Notes:
+ * - This component does not manage motion directly
+ * - A hidden honeypot field is used to reduce spam without affecting layout
  */
 
 export default function ContactForm() {
+  // Derived values
   const t = useTranslations('contact');
   const initialContactFormState = {
     success: false,
@@ -25,6 +35,7 @@ export default function ContactForm() {
     initialContactFormState,
   );
 
+  // Effects
   useEffect(() => {
     track('contact_form_viewed');
   }, []);
@@ -35,6 +46,7 @@ export default function ContactForm() {
     }
   }, [state.success]);
 
+  // Render
   return (
     <section id='contact' className='section-block'>
       <div
@@ -54,7 +66,7 @@ export default function ContactForm() {
           {t('intro')}
         </p>
         <form
-          className='mt-5 rounded-xl surface-card bg-surface/60 backdrop-blur-md p-5 sm:mt-6 sm:p-6'
+          className='glass-effect mt-5 rounded-xl surface-card bg-[var(--panel-bg)] p-5 sm:mt-6 sm:p-6'
           action={formAction}
         >
           <input

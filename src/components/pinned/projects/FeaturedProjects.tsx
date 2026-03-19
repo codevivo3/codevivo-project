@@ -8,6 +8,20 @@ import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
 import ProjectPanel from './ProjectPanel';
 
+/**
+ * FeaturedProjects
+ *
+ * Renders the pinned projects section with two responsive presentation modes.
+ *
+ * Behavior:
+ * - Large screens: uses a sticky scroll stage and `ProjectPanel` for scroll-driven animation
+ * - Medium/small screens: renders a simple stacked list of `ProjectCard` entries
+ *
+ * Notes:
+ * - Mobile and tablet do not depend on desktop scroll progress to show content
+ * - Desktop layout and sticky positioning are shared stage concerns and should stay centralized here
+ */
+
 type RawProjectItem = {
   id: string;
   title: string;
@@ -19,23 +33,28 @@ type RawProjectItem = {
 };
 
 export default function FeaturedProjects() {
+  // Derived data
   const t = useTranslations('projects');
   const featured = useMemo(() => {
     const items = (t.raw('items') as RawProjectItem[] | undefined) ?? [];
     return items.slice(-3);
   }, [t]);
+
+  // Scroll stage refs
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end end'],
   });
 
+  // Render
   return (
     <section id='projects' className='section-block relative'>
       <div
         className='section-reveal relative'
         style={{ ['--reveal-delay' as string]: '120ms' }}
       >
+        {/* Desktop sticky stage */}
         <div ref={sectionRef} className='relative hidden h-[300vh] md:block'>
           <div className='sticky top-10 flex h-screen flex-col items-center justify-start overflow-hidden pt-10'>
             <div className='mx-auto w-full max-w-5xl px-4 sm:px-6'>
@@ -70,6 +89,7 @@ export default function FeaturedProjects() {
           </div>
         </div>
 
+        {/* Mobile and tablet stacked list */}
         <div className='mx-auto mt-12 flex w-full max-w-5xl flex-col gap-10 px-4 pb-10 sm:px-6 md:hidden'>
           {featured.map((item, index) => (
             <div

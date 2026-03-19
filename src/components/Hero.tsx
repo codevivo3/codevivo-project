@@ -1,12 +1,28 @@
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
-
-// import HeroLogo3D from './HeroLogo3D';
 import Button from '@/components/ui/Button';
 
+/**
+ * Hero
+ *
+ * Purpose:
+ * Renders the landing hero copy, primary CTA, and brand artwork.
+ *
+ * Behavior:
+ * - Large screens: places copy and artwork side by side
+ * - Medium screens: keeps the same content with responsive spacing
+ * - Mobile: content is visible on first render with no animation dependency
+ *
+ * Notes:
+ * - This component does not manage motion directly
+ * - The hero artwork is currently rendered as a static image for layout stability
+ */
+
 export default function Hero() {
+  // Derived values
   const t = useTranslations('hero');
 
+  // Render
   return (
     <section id='hero' className='section-block'>
       <div
@@ -31,7 +47,6 @@ export default function Hero() {
           </div>
         </div>
         <div className='flex items-center justify-center'>
-          {/* <HeroLogo3D /> */}
           <Image
             src='/logos/codevivo/codevivo-icon-color.svg'
             alt='Hero Logo'

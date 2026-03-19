@@ -1,9 +1,24 @@
 'use client';
 
 import { Canvas, useThree } from '@react-three/fiber';
-import { useMemo, useRef, Suspense } from 'react';
+import { Suspense } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+
+/**
+ * HeroLogo3D
+ *
+ * Purpose:
+ * Renders the 3D hero logo inside a transparent WebGL canvas.
+ *
+ * Behavior:
+ * - Large screens: shows the same centered 3D logo presentation
+ * - Medium screens: scales responsively within the same square frame
+ * - Mobile: remains visible immediately once mounted; no hidden content state
+ *
+ * Notes:
+ * - This component uses WebGL rendering, not Framer Motion
+ * - The transparent canvas preserves the surrounding page layout and background
+ */
 
 function LogoModel() {
   const { scene } = useGLTF('/models/3D-logo-color.glb');
@@ -24,6 +39,7 @@ function TransparentBackground() {
 }
 
 export default function HeroLogo3D() {
+  // Render
   return (
     <div className='aspect-square w-[320px] md:w-[420px]'>
       <Canvas

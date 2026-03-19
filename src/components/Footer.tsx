@@ -1,15 +1,33 @@
 'use client';
 
 import { useLocale, useTranslations } from 'next-intl';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Mail, Calendar, Github, Linkedin, Dribbble } from 'lucide-react';
 import LanguageToggle from '@/components/LanguageToggle';
+import Logo from './ui/Logo';
+
+/**
+ * Footer
+ *
+ * Purpose:
+ * Renders the site footer with brand links, locale switcher, and contact actions.
+ *
+ * Behavior:
+ * - Large screens: uses a three-column footer layout with static links
+ * - Medium screens: keeps the same content with responsive alignment changes
+ * - Mobile: content stays visible on first render with no hidden animation state
+ *
+ * Notes:
+ * - This component does not manage motion timing
+ * - External link analytics are handled locally without affecting layout visibility
+ */
 
 export default function Footer() {
+  // Derived values
   const t = useTranslations('footer');
   const locale = useLocale();
 
+  // Event handlers
   const handleCalendlyClick = () => {
     const gtag = (
       window as Window & {
@@ -30,6 +48,7 @@ export default function Footer() {
     });
   };
 
+  // Render
   return (
     <footer className='relative text-fg backdrop-blur-md'>
       {/* Footer accent lines */}
@@ -40,27 +59,18 @@ export default function Footer() {
         <div className='pointer-events-none hidden md:block absolute left-2/3 top-1/2 h-16 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-[var(--brand-blue)] to-[var(--brand-gold)] opacity-70' />
         <div className='flex h-full flex-col justify-between items-center md:items-start'>
           <Link
-            href={`/${locale}#hero`}
+            href={`/${locale}`}
+            scroll={true}
             className='text-base font-semibold tracking-tight text-fg sm:text-lg'
+            onClick={(e) => {
+              const el = document.getElementById('hero');
+              if (el) {
+                e.preventDefault();
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }}
           >
-            <div className='relative h-auto w-24 sm:w-32 md:w-36 lg:w-40'>
-              <Image
-                src='/logos/codevivo/codevivo-col-logo-white-text.svg'
-                alt='Codevivo logo'
-                width={160}
-                height={40}
-                className='logo-white transition-transform duration-500 ease-out hover:scale-105'
-                priority
-              />
-              <Image
-                src='/logos/codevivo/codevivo-col-logo-black-text.svg'
-                alt='Codevivo logo'
-                width={160}
-                height={40}
-                className='logo-black transition-transform duration-500 ease-out hover:scale-105'
-                priority
-              />
-            </div>
+            <Logo className='opacity-80 hover:opacity-100' />
           </Link>
 
           <span className='mt-6 text-fg/50 text-xs'>{t('copyright')}</span>
