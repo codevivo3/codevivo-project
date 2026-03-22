@@ -52,6 +52,7 @@ export default function Hero() {
             alt='Hero Logo'
             width={300}
             height={300}
+            className='hero-logo-float'
           />
         </div>
       </div>

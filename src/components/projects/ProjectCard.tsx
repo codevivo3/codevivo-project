@@ -6,10 +6,10 @@ import ProjectThumbnail, {
 } from '@/components/projects/ProjectThumbnail';
 import TechIcon from '@/components/ui/TechIcon';
 import { type TechId } from '@/data/techStack';
+import { getProjectAssets } from '@/lib/getProjectAssets';
 import { useLocale } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { getProjectImageSources } from '@/lib/getProjectImage';
 
 /**
  * ProjectCard
@@ -35,6 +35,7 @@ const buttonsClassName = 'flex items-center gap-4';
 
 type ProjectCardProps = {
   animateIn?: boolean;
+  slug: string;
   title: string;
   description: string;
   tags: TechId[];
@@ -47,6 +48,7 @@ type ProjectCardProps = {
 
 export default function ProjectCard({
   animateIn = true,
+  slug,
   title,
   description,
   tags,
@@ -63,28 +65,6 @@ export default function ProjectCard({
 
   // Responsive content selection
   const normalizedLocale: 'it' | 'en' = locale.startsWith('it') ? 'it' : 'en';
-  const projectSlug = (() => {
-    try {
-      const hostname = new URL(projectUrl).hostname.replace(/^www\./, '');
-
-      if (hostname === 'thepagurojourney.com') {
-        return 'paguro';
-      }
-    } catch {
-      // Ignore placeholder or invalid URLs and fall back to title-based slugs.
-    }
-
-    const projectNumber = title.match(/\d+/)?.[0];
-
-    if (projectNumber) {
-      return `project-${projectNumber}`;
-    }
-
-    return title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-  })();
 
   // Effects
   useEffect(() => {
@@ -131,47 +111,17 @@ export default function ProjectCard({
     ? { once: true, margin: '-20% 0px -60% 0px' }
     : { once: true, amount: 0.6, margin: '0px 0px -20% 0px' };
 
-  // Derived preview sources
-  const previewImage = getProjectImageSources({
-    slug: projectSlug,
-    type: 'preview',
+  const {
+    previewImage,
+    previewImageLeft,
+    previewImageCenter,
+    previewImageRight,
+    fullPreview,
+  } = getProjectAssets({
+    slug,
     theme,
     locale: normalizedLocale,
-  }).at(-1);
-
-  const previewImageLeft = getProjectImageSources({
-    slug: projectSlug,
-    type: 'mobile-left',
-    theme,
-    locale: normalizedLocale,
-  }).at(-1);
-
-  const previewImageCenter = getProjectImageSources({
-    slug: projectSlug,
-    type: 'mobile-center',
-    theme,
-    locale: normalizedLocale,
-  }).at(-1);
-
-  const previewImageRight = getProjectImageSources({
-    slug: projectSlug,
-    type: 'mobile-right',
-    theme,
-    locale: normalizedLocale,
-  }).at(-1);
-
-  const fullPreview =
-    getProjectImageSources({
-      slug: projectSlug,
-      type: 'full',
-      theme,
-      locale: normalizedLocale,
-    })[0] ??
-    previewImageCenter ??
-    previewImage ??
-    '';
-
-  const resolvedPreviewImage = previewImage ?? previewImageCenter ?? fullPreview;
+  });
 
   // Render
   return (
@@ -272,7 +222,7 @@ export default function ProjectCard({
             <div className='aspect-[16/9] w-full max-w-[420px] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02]'>
               <ProjectThumbnail
                 title={title}
-                previewImage={resolvedPreviewImage}
+                previewImage={previewImage}
                 previewImageLeft={previewImageLeft}
                 previewImageCenter={previewImageCenter}
                 previewImageRight={previewImageRight}
@@ -298,7 +248,7 @@ export default function ProjectCard({
             <div className='aspect-[16/9] w-full max-w-[420px] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02]'>
               <ProjectThumbnail
                 title={title}
-                previewImage={resolvedPreviewImage}
+                previewImage={previewImage}
                 previewImageLeft={previewImageLeft}
                 previewImageCenter={previewImageCenter}
                 previewImageRight={previewImageRight}

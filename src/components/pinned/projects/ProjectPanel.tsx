@@ -1,8 +1,14 @@
 'use client';
 
-import { motion, useTransform, useSpring, type MotionValue, type Variants } from 'framer-motion';
+import {
+  motion,
+  useTransform,
+  useSpring,
+  type MotionValue,
+  type Variants,
+} from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
-import ProjectCard from '@/components/ProjectCard';
+import ProjectCard from '@/components/projects/ProjectCard';
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
 
@@ -23,6 +29,7 @@ import { type TechId } from '@/data/techStack';
 
 export type ProjectItem = {
   id: string;
+  slug: string;
   title: string;
   description: string;
   tags: TechId[];
@@ -32,12 +39,13 @@ export type ProjectItem = {
 };
 
 type ProjectPanelProps = {
-  item: ProjectItem;
+  item: ProjectItem | null;
   index: number;
   total: number;
   scrollYProgress: MotionValue<number>;
   primaryLabel: string;
   secondaryLabel: string;
+  renderContent?: React.ReactNode;
 };
 
 const containerVariants: Variants = {
@@ -79,6 +87,7 @@ export default function ProjectPanel({
   scrollYProgress,
   primaryLabel,
   secondaryLabel,
+  renderContent,
 }: ProjectPanelProps) {
   // State & refs
   const [showContent, setShowContent] = useState(false);
@@ -137,17 +146,20 @@ export default function ProjectPanel({
         initial='hidden'
         animate='visible'
       >
-        <ProjectCard
-          animateIn={showContent}
-          title={item.title}
-          description={item.description}
-          tags={item.tags}
-          projectUrl={item.projectUrl}
-          githubUrl={item.githubUrl}
-          previewType={item.previewType}
-          primaryLabel={primaryLabel}
-          secondaryLabel={secondaryLabel}
-        />
+        {renderContent ?? (
+          <ProjectCard
+            animateIn={showContent}
+            slug={item!.slug}
+            title={item!.title}
+            description={item!.description}
+            tags={item!.tags}
+            projectUrl={item!.projectUrl}
+            githubUrl={item!.githubUrl}
+            previewType={item!.previewType}
+            primaryLabel={primaryLabel}
+            secondaryLabel={secondaryLabel}
+          />
+        )}
       </motion.div>
     </motion.div>
   );

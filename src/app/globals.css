@@ -114,7 +114,7 @@ body::before {
   background-image: url("/patterns/codevivo-tile-dark.svg");
   background-repeat: repeat;
   background-size: 1550px;
-  background-position: 0 calc(var(--pattern-offset, 0px) * 1.55);
+  background-position: center calc(var(--pattern-offset, 0px) * 1.55);
   opacity: 0.1;
   will-change: background-position;
   z-index: -1;
@@ -225,17 +225,6 @@ html.light .brand-border {
    12. Logo Utilities
    ================================================== */
 
-.logo-3d-wrapper {
-  perspective: 1000px;
-  transform-style: preserve-3d;
-}
-
-.logo-3d {
-  transform-style: preserve-3d;
-  transition: transform 300ms ease-out;
-  will-change: transform;
-}
-
 
 /* ==================================================
    13. Floating Animation
@@ -286,13 +275,33 @@ html.light .brand-border {
   animation: logoFloat 6s ease-in-out infinite;
 }
 
+/*
+ --------------------------------------------------
+ Hero Logo Floating (v2 — smoother + subtle scale)
+ Isolated utility for Hero component only
+ --------------------------------------------------
+*/
+
+@keyframes heroLogoFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.015);
+  }
+}
+
+.hero-logo-float {
+  animation: heroLogoFloat 7s ease-in-out infinite;
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .logo-float {
     animation: none;
   }
-
-  .logo-3d {
-    transition: none;
+  .hero-logo-float {
+    animation: none;
   }
 }
 

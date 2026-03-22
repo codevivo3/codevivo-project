@@ -3,7 +3,8 @@
 import { useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useScroll } from 'framer-motion';
-import ProjectCard from '@/components/ProjectCard';
+import ProjectCard from '@/components/projects/ProjectCard';
+import ExploreProjects from '@/components/projects/ExploreProjects';
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
 import ProjectPanel from './ProjectPanel';
@@ -24,6 +25,7 @@ import ProjectPanel from './ProjectPanel';
 
 type RawProjectItem = {
   id: string;
+  slug: string;
   title: string;
   description: string;
   tags: TechId[];
@@ -79,12 +81,23 @@ export default function FeaturedProjects() {
                   key={item.id ?? `${item.title}-${index}`}
                   item={item}
                   index={index}
-                  total={featured.length}
+                  total={featured.length + 1}
                   scrollYProgress={scrollYProgress}
                   primaryLabel={t('primaryAction')}
                   secondaryLabel={t('secondaryAction')}
                 />
               ))}
+
+              <ProjectPanel
+                key="explore-projects"
+                item={null}
+                index={featured.length}
+                total={featured.length + 1}
+                scrollYProgress={scrollYProgress}
+                primaryLabel={t('primaryAction')}
+                secondaryLabel={t('secondaryAction')}
+                renderContent={<ExploreProjects />}
+              />
             </div>
           </div>
         </div>
@@ -98,6 +111,7 @@ export default function FeaturedProjects() {
               style={{ ['--reveal-delay' as string]: `${index * 70}ms` }}
             >
               <ProjectCard
+                slug={item.slug}
                 title={item.title}
                 description={item.description}
                 tags={item.tags}
@@ -109,6 +123,7 @@ export default function FeaturedProjects() {
               />
             </div>
           ))}
+          <ExploreProjects />
         </div>
       </div>
     </section>

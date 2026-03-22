@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';

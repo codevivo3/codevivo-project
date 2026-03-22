@@ -64,7 +64,7 @@ export default function WorkWithMe() {
           <p className='mt-6 text-sm text-fg/72 sm:text-base'>
             <a
               href='mailto:hello@codevivo.dev'
-              className='text-primary transition-colors hover:text-fg'
+              className='text-primary font-semibold transition-colors hover:text-fg'
             >
               {cta}
             </a>
