@@ -1,16 +1,23 @@
-// File: src/proxy.ts
-// Middleware configuration for handling internationalized routing using next-intl.
-
-// Import the middleware creation function from next-intl
+/**
+ * i18n Proxy Middleware
+ *
+ * Purpose:
+ * Applies locale-aware middleware to application routes using the shared routing configuration.
+ *
+ * Context:
+ * Runs before matching requests so localized route handling is consistent.
+ *
+ * Dependencies:
+ * - next-intl middleware
+ * - locale definitions from `src/i18n/routing.ts`
+ *
+ * Notes:
+ * - The matcher intentionally excludes API, static asset, and Next internals.
+ * - Route matching changes here affect the whole application entry flow.
+ */
 import createMiddleware from 'next-intl/middleware';
-
-// Import routing configuration object from our local i18n setup
 import { routing } from '@/i18n/routing';
-
-// Create and export the middleware using the routing config
 export default createMiddleware(routing);
-
-// Export matcher config to apply middleware only to certain routes
 export const config = {
   matcher: '/((?!api|trpc|_next|_vercel|.*\\..*).*)',
 };

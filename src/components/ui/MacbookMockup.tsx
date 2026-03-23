@@ -1,22 +1,23 @@
 'use client';
 
-import Image from 'next/image';
-
 /**
  * MacbookMockup
  *
  * Purpose:
- * Renders a desktop screenshot inside a MacBook-style device frame.
+ * Renders a project screenshot inside a stylized desktop device frame.
  *
- * Behavior:
- * - Large screens: shows the full mockup at its intended desktop size
- * - Medium screens: scales within its parent container
- * - Mobile: remains visible immediately when rendered and does not depend on parent motion state
+ * Context:
+ * Used by `ProjectThumbnail` for desktop-oriented project previews.
+ *
+ * Dependencies:
+ * - Next `Image` for screenshot rendering
+ * - shared device shadow token
  *
  * Notes:
- * - This component does not manage animation timing
- * - The screenshot is clipped only within the mockup screen, not by outer layout wrappers
+ * - Frame dimensions are part of the project card composition and should be changed carefully.
+ * - Only the screen cutout should clip the preview image.
  */
+import Image from 'next/image';
 
 type Props = {
   src: string;

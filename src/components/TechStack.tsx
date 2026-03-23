@@ -1,31 +1,31 @@
+/**
+ * TechStack
+ *
+ * Purpose:
+ * Renders the homepage technology stack using the shared registry of icons and labels.
+ *
+ * Context:
+ * Used on the homepage as a compact overview of tools and platforms.
+ *
+ * Dependencies:
+ * - next-intl for localized headings and intro copy
+ * - `techStackEntries` metadata from `src/data/techStack.ts`
+ * - shared icon rendering via `TechIcon`
+ *
+ * Notes:
+ * - Icon labels come from metadata, not translation files.
+ * - Keep optional message fallbacks so missing intro text does not break the section.
+ */
 import { useTranslations } from 'next-intl';
 
 import TechIcon from '@/components/ui/TechIcon';
 import { techStackEntries } from '@/data/techStack';
 
-/**
- * TechStack
- *
- * Purpose:
- * Renders the technology stack section using shared icon metadata.
- *
- * Behavior:
- * - Large screens: displays a multi-column static icon grid
- * - Medium screens: keeps the same content with responsive column changes
- * - Mobile: remains fully visible on first render with no hidden state
- *
- * Notes:
- * - This component does not manage motion directly
- * - Technology metadata comes from `src/data/techStack.ts`
- */
-
 export default function TechStack() {
-  // Derived values
+  // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('techStack');
   const overline = t.has('overline') ? t('overline') : t('title');
   const intro = t.has('intro') ? t('intro') : '';
-
-  // Render
   return (
     <section id='tools' className='section-block'>
       <div

@@ -1,3 +1,21 @@
+/**
+ * HomePage
+ *
+ * Purpose:
+ * Composes the localized homepage sections and exports locale-aware metadata.
+ *
+ * Context:
+ * Main landing page for each supported locale.
+ *
+ * Dependencies:
+ * - shared homepage sections from `src/components`
+ * - Next.js metadata APIs for per-locale SEO output
+ * - locale-specific copy selected from the local metadata map
+ *
+ * Notes:
+ * - Keep section ordering here; individual sections should remain presentation-focused.
+ * - Metadata fallback behavior depends on the locale keys defined in `homeMetadata`.
+ */
 import type { Metadata, ResolvingMetadata } from 'next';
 import Hero from '@/components/Hero';
 import TechStack from '@/components/TechStack';
@@ -34,6 +52,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }, parent: ResolvingMetadata): Promise<Metadata> {
   const { locale } = await params;
+  // Resolve a stable metadata set per supported locale before merging parent images.
   const currentLocale = locale === 'it' ? homeMetadata.it : homeMetadata.en;
   const parentMetadata = await parent;
 

@@ -1,44 +1,41 @@
 'use client';
 
-import { useLocale } from 'next-intl';
-import { usePathname, useRouter } from 'next/navigation';
-
 /**
  * LanguageToggle
  *
  * Purpose:
- * Switches the active locale between English and Italian.
+ * Switches between supported locales while preserving the current route.
  *
- * Behavior:
- * - Large screens: renders as a compact inline control
- * - Medium screens: preserves the same interaction and sizing
- * - Mobile: stays visible on first render with no animation or async visibility dependency
+ * Context:
+ * Used in shared navigation controls such as the header and footer.
+ *
+ * Dependencies:
+ * - next-intl locale state
+ * - Next.js client routing hooks
  *
  * Notes:
- * - This component does not manage motion
- * - Route normalization prevents accidental double-locale paths
+ * - Path normalization prevents malformed double-locale URLs.
+ * - Keep supported locale options aligned with `src/i18n/routing.ts`.
  */
+import { useLocale } from 'next-intl';
+import { usePathname, useRouter } from 'next/navigation';
 
 export default function LanguageToggle() {
-  // Derived values
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
 
-  // Event handlers
   const switchLocale = (nextLocale: 'en' | 'it') => {
     if (nextLocale === locale) return;
+    // Normalize nested locale prefixes before rebuilding the destination path.
     const normalizedPath = pathname.replace(/^\/(en|it)\/(en|it)/, '/$1');
     const pathWithoutLocale = normalizedPath.replace(/^\/(en|it)/, '');
     const nextPath = `/${nextLocale}${pathWithoutLocale || ''}`;
     router.replace(nextPath);
   };
 
-  // Derived classes
   const baseButton =
     'relative flex h-full flex-col items-center justify-center px-1.5 text-[11px] font-mono-var uppercase tracking-[0.2em] transition-colors duration-200 hover:text-fg/80';
-
-  // Render
   return (
     <div className='surface-card inline-flex h-8 items-center gap-2 rounded-lg bg-surface/60 px-2 text-xs font-mono-var backdrop-blur-md'>
       <button

@@ -1,3 +1,19 @@
+/**
+ * Contact Rate Limit
+ *
+ * Purpose:
+ * Defines the shared rate limiter used by the contact form server action.
+ *
+ * Context:
+ * Imported by `src/app/contact/actions.ts`.
+ *
+ * Dependencies:
+ * - Upstash Redis and Ratelimit
+ *
+ * Notes:
+ * - Current policy allows 3 requests per 5 minutes per identifier.
+ * - Keep this isolated so the contact action stays focused on request handling.
+ */
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 

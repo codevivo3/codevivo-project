@@ -1,21 +1,22 @@
-import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode } from 'react';
-import Link from 'next/link';
-
 /**
  * Button
  *
  * Purpose:
- * Shared action component that renders either a native button or a link.
+ * Provides a single action component that can render as either a link or a native button.
  *
- * Behavior:
- * - Large screens: keeps the same visual style and interaction model
- * - Medium screens: preserves sizing and responsive width behavior
- * - Mobile: stays visible immediately and does not depend on animation state
+ * Context:
+ * Shared across homepage sections, project cards, and utility actions.
+ *
+ * Dependencies:
+ * - Next.js `Link` for internal navigation
+ * - shared design tokens for button variants
  *
  * Notes:
- * - This component does not manage motion
- * - External links automatically receive secure target and rel attributes
+ * - External URLs are detected here so callers do not repeat target/rel handling.
+ * - Keep variant styling centralized to preserve consistency across the site.
  */
+import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode } from 'react';
+import Link from 'next/link';
 
 type ButtonVariant = 'primary' | 'accent';
 
@@ -55,7 +56,6 @@ function isExternalHref(href: string) {
 }
 
 export default function Button(props: ButtonProps) {
-  // Derived values
   const {
     children,
     className,
@@ -72,6 +72,7 @@ export default function Button(props: ButtonProps) {
   if ('href' in props && props.href) {
     const { href, onClick, ...rest } = props as LinkButtonProps;
 
+    // Apply safe external-link attributes centrally instead of duplicating them at call sites.
     if (isExternalHref(href)) {
       return (
         <a

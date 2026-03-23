@@ -1,24 +1,36 @@
-// File: src/app/layout.tsx
-// Purpose: Root layout file for the application. Sets global fonts and wraps all pages with shared HTML and body tags.
+/**
+ * RootLayout
+ *
+ * Purpose:
+ * Defines the global HTML shell, shared metadata, fonts, analytics, and theme bootstrapping.
+ *
+ * Context:
+ * Wraps every route in the application before locale-specific layout logic runs.
+ *
+ * Dependencies:
+ * - next/font for shared typography tokens
+ * - analytics integrations from Google Analytics and Vercel
+ * - global design tokens from `src/app/globals.css`
+ *
+ * Notes:
+ * - Keep `html` and `body` ownership here; locale layouts should not duplicate them.
+ * - The inline theme script must run before hydration to avoid a light/dark flash.
+ */
 
 import type { Metadata } from 'next';
 import { GoogleAnalytics } from '@next/third-parties/google';
-// Importing Google Fonts (Montserrat and Roboto Mono) using next/font
 import { Montserrat, Roboto_Mono } from 'next/font/google';
-// Importing global styles from the locale-specific folder
-import './globals.css'; // keep as-is if globals.css is inside [locale]; otherwise change to './globals.css' only if file is moved
+import './globals.css';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import Script from 'next/script';
 
-// Configure Montserrat font with CSS variable for usage in the layout
 const montserrat = Montserrat({
   variable: '--font-sans',
   subsets: ['latin'],
   display: 'swap',
 });
 
-// Configure Roboto Mono font with CSS variable for usage in the layout
 const robotoMono = Roboto_Mono({
   variable: '--font-mono',
   subsets: ['latin'],
@@ -50,21 +62,19 @@ export const metadata: Metadata = {
   },
 };
 
-// RootLayout component wraps the app with base HTML structure and font classes
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    // Set default language attribute and wrap the page content
     <html lang='en' suppressHydrationWarning>
-      {/* Apply font variables and antialiasing to body */}
       <body
         className={`${montserrat.variable} ${robotoMono.variable} antialiased`}
       >
         <Script id='theme-init' strategy='beforeInteractive'>
           {`
+  // Apply the persisted theme class before React hydration.
   (function() {
     try {
       var theme = localStorage.getItem('theme');

@@ -1,27 +1,27 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-
 /**
  * ClientShell
  *
  * Purpose:
- * Wraps page content with the shared header and footer and updates global pattern offset.
+ * Wraps page content with shared chrome and manages a cosmetic scroll-based background offset.
  *
- * Behavior:
- * - Large screens: keeps shared chrome mounted while scroll updates the background offset
- * - Medium screens: preserves the same shell structure and effect
- * - Mobile: content stays visible on first render; the scroll effect is progressive only
+ * Context:
+ * Mounted inside the locale layout so every localized route shares the same header and footer.
+ *
+ * Dependencies:
+ * - shared `Header` and `Footer`
+ * - CSS custom property `--pattern-offset` used by global background styling
  *
  * Notes:
- * - This component does not own section animation timing
- * - The background offset effect is cosmetic and should not gate visibility
+ * - The scroll effect is purely decorative and must never gate content visibility.
+ * - Keep requestAnimationFrame throttling here to avoid high-frequency style writes on scroll.
  */
+import { useEffect, type ReactNode } from 'react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 export default function ClientShell({ children }: { children: ReactNode }) {
-  // Effects
   useEffect(() => {
     let raf = 0;
 
@@ -36,6 +36,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
       raf = 0;
     };
 
+    // Batch CSS variable writes so scroll handling stays cheap.
     const onScroll = () => {
       if (raf) return;
       raf = window.requestAnimationFrame(updatePatternOffset);
@@ -52,10 +53,10 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 
   // Render
   return (
-    <>
+    <div className='w-full max-w-full overflow-x-hidden'>
       <Header />
       {children}
       <Footer />
-    </>
+    </div>
   );
 }

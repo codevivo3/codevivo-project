@@ -1,5 +1,23 @@
 'use client';
 
+/**
+ * ContactForm
+ *
+ * Purpose:
+ * Renders the public contact form and connects it to the server action submission flow.
+ *
+ * Context:
+ * Used on the homepage as the primary direct contact entry point.
+ *
+ * Dependencies:
+ * - next-intl for localized copy
+ * - `sendContactEmail` server action for submission handling
+ * - Vercel analytics for simple view/submission tracking
+ *
+ * Notes:
+ * - Keep the hidden honeypot field in place; it supports the anti-spam flow on the server.
+ * - Form labels and validation text should remain message-driven.
+ */
 import { useActionState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { track } from '@vercel/analytics';
@@ -7,24 +25,8 @@ import { track } from '@vercel/analytics';
 import Button from '@/components/ui/Button';
 import { sendContactEmail } from '@/app/contact/actions';
 
-/**
- * ContactForm
- *
- * Purpose:
- * Renders the contact section form with validation, analytics, and submission state.
- *
- * Behavior:
- * - Large screens: uses the same static form layout with responsive spacing
- * - Medium screens: keeps the same form structure without animation state dependencies
- * - Mobile: remains fully visible on first render and does not depend on parent triggers
- *
- * Notes:
- * - This component does not manage motion directly
- * - A hidden honeypot field is used to reduce spam without affecting layout
- */
-
 export default function ContactForm() {
-  // Derived values
+  // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('contact');
   const initialContactFormState = {
     success: false,
@@ -35,7 +37,6 @@ export default function ContactForm() {
     initialContactFormState,
   );
 
-  // Effects
   useEffect(() => {
     track('contact_form_viewed');
   }, []);
@@ -46,7 +47,6 @@ export default function ContactForm() {
     }
   }, [state.success]);
 
-  // Render
   return (
     <section id='contact' className='section-block'>
       <div
@@ -69,6 +69,7 @@ export default function ContactForm() {
           className='glass-effect mt-5 rounded-xl surface-card bg-[var(--panel-bg)] p-5 sm:mt-6 sm:p-6'
           action={formAction}
         >
+          {/* Hidden honeypot field; legitimate users never interact with this input. */}
           <input
             type='text'
             name='website'

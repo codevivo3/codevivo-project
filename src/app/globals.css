@@ -101,6 +101,7 @@ body {
   background: var(--surface-main);
   color: var(--color-fg);
   font-family: var(--font-sans);
+  overflow-x: hidden;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -151,6 +152,7 @@ html {
   scrollbar-width: thin;
   scrollbar-color: var(--color-primary) transparent;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 ::-webkit-scrollbar {

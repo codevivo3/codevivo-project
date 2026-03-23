@@ -1,33 +1,34 @@
 'use client';
 
-import { useLocale, useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { Mail, Calendar, Github, Linkedin, Dribbble } from 'lucide-react';
-import LanguageToggle from '@/components/LanguageToggle';
-import Logo from './ui/Logo';
-
 /**
  * Footer
  *
  * Purpose:
- * Renders the site footer with brand links, locale switcher, and contact actions.
+ * Renders the shared site footer with localized navigation, brand links, and contact shortcuts.
  *
- * Behavior:
- * - Large screens: uses a three-column footer layout with static links
- * - Medium screens: keeps the same content with responsive alignment changes
- * - Mobile: content stays visible on first render with no hidden animation state
+ * Context:
+ * Mounted by `ClientShell` on all localized pages.
+ *
+ * Dependencies:
+ * - next-intl for localized navigation labels
+ * - `LanguageToggle` and shared brand components
+ * - shared `surface-card` styling and footer layout tokens
  *
  * Notes:
- * - This component does not manage motion timing
- * - External link analytics are handled locally without affecting layout visibility
+ * - External CTA labels are intentionally static for now; navigation labels remain localized.
+ * - Keep the smooth-scroll hero shortcut aligned with the homepage section IDs.
  */
+import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { Mail, Calendar, Github, Linkedin } from 'lucide-react';
+import LanguageToggle from '@/components/LanguageToggle';
+import Logo from './ui/Logo';
 
 export default function Footer() {
-  // Derived values
+  // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('footer');
   const locale = useLocale();
 
-  // Event handlers
   const handleCalendlyClick = () => {
     const gtag = (
       window as Window & {
@@ -48,16 +49,15 @@ export default function Footer() {
     });
   };
 
-  // Render
   return (
     <footer className='relative text-fg backdrop-blur-md'>
       {/* Footer accent lines */}
 
-      <div className='mx-auto relative grid w-full max-w-5xl grid-cols-1 md:grid-cols-3 items-center gap-6 px-4 py-6 text-center text-xs text-fg/70 sm:px-6 md:text-left'>
+      <div className='mx-auto relative grid w-full max-w-5xl grid-cols-1 items-start gap-6 px-4 py-6 text-center text-xs text-fg/70 sm:px-6 md:grid-cols-3 md:text-left'>
         {/* Vertical dividers */}
         <div className='pointer-events-none hidden md:block absolute left-1/3 top-1/2 h-16 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-[var(--brand-blue)] to-[var(--brand-gold)] opacity-70' />
         <div className='pointer-events-none hidden md:block absolute left-2/3 top-1/2 h-16 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-[var(--brand-blue)] to-[var(--brand-gold)] opacity-70' />
-        <div className='flex h-full flex-col justify-between items-center md:items-start'>
+        <div className='order-1 flex h-full flex-col items-center md:items-start'>
           <Link
             href={`/${locale}`}
             scroll={true}
@@ -72,43 +72,41 @@ export default function Footer() {
           >
             <Logo className='opacity-80 hover:opacity-100' />
           </Link>
-
-          <span className='mt-6 text-fg/50 text-xs'>{t('copyright')}</span>
         </div>
-        <nav className='flex flex-col items-center justify-center gap-4 text-xs sm:text-sm'>
+        <nav className='order-2 flex flex-col items-center justify-center gap-4 text-xs sm:text-sm'>
           <Link
             href={`/${locale}#projects`}
-            className='text-fg/70 hover:text-primary font-mono-var'
+            className='inline-flex min-h-10 items-center text-fg/70 hover:text-primary font-mono-var'
           >
             {t('nav.projects')}
           </Link>
           <Link
             href={`/${locale}#tools`}
-            className='text-fg/70 hover:text-primary font-mono-var'
+            className='inline-flex min-h-10 items-center text-fg/70 hover:text-primary font-mono-var'
           >
             {t('nav.tools')}
           </Link>
           <Link
             href={`/${locale}#about`}
-            className='text-fg/70 hover:text-primary font-mono-var'
+            className='inline-flex min-h-10 items-center text-fg/70 hover:text-primary font-mono-var'
           >
             {t('nav.about')}
           </Link>
           <Link
             href={`/${locale}#contact`}
-            className='text-fg/70 hover:text-primary font-mono-var'
+            className='inline-flex min-h-10 items-center text-fg/70 hover:text-primary font-mono-var'
           >
             {t('nav.contact')}
           </Link>
 
-          <div className='pt-1'>
+          <div className='hidden pt-1 md:block'>
             <LanguageToggle />
           </div>
         </nav>
-        <div className='flex flex-col items-center md:items-end gap-5'>
+        <div className='order-4 flex flex-col items-center gap-5 md:items-end'>
           <a
             href='mailto:hello@codevivo.dev'
-            className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
+            className='group flex min-h-10 items-center gap-3 text-fg/60 transition-colors hover:text-primary'
           >
             <Mail className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-xs sm:text-sm'>Email me</span>
@@ -119,7 +117,7 @@ export default function Footer() {
             target='_blank'
             rel="noopener noreferrer"
             onClick={handleCalendlyClick}
-            className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
+            className='group flex min-h-10 items-center gap-3 text-fg/60 transition-colors hover:text-primary'
           >
             <Calendar className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-xs sm:text-sm'>
@@ -131,7 +129,7 @@ export default function Footer() {
             href='https://github.com/codevivo3'
             target='_blank'
             rel="noopener noreferrer"
-            className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
+            className='group flex min-h-10 items-center gap-3 text-fg/60 transition-colors hover:text-primary'
           >
             <Github className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-xs sm:text-sm'>
@@ -143,26 +141,21 @@ export default function Footer() {
             href='https://linkedin.com'
             target='_blank'
             rel="noopener noreferrer"
-            className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
+            className='group flex min-h-10 items-center gap-3 text-fg/60 transition-colors hover:text-primary'
           >
             <Linkedin className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-xs sm:text-sm'>
               Connect on LinkedIn
             </span>
           </a>
-
-          <a
-            href='https://dribbble.com/francescodvf'
-            target='_blank'
-            rel="noopener noreferrer"
-            className='group flex items-center gap-3 text-fg/60 hover:text-primary transition-colors'
-          >
-            <Dribbble className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
-            <span className='font-mono-var text-xs sm:text-sm'>
-              See my designs
-            </span>
-          </a>
         </div>
+        <div className='order-3 flex justify-center md:hidden'>
+          <LanguageToggle />
+        </div>
+        <span className='order-5 mt-8 text-center text-fg/50 text-xs md:hidden'>
+          {t('copyright')}
+        </span>
+        <span className='hidden text-fg/50 text-xs md:block'>{t('copyright')}</span>
       </div>
     </footer>
   );

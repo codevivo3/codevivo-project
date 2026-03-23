@@ -1,22 +1,23 @@
 'use client';
 
-import Image from 'next/image';
-
 /**
  * IphoneMockup
  *
  * Purpose:
- * Renders a mobile screenshot inside an iPhone-style device frame.
+ * Renders a project screenshot inside a stylized iPhone frame.
  *
- * Behavior:
- * - Large screens: shows the same framed mobile preview inside larger layouts
- * - Medium screens: keeps the same markup with responsive parent sizing
- * - Mobile: remains visible when rendered and does not depend on external triggers
+ * Context:
+ * Used by `ProjectThumbnail` and the modal mobile preview presentation.
+ *
+ * Dependencies:
+ * - Next `Image` for screenshot rendering
+ * - shared device shadow token
  *
  * Notes:
- * - This component does not manage animation timing
- * - The screenshot is intentionally clipped only by the phone screen mask
+ * - Keep the frame dimensions stable because surrounding preview layouts are tuned around them.
+ * - Only the screen area should clip the image; the outer device shell should remain intact.
  */
+import Image from 'next/image';
 
 type Props = {
   src: string;

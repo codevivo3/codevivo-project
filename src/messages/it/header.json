@@ -1,6 +1,7 @@
 {
   "brand": "codevivo",
   "nav": {
+    "home": "Home",
     "about": "Chi sono",
     "projects": "Progetti",
     "tools": "Strumenti",

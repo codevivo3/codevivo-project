@@ -1,30 +1,30 @@
-import { useTranslations } from 'next-intl';
-
 /**
  * WhatIDo
  *
  * Purpose:
- * Renders the services summary section as a simple responsive card grid.
+ * Renders the homepage services summary using translation-provided item lists.
  *
- * Behavior:
- * - Large screens: displays the grid in multiple columns with static content
- * - Medium screens: keeps the same items with responsive wrapping
- * - Mobile: content is fully visible on first render with no trigger dependency
+ * Context:
+ * Used on the homepage to summarize service areas before the tech and project sections.
+ *
+ * Dependencies:
+ * - next-intl for headings, intro text, and item arrays
+ * - shared `surface-card` presentation styles
  *
  * Notes:
- * - This component does not manage animation directly
- * - Copy is translation-driven and safely falls back when optional fields are missing
+ * - Optional message keys fall back locally to keep the section resilient.
+ * - Item content should remain translation-driven rather than embedded here.
  */
+import { useTranslations } from 'next-intl';
 
 export default function WhatIDo() {
-  // Derived values
+  // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('whatIDo');
   const rawItems = t.raw('items');
   const items = Array.isArray(rawItems) ? rawItems : [];
   const overline = t.has('overline') ? t('overline') : t('title');
   const intro = t.has('intro') ? t('intro') : '';
 
-  // Render
   return (
     <section id='what-i-do' className='section-block'>
       <div

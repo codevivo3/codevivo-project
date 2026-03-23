@@ -4,14 +4,16 @@
  * Purpose:
  * Renders a technology icon from the shared tech stack registry.
  *
- * Behavior:
- * - Large screens: uses the requested icon size in static UI layouts
- * - Medium screens: preserves the same rendering behavior
- * - Mobile: stays visible on first render with no animation dependency
+ * Context:
+ * Used across tech stack displays and project metadata badges.
+ *
+ * Dependencies:
+ * - `techStack` metadata in `src/data/techStack.ts`
+ * - CSS mask support so the icon color can follow current theme tokens
  *
  * Notes:
- * - This component does not manage motion
- * - CSS masks are used so icon color follows the current theme automatically
+ * - Keep icons metadata-driven so labels and assets stay centralized.
+ * - CSS masks let the icon inherit foreground color without maintaining multiple SVG fills.
  */
 
 import type { CSSProperties } from 'react';
@@ -29,11 +31,11 @@ const sizeClassName: Record<NonNullable<TechIconProps['size']>, string> = {
 };
 
 export default function TechIcon({ id, size = 'md' }: TechIconProps) {
-  // Derived values
   const tech = techStack[id];
 
   if (!tech) return null;
 
+  // Render SVGs as masks so the visible color comes from CSS instead of the source file.
   const maskStyle = {
     WebkitMaskImage: `url(${tech.icon})`,
     maskImage: `url(${tech.icon})`,

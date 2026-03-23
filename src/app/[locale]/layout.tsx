@@ -1,4 +1,22 @@
 
+/**
+ * LocaleLayout
+ *
+ * Purpose:
+ * Validates the active locale, loads locale messages, and provides the localized client shell.
+ *
+ * Context:
+ * Wraps every route under `src/app/[locale]` including the homepage and projects page.
+ *
+ * Dependencies:
+ * - next-intl provider and server message loading
+ * - shared routing rules from `src/i18n/routing.ts`
+ * - shared header/footer shell from `ClientShell`
+ *
+ * Notes:
+ * - Keep locale validation here so invalid locale segments fail fast.
+ * - Do not introduce `html` or `body` tags here; the root layout owns them.
+ */
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
@@ -16,12 +34,10 @@ const localeMetadata = {
   },
 } as const;
 
-// Pre-generate static paths for supported locales
 export function generateStaticParams() {
   return [{ locale: 'en' }, { locale: 'it' }];
 }
 
-// Locale layout (NO html/body here — root layout handles that)
 export default async function LocaleLayout({
   children,
   params,
@@ -35,6 +51,7 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  // Load locale-scoped messages once and provide them to all client components below.
   const messages = await getMessages({ locale });
 
   return (

@@ -1,12 +1,22 @@
 'use server';
 
 /**
- * File: src/app/contact/actions.ts
- * Purpose: Server Action used by the ContactForm component to send emails
- * from the CodeVivo contact form to hello@codevivo.dev using Resend.
+ * Contact Actions
  *
- * This runs only on the server (Next.js Server Action).
- * The RESEND_API_KEY must exist in `.env.local` and Vercel environment variables.
+ * Purpose:
+ * Handles contact form submissions, rate limiting, and outbound email delivery.
+ *
+ * Context:
+ * Called by `ContactForm` as a Next.js Server Action.
+ *
+ * Dependencies:
+ * - Resend for outbound email delivery
+ * - Upstash rate limiting from `src/lib/rate-limit.ts`
+ * - `ContactEmail` for the internal inbox template
+ *
+ * Notes:
+ * - This file must remain server-only because it reads headers and secrets.
+ * - Validation, anti-spam checks, and email side effects are intentionally centralized here.
  */
 
 import { Resend } from 'resend';
@@ -30,6 +40,7 @@ export async function sendContactEmail(
     const email = formData.get('email')?.toString().trim();
     const message = formData.get('message')?.toString().trim();
 
+    // Honeypot field: treat bot submissions as successful no-ops to avoid feedback loops.
     if (website) {
       return {
         success: true,
@@ -37,10 +48,12 @@ export async function sendContactEmail(
       };
     }
 
+    // Infer the reply language from the request headers used by the public form.
     const h = await headers();
     const acceptLanguage = h.get('accept-language') || '';
     const isItalian = acceptLanguage.toLowerCase().startsWith('it');
 
+    // Rate limit by the best available client IP signal before performing email work.
     const ip =
       h.get('x-forwarded-for')?.split(',')[0] ??
       h.get('x-real-ip') ??
@@ -92,7 +105,7 @@ ${message}`,
       },
     });
 
-    // Auto‑reply to the visitor confirming message receipt
+    // Auto-reply in the visitor language after the internal notification succeeds.
     await resend.emails.send({
       from: 'CodeVivo <contact@codevivo.dev>',
       to: [email],

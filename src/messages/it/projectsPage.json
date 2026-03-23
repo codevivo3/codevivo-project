@@ -5,5 +5,7 @@
   "labTitle": "Esperimenti",
   "selectedTitle": "Lavori Selezionati",
   "inProgressTitle": "In Corso",
+  "inProgressLink": "Segui sviluppo",
+  "inProgressStatus": "In corso",
   "viewProject": "Guarda il progetto"
 }

@@ -1,3 +1,19 @@
+/**
+ * ContactEmail
+ *
+ * Purpose:
+ * Defines the internal notification email sent when the contact form is submitted.
+ *
+ * Context:
+ * Rendered server-side by the contact action before being sent through Resend.
+ *
+ * Dependencies:
+ * - `@react-email/components` for portable email markup
+ *
+ * Notes:
+ * - Keep styling email-safe and inline-friendly.
+ * - This template is for the site owner inbox, not the visitor auto-reply.
+ */
 import {
   Html,
   Head,

@@ -1,35 +1,35 @@
-import { useTranslations } from 'next-intl';
-import Image from 'next/image';
-import Button from '@/components/ui/Button';
-
 /**
  * Hero
  *
  * Purpose:
- * Renders the landing hero copy, primary CTA, and brand artwork.
+ * Renders the homepage hero copy, main CTA, and brand artwork.
  *
- * Behavior:
- * - Large screens: places copy and artwork side by side
- * - Medium screens: keeps the same content with responsive spacing
- * - Mobile: content is visible on first render with no animation dependency
+ * Context:
+ * First section on the localized homepage.
+ *
+ * Dependencies:
+ * - next-intl for localized copy
+ * - shared `Button` CTA styling
+ * - static brand asset in `/public/logos`
  *
  * Notes:
- * - This component does not manage motion directly
- * - The hero artwork is currently rendered as a static image for layout stability
+ * - Keep the hero ID stable because header/footer links scroll to it.
+ * - The artwork is intentionally static here for layout predictability.
  */
+import { useTranslations } from 'next-intl';
+import Image from 'next/image';
+import Button from '@/components/ui/Button';
 
 export default function Hero() {
-  // Derived values
+  // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('hero');
-
-  // Render
   return (
     <section id='hero' className='section-block'>
       <div
-        className='section-reveal mx-auto flex w-full max-w-5xl -translate-y-6 flex-col gap-10 px-4 sm:px-6 md:flex-row md:items-center md:justify-between'
+        className='section-reveal mx-auto flex min-h-[100dvh] w-full max-w-5xl flex-col justify-center gap-6 px-4 py-16 sm:px-6 md:-translate-y-6 md:min-h-0 md:flex-row md:items-center md:justify-between md:gap-10 md:py-0'
         style={{ ['--reveal-delay' as string]: '0ms' }}
       >
-        <div className='max-w-xl text-center md:text-left'>
+        <div className='mx-auto w-full max-w-2xl text-center md:mx-0 md:max-w-xl md:text-left'>
           <p className='mb-3 text-xs uppercase tracking-[0.2em] text-fg/70 font-mono-var'>
             {t('eyebrow')}
           </p>
@@ -42,17 +42,17 @@ export default function Hero() {
           <p className='mt-4 text-sm font-medium text-fg/84 sm:text-base'>
             {t('story')}
           </p>
-          <div className='mt-8 flex justify-center md:justify-start'>
+          <div className='mt-6 flex justify-center md:mt-8 md:justify-start'>
             <Button href='/projects'>{t('cta')}</Button>
           </div>
         </div>
-        <div className='flex items-center justify-center'>
+        <div className='mx-auto flex w-full max-w-[280px] items-center justify-center md:mx-0 md:max-w-none'>
           <Image
             src='/logos/codevivo/codevivo-icon-color.svg'
             alt='Hero Logo'
             width={300}
             height={300}
-            className='hero-logo-float'
+            className='hero-logo-float h-auto w-full md:w-auto'
           />
         </div>
       </div>

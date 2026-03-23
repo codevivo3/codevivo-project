@@ -1,22 +1,23 @@
 'use client';
 
-import Image from 'next/image';
-
 /**
  * Logo
  *
  * Purpose:
- * Renders the light and dark brand logo assets in a shared responsive wrapper.
+ * Renders the brand logo assets for both theme modes in one shared wrapper.
  *
- * Behavior:
- * - Large screens: scales the logo container responsively
- * - Medium screens: keeps the same dual-image setup with responsive sizing
- * - Mobile: remains visible on first render with no hidden animation state
+ * Context:
+ * Used in shared navigation and footer branding.
+ *
+ * Dependencies:
+ * - Next `Image` for optimized SVG asset rendering
+ * - CSS theme classes that swap visibility between light and dark logo variants
  *
  * Notes:
- * - This component does not manage motion timing
- * - Theme-specific visibility is handled through CSS classes on the images
+ * - Keep both logo assets mounted so theme changes do not require component re-render logic.
+ * - Wrapper sizing is shared across header and footer, so changes affect both areas.
  */
+import Image from 'next/image';
 
 type LogoProps = {
   className?: string;

@@ -1,23 +1,24 @@
-import { useTranslations } from 'next-intl';
-
 /**
  * WorkWithMe
  *
  * Purpose:
- * Renders the collaboration CTA section with service tags and a contact link.
+ * Renders the collaboration CTA card with service tags and a mail link.
  *
- * Behavior:
- * - Large screens: keeps the centered card layout with static content
- * - Medium screens: preserves the same card structure with responsive spacing
- * - Mobile: remains visible and stable on first render with no trigger dependency
+ * Context:
+ * Used on the homepage after featured projects as a conversion-focused section.
+ *
+ * Dependencies:
+ * - next-intl for headings, copy, and CTA text
+ * - shared `surface-card` styling tokens
  *
  * Notes:
- * - This component does not manage motion directly
- * - Translation fallbacks are resolved locally to avoid empty text blocks
+ * - Message fallbacks are resolved locally so missing optional keys do not break the section.
+ * - Keep the CTA as a direct mail link unless the contact flow changes site-wide.
  */
+import { useTranslations } from 'next-intl';
 
 export default function WorkWithMe() {
-  // Derived values
+  // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('workWithMe');
   const rawItems = t.raw('items');
   const items = Array.isArray(rawItems) ? rawItems : [];
@@ -31,7 +32,6 @@ export default function WorkWithMe() {
     ? t('cta')
     : `${t.has('ctaLabel') ? t('ctaLabel') : "Let's talk:"} hello@codevivo.dev`;
 
-  // Render
   return (
     <section id='work-with-me' className='section-block'>
       <div

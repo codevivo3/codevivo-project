@@ -1,5 +1,23 @@
 'use client';
 
+/**
+ * ProjectCard
+ *
+ * Purpose:
+ * Renders a reusable featured project card with copy, actions, tech tags, and preview media.
+ *
+ * Context:
+ * Used on the homepage in both the pinned desktop experience and the stacked mobile list.
+ *
+ * Dependencies:
+ * - centralized preview system via `getProjectAssets`
+ * - next-intl locale state for preview variants
+ * - `ProjectThumbnail` and shared `Button` / `TechIcon` components
+ *
+ * Notes:
+ * - Keep preview resolution centralized here rather than scattering image path logic in callers.
+ * - Desktop and mobile animation triggers intentionally differ; preserve that split.
+ */
 import Button from '@/components/ui/Button';
 import ProjectThumbnail, {
   type PreviewType,
@@ -11,27 +29,11 @@ import { useLocale } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-/**
- * ProjectCard
- *
- * Displays a single project entry with title, description, tech stack,
- * primary actions, and a preview thumbnail.
- *
- * Behavior:
- * - Large screens: content animation is controlled by the parent via `animateIn`
- * - Medium/small screens: each content block reveals with its own while-in-view motion
- *
- * Notes:
- * - Large-screen layout stays fixed; only the animation trigger changes responsively
- * - Medium/small screens must never depend on `animateIn` to become visible
- * - Thumbnail wrappers keep overflow visible so shadows and scaled previews are not clipped
- */
-
 const cardClassName =
   'glass-effect surface-card mx-auto w-full max-w-4xl rounded-xl bg-[var(--panel-bg)] p-4';
-const tagsClassName = 'flex items-center gap-3';
+const tagsClassName = 'flex flex-wrap items-center gap-3';
 const tagClassName = 'group flex items-center justify-center';
-const buttonsClassName = 'flex items-center gap-4';
+const buttonsClassName = 'flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4';
 
 type ProjectCardProps = {
   animateIn?: boolean;
@@ -58,15 +60,13 @@ export default function ProjectCard({
   githubUrl,
   previewType = 'desktop',
 }: ProjectCardProps) {
-  // State
   const locale = useLocale();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
-  // Responsive content selection
+  // Normalize locale for image selection.
   const normalizedLocale: 'it' | 'en' = locale.startsWith('it') ? 'it' : 'en';
 
-  // Effects
   useEffect(() => {
     const updateTheme = () => {
       setTheme(
@@ -76,6 +76,7 @@ export default function ProjectCard({
 
     updateTheme();
 
+    // Detect current theme from document root so preview variants stay in sync with the UI theme.
     const observer = new MutationObserver(updateTheme);
     observer.observe(document.documentElement, {
       attributes: true,
@@ -89,6 +90,7 @@ export default function ProjectCard({
 
   useEffect(() => {
     const checkScreen = () => {
+      // Use viewport height to decide whether the desktop pinned presentation has enough room.
       setIsLargeScreen(window.innerHeight > 900);
     };
 
@@ -100,17 +102,16 @@ export default function ProjectCard({
     };
   }, []);
 
-  // Animation variants
   const contentVariants = {
     hidden: { y: 30, opacity: 0 },
     visible: { y: 0, opacity: 1 },
   };
 
-  // Responsive animation config
   const viewportConfig = isLargeScreen
     ? { once: true, margin: '-20% 0px -60% 0px' }
     : { once: true, amount: 0.6, margin: '0px 0px -20% 0px' };
 
+  // Resolve preview assets using the centralized helper to keep file fallback logic in one place.
   const {
     previewImage,
     previewImageLeft,
@@ -123,13 +124,12 @@ export default function ProjectCard({
     locale: normalizedLocale,
   });
 
-  // Render
   return (
     <motion.article className={cardClassName}>
-      <div className='grid h-[276px] grid-cols-[1.1fr_420px] items-stretch gap-6'>
+      <div className='grid h-auto w-full max-w-full grid-cols-1 items-stretch gap-6 md:h-[276px] md:grid-cols-[minmax(0,1.1fr)_minmax(0,420px)]'>
         {isLargeScreen ? (
           <motion.div
-            className='flex h-full flex-col justify-between px-2 py-4'
+            className='flex h-full w-full max-w-full flex-col justify-between px-2 py-2 md:py-4'
             variants={contentVariants}
             initial='hidden'
             animate={animateIn ? 'visible' : 'hidden'}
@@ -140,7 +140,7 @@ export default function ProjectCard({
             }}
           >
             <div className='space-y-3'>
-              <h3 className='text-xl font-semibold'>{title}</h3>
+              <h3 className='text-xl font-semibold sm:text-2xl md:text-xl'>{title}</h3>
               <p className='text-sm leading-5 text-fg/72'>{description}</p>
             </div>
             <div className='space-y-4 pt-2'>
@@ -167,7 +167,7 @@ export default function ProjectCard({
           </motion.div>
         ) : (
           <motion.div
-            className='flex h-full flex-col justify-between px-2 py-4'
+            className='flex h-full w-full max-w-full flex-col justify-between px-2 py-2 md:py-4'
             variants={contentVariants}
             initial='hidden'
             whileInView='visible'
@@ -180,7 +180,7 @@ export default function ProjectCard({
             }}
           >
             <div className='space-y-3'>
-              <h3 className='text-xl font-semibold'>{title}</h3>
+              <h3 className='text-xl font-semibold sm:text-2xl md:text-xl'>{title}</h3>
               <p className='text-sm leading-5 text-fg/72'>{description}</p>
             </div>
             <div className='space-y-4 pt-2'>
@@ -208,7 +208,7 @@ export default function ProjectCard({
         )}
         {isLargeScreen ? (
           <motion.div
-            className='flex h-full items-center justify-center'
+            className='flex h-full w-full max-w-full items-center justify-center'
             variants={contentVariants}
             initial='hidden'
             animate={animateIn ? 'visible' : 'hidden'}
@@ -219,7 +219,7 @@ export default function ProjectCard({
               delay: 0.04,
             }}
           >
-            <div className='aspect-[16/9] w-full max-w-[420px] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02]'>
+            <div className='aspect-[16/9] w-full max-w-md overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02] md:max-w-[420px]'>
               <ProjectThumbnail
                 title={title}
                 previewImage={previewImage}
@@ -233,7 +233,7 @@ export default function ProjectCard({
           </motion.div>
         ) : (
           <motion.div
-            className='flex h-full items-center justify-center'
+            className='flex h-full w-full max-w-full items-center justify-center'
             variants={contentVariants}
             initial='hidden'
             whileInView='visible'
@@ -245,7 +245,7 @@ export default function ProjectCard({
               ease: [0.22, 1, 0.36, 1],
             }}
           >
-            <div className='aspect-[16/9] w-full max-w-[420px] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02]'>
+            <div className='aspect-[16/9] w-full max-w-[85%] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02] md:max-w-[420px]'>
               <ProjectThumbnail
                 title={title}
                 previewImage={previewImage}

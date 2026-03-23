@@ -1,11 +1,20 @@
 /**
- * src/i18n/request.ts
- * 
- * This file defines the server-side i18n request configuration for next-intl.
- * It resolves the appropriate locale using requestLocale, checks against supported locales,
- * and falls back to the default locale when necessary.
- * Locale-specific translation messages are loaded from /src/messages/{locale} and
- * merged by file name into one object (e.g. projects.json -> messages.projects).
+ * i18n Request Configuration
+ *
+ * Purpose:
+ * Resolves the active locale for a request and loads the corresponding next-intl message payload.
+ *
+ * Context:
+ * Used by next-intl on the server for every localized request.
+ *
+ * Dependencies:
+ * - next-intl request config APIs
+ * - locale routing rules from `src/i18n/routing.ts`
+ * - JSON message namespaces under `src/messages`
+ *
+ * Notes:
+ * - Unsupported locales fall back to the default locale defined in routing.
+ * - Namespace keys come from JSON file names and are merged into one message object.
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -19,6 +28,7 @@ async function loadMessages(locale: string) {
     .filter((file) => file.endsWith('.json'))
     .sort((a, b) => a.localeCompare(b));
 
+  // Merge all namespace files for the locale into the single object expected by next-intl.
   const entries = await Promise.all(
     files.map(async (file) => {
       const content = await readFile(join(localeDir, file), 'utf8');
@@ -31,6 +41,7 @@ async function loadMessages(locale: string) {
 
 export default getRequestConfig(async ({ requestLocale }) => {
   const requested = await requestLocale;
+  // Validate the incoming locale against the shared routing config before loading messages.
   const locale = hasLocale(routing.locales, requested)
     ? requested
     : routing.defaultLocale;

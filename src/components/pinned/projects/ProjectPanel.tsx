@@ -1,5 +1,22 @@
 'use client';
 
+/**
+ * ProjectPanel
+ *
+ * Purpose:
+ * Wraps a single featured project inside the desktop pinned-scroll stage.
+ *
+ * Context:
+ * Used only by `FeaturedProjects` on desktop-sized layouts.
+ *
+ * Dependencies:
+ * - Framer Motion motion values from the parent sticky stage
+ * - `ProjectCard` for the actual project content
+ *
+ * Notes:
+ * - Keep the scroll mapping logic here so `ProjectCard` stays reusable outside the pinned experience.
+ * - `renderContent` exists to support the final non-project explore panel without duplicating stage logic.
+ */
 import {
   motion,
   useTransform,
@@ -11,21 +28,6 @@ import { useEffect, useState, useRef } from 'react';
 import ProjectCard from '@/components/projects/ProjectCard';
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
-
-/**
- * ProjectPanel
- *
- * Wraps a single pinned project card inside the desktop sticky-scroll stage.
- *
- * Behavior:
- * - Large screens: scroll progress drives panel opacity, scale, and vertical movement
- * - Medium/small screens: this component is not used; `FeaturedProjects` renders static cards instead
- *
- * Notes:
- * - `showContent` is derived from the panel's existing opacity motion value
- * - The parent panel remains responsible for the outer fade/position transforms
- * - The inner card must keep its own layout intact; this file should not introduce clipping hacks
- */
 
 export type ProjectItem = {
   id: string;
@@ -64,6 +66,7 @@ const containerVariants: Variants = {
 };
 
 function getPanelScrollRange(index: number, total: number, isLast: boolean) {
+  // Divide the full sticky stage into equal segments, then soften each panel's entry/exit window.
   const segment = 1 / total;
   const start = index * segment;
   const end = start + segment;
@@ -89,11 +92,9 @@ export default function ProjectPanel({
   secondaryLabel,
   renderContent,
 }: ProjectPanelProps) {
-  // State & refs
   const [showContent, setShowContent] = useState(false);
   const hasTriggeredRef = useRef(false);
 
-  // Responsive scroll mapping
   const isLast = index === total - 1;
   const { inputRange, opacityRange, scaleRange, yRange } = getPanelScrollRange(
     index,
@@ -101,11 +102,10 @@ export default function ProjectPanel({
     isLast,
   );
 
-  // Animation values
   const rawOpacity = useTransform(scrollYProgress, inputRange, opacityRange);
 
-  // Effects
   useEffect(() => {
+    // Reveal inner content once the panel is meaningfully visible, then leave it mounted.
     const unsubscribe = rawOpacity.on('change', (value) => {
       if (value > 0.6 && !hasTriggeredRef.current) {
         hasTriggeredRef.current = true;
@@ -129,7 +129,6 @@ export default function ProjectPanel({
   const scale = useTransform(scrollYProgress, inputRange, scaleRange);
   const y = useTransform(scrollYProgress, inputRange, yRange);
 
-  // Render
   return (
     <motion.div
       className='absolute inset-0 flex items-start justify-center pt-10 overflow-hidden'

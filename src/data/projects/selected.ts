@@ -1,3 +1,20 @@
+/**
+ * Selected Project Metadata
+ *
+ * Purpose:
+ * Stores non-translated metadata for selected projects such as slugs, links, and preview type.
+ *
+ * Context:
+ * Merged with translated selected project copy on the projects page and homepage.
+ *
+ * Dependencies:
+ * - preview system (`getProjectAssets` / `ProjectThumbnail`)
+ * - projects page and homepage project sections
+ *
+ * Notes:
+ * - `slug` values must match folders under `/public/projects/`.
+ * - Keep URLs and preview-specific settings here so translation files remain content-only.
+ */
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 
 export type SelectedProjectMeta = {

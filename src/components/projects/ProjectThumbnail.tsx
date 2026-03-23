@@ -2,18 +2,19 @@
  * ProjectThumbnail
  *
  * Purpose:
- * Renders a clickable project preview thumbnail that opens a modal with a larger preview.
- * Supports both desktop (Macbook mockup) and mobile (iPhone mockups) presentations.
+ * Renders the interactive preview surface for a project card.
  *
- * Behavior:
- * - Desktop: Displays a Macbook mockup with the preview image centered and scaled.
- * - Mobile: Displays three iPhone mockups (left/center/right) using provided images or fallbacks.
- * - Interaction: Click or keyboard (Enter/Space) opens ProjectPreviewModal.
+ * Context:
+ * Used by `ProjectCard` to present either desktop or mobile mockups and open the larger modal view.
+ *
+ * Dependencies:
+ * - `ProjectPreviewModal` for enlarged previews
+ * - `MacbookMockup` and `IphoneMockup` for framed device rendering
+ * - preview assets already resolved by `getProjectAssets`
  *
  * Notes:
- * - This component is purely visual and does not manage animations.
- * - It must not clip shadows (uses overflow-visible on container).
- * - Mobile rendering is static-safe (no dependency on external animation triggers).
+ * - Keep fallback image selection here simple; asset path resolution belongs to the helper layer.
+ * - The container must stay keyboard-accessible because it behaves like an interactive control.
  */
 'use client';
 
@@ -21,8 +22,6 @@ import { useState } from 'react';
 import ProjectPreviewModal from '@/components/projects/ProjectPreviewModal';
 import IphoneMockup from '@/components/ui/IphoneMockup';
 import MacbookMockup from '@/components/ui/MacbookMockup';
-
-// Types
 
 export type PreviewType = 'desktop' | 'mobile';
 
@@ -36,8 +35,6 @@ type Props = {
   previewType?: PreviewType;
 };
 
-// Component
-
 export default function ProjectThumbnail({
   title,
   previewImage,
@@ -47,17 +44,15 @@ export default function ProjectThumbnail({
   fullPreview,
   previewType = 'desktop',
 }: Props) {
-  // State
   const [open, setOpen] = useState(false);
 
-  // Derived values
   const isMobilePreview = previewType === 'mobile';
+  // Fall back to the resolved primary preview so partial mobile asset sets still render.
   const imageSrc = previewImage ?? fullPreview;
   const leftSrc = previewImageLeft ?? imageSrc;
   const centerSrc = previewImageCenter ?? imageSrc;
   const rightSrc = previewImageRight ?? imageSrc;
 
-  // Render
   return (
     <>
       <div
@@ -73,12 +68,12 @@ export default function ProjectThumbnail({
         tabIndex={0}
         aria-label={`Open ${title} preview`}
       >
-        {/* Responsive preview rendering (mobile vs desktop) */}
+        {/* Render the correct device framing without re-resolving asset paths here. */}
         {isMobilePreview ? (
           imageSrc ? (
             <div className='relative flex h-full items-center justify-center transition-transform duration-300 group-hover:scale-[1.02]'>
-              <div className="flex items-center justify-center h-full w-full">
-                <div className="flex items-center justify-center gap-15 scale-[0.6] origin-center h-full">
+              <div className="flex h-full w-full items-center justify-center">
+                <div className="flex h-full origin-center items-center justify-center gap-15 scale-[0.52] sm:scale-[0.6]">
                   {[leftSrc, centerSrc, rightSrc].map((src, index) => (
                     <IphoneMockup
                       key={index}
@@ -97,7 +92,7 @@ export default function ProjectThumbnail({
         ) : (
           <div className='flex h-full w-full items-center justify-center p-4'>
             {imageSrc ? (
-              <div className='h-full flex items-center justify-center'>
+              <div className='flex h-full w-full items-center justify-center'>
                 <div className='h-full max-h-[85%] flex items-center justify-center [&>*]:h-full [&>*]:w-auto'>
                   <MacbookMockup
                     src={imageSrc}
@@ -114,7 +109,6 @@ export default function ProjectThumbnail({
         )}
       </div>
 
-      {/* Modal preview */}
       <ProjectPreviewModal
         open={open}
         onClose={() => setOpen(false)}

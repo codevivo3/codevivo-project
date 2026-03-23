@@ -1,5 +1,23 @@
 'use client';
 
+/**
+ * SelectedSection
+ *
+ * Purpose:
+ * Renders the larger selected-work cards on the projects archive page.
+ *
+ * Context:
+ * Used only on the projects page as the main long-form showcase.
+ *
+ * Dependencies:
+ * - next-intl locale state for preview selection
+ * - centralized asset resolution via `getProjectAssets`
+ * - shared `surface-card` system and `Button`
+ *
+ * Notes:
+ * - Theme-aware image selection depends on the document root class.
+ * - Keep preview resolution inside the shared helper path rather than hardcoding image files here.
+ */
 import { useEffect, useState } from 'react';
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import Button from '@/components/ui/Button';
@@ -30,6 +48,7 @@ export default function SelectedSection({
   const locale = useLocale();
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
+  // Normalize locale for image selection.
   const normalizedLocale: 'it' | 'en' = locale.startsWith('it') ? 'it' : 'en';
 
   useEffect(() => {
@@ -43,6 +62,7 @@ export default function SelectedSection({
 
     updateTheme();
 
+    // Detect current theme from document root so preview variants stay aligned with the UI theme.
     const observer = new MutationObserver(updateTheme);
     observer.observe(document.documentElement, {
       attributes: true,
@@ -57,8 +77,9 @@ export default function SelectedSection({
       <h2 className='mx-auto w-full max-w-4xl text-lg font-semibold'>
         {title}
       </h2>
-      <div className='space-y-20'>
+      <div className='space-y-12 md:space-y-20'>
         {projects.map((project) => {
+          // Resolve preview assets using the centralized helper (single source of truth).
           const {
             previewImage,
             fullPreview,
@@ -71,14 +92,16 @@ export default function SelectedSection({
           return (
             <div
               key={project.id}
-              className='glass-effect surface-card mx-auto flex w-full max-w-4xl flex-col justify-center rounded-xl bg-[var(--panel-bg)] p-4 min-h-[65vh]'
+              className='glass-effect surface-card mx-auto flex w-full max-w-4xl max-w-full flex-col justify-center rounded-xl bg-[var(--panel-bg)] p-4 min-h-[50vh] md:min-h-[65vh]'
             >
-              <div className='mx-auto flex max-w-3xl flex-col justify-center gap-5 text-center'>
-                <h3 className='text-xl font-semibold'>{project.title}</h3>
+              <div className='mx-auto flex w-full max-w-3xl max-w-full flex-col justify-center gap-5 text-center'>
+                <h3 className='order-1 text-xl font-semibold sm:text-2xl md:order-none'>
+                  {project.title}
+                </h3>
 
-                <div className='flex w-full items-center justify-center overflow-hidden rounded-lg'>
-                  <div className='flex w-full items-center justify-center'>
-                    <div className='relative w-full max-w-[600px] aspect-[16/9] rounded-lg overflow-hidden'>
+                <div className='order-3 flex w-full max-w-full items-center justify-center overflow-hidden rounded-lg md:order-none'>
+                  <div className='flex w-full max-w-full items-center justify-center'>
+                    <div className='relative aspect-[16/9] w-full max-w-[85%] rounded-lg overflow-hidden md:max-w-[600px]'>
                       <Image
                         src={previewImage ?? fullPreview ?? '/fallback.png'}
                         alt={project.title}
@@ -91,11 +114,11 @@ export default function SelectedSection({
                   </div>
                 </div>
 
-                <p className='text-sm leading-relaxed text-fg/72'>
+                <p className='order-2 text-sm leading-relaxed text-fg/72 md:order-none'>
                   {project.description}
                 </p>
 
-                <div className='pt-2'>
+                <div className='order-4 flex w-full flex-col gap-3 pt-2 md:order-none'>
                   {project.projectUrl ? (
                     <Button href={project.projectUrl} variant='primary'>
                       {viewLabel}

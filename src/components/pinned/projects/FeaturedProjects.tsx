@@ -1,5 +1,23 @@
 'use client';
 
+/**
+ * FeaturedProjects
+ *
+ * Purpose:
+ * Renders the homepage featured work section with desktop pinned panels and mobile stacked cards.
+ *
+ * Context:
+ * Used on the homepage as the main project showcase before the broader projects archive page.
+ *
+ * Dependencies:
+ * - next-intl for localized headings and CTA labels
+ * - `ProjectCard`, `ProjectPanel`, and `ExploreProjects`
+ * - Framer Motion scroll progress for the desktop pinned experience
+ *
+ * Notes:
+ * - Desktop and mobile layouts intentionally diverge here; do not push that branching into the card component.
+ * - The final panel is a navigation card, not a project entry.
+ */
 import { useMemo, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useScroll } from 'framer-motion';
@@ -8,20 +26,6 @@ import ExploreProjects from '@/components/projects/ExploreProjects';
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
 import ProjectPanel from './ProjectPanel';
-
-/**
- * FeaturedProjects
- *
- * Renders the pinned projects section with two responsive presentation modes.
- *
- * Behavior:
- * - Large screens: uses a sticky scroll stage and `ProjectPanel` for scroll-driven animation
- * - Medium/small screens: renders a simple stacked list of `ProjectCard` entries
- *
- * Notes:
- * - Mobile and tablet do not depend on desktop scroll progress to show content
- * - Desktop layout and sticky positioning are shared stage concerns and should stay centralized here
- */
 
 type RawProjectItem = {
   id: string;
@@ -35,21 +39,20 @@ type RawProjectItem = {
 };
 
 export default function FeaturedProjects() {
-  // Derived data
+  // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('projects');
   const featured = useMemo(() => {
     const items = (t.raw('items') as RawProjectItem[] | undefined) ?? [];
     return items.slice(-3);
   }, [t]);
 
-  // Scroll stage refs
+  // Drive desktop panel transitions from a single sticky scroll stage.
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end end'],
   });
 
-  // Render
   return (
     <section id='projects' className='section-block relative'>
       <div
@@ -103,7 +106,7 @@ export default function FeaturedProjects() {
         </div>
 
         {/* Mobile and tablet stacked list */}
-        <div className='mx-auto mt-12 flex w-full max-w-5xl flex-col gap-10 px-4 pb-10 sm:px-6 md:hidden'>
+        <div className='mx-auto mt-12 flex w-full max-w-5xl max-w-full flex-col gap-6 px-4 pb-10 sm:px-6 md:hidden'>
           {featured.map((item, index) => (
             <div
               key={item.id ?? `${item.title}-${index}`}

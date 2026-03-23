@@ -2,17 +2,19 @@
  * ProjectPreviewModal
  *
  * Purpose:
- * Displays a full-screen modal with an enlarged project preview image.
+ * Displays a modal with the full project preview in either desktop or mobile framing.
  *
- * Behavior:
- * - Large screens: opens a centered dialog with scrollable preview content
- * - Medium screens: keeps the same dialog with responsive bounds
- * - Mobile: remains self-contained once opened and never depends on parent animation state
+ * Context:
+ * Opened from `ProjectThumbnail` when a user requests a larger preview.
+ *
+ * Dependencies:
+ * - `createPortal` so the modal escapes parent stacking and overflow contexts
+ * - Next `Image` for optimized preview rendering
+ * - `PreviewType` shared with thumbnail presentation logic
  *
  * Notes:
- * - Uses `createPortal` to render outside the normal DOM hierarchy
- * - Animation is handled via CSS keyframes, not Framer Motion
- * - Returns `null` when closed so no hidden modal state remains mounted
+ * - Keep the open/close contract simple; this component should not own higher-level gallery state.
+ * - The portal target must remain `document.body` to avoid clipping inside card containers.
  */
 
 'use client';
@@ -37,13 +39,12 @@ export default function ProjectPreviewModal({
   fullPreview,
   previewType = 'desktop',
 }: Props) {
-  // Derived values
   const isMobilePreview = previewType === 'mobile';
 
-  // Effects
   useEffect(() => {
     if (!open) return;
 
+    // Close from Escape at the window level so focus placement inside the modal does not matter.
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose();
@@ -61,7 +62,6 @@ export default function ProjectPreviewModal({
     return null;
   }
 
-  // Render
   return createPortal(
     <div
       className='fixed inset-0 z-[9999] bg-black/70 backdrop-blur-md flex items-center justify-center p-6 animate-[modalFadeIn_180ms_ease-out]'

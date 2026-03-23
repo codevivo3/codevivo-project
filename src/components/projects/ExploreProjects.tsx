@@ -2,17 +2,19 @@
  * ExploreProjects
  *
  * Purpose:
- * A navigational card that links to the full Projects page.
- * It visually aligns with ProjectCard but represents a portal rather than a project.
+ * Renders a dedicated navigation card that points users to the full projects archive.
  *
- * Behavior:
- * - Large / medium screens: subtle hover scale interaction
- * - Mobile: fully visible, static-safe (no dependency on animation triggers)
+ * Context:
+ * Used as the final item in homepage project flows.
+ *
+ * Dependencies:
+ * - next-intl for localized copy
+ * - shared `Button` styling
+ * - Framer Motion for staged text/button reveal
  *
  * Notes:
- * - Must NOT mimic a real project card (no tech stack, no preview)
- * - Content is centered to differentiate from standard ProjectCard layout
- * - Acts as a transition from homepage to /projects
+ * - This should read as a transition card, not as another project entry.
+ * - Keep the centered composition distinct from `ProjectCard`.
  */
 'use client';
 
@@ -22,7 +24,7 @@ import Button from '@/components/ui/Button';
 
 // Styles
 
-const cardClassName = 'mx-auto w-full max-w-5xl h-[276px] flex items-center justify-center';
+const cardClassName = 'mx-auto flex h-[240px] w-full max-w-5xl max-w-full items-center justify-center md:h-[276px]';
 
 const containerVariants = {
   hidden: {},
@@ -47,9 +49,8 @@ const itemVariants = {
 
 // Component
 export default function ExploreProjects() {
+  // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('exploreProjects');
-
-  // Render
   return (
     <motion.article
       className={cardClassName}
@@ -59,7 +60,7 @@ export default function ExploreProjects() {
       whileInView='visible'
       viewport={{ once: true, amount: 0.6 }}
     >
-      <div className='flex flex-col items-center justify-center text-center space-y-6'>
+      <div className='flex w-full max-w-full flex-col items-center justify-center space-y-6 px-4 text-center'>
         <motion.div variants={itemVariants}>
           <h3
             id='explore-projects-card-title'
