@@ -5,6 +5,7 @@
  * Displays a modal with the full project preview in either desktop or mobile framing.
  *
  * Context:
+<<<<<<< Updated upstream
  * Opened from `ProjectThumbnail` when a user requests a larger preview.
  *
  * Dependencies:
@@ -15,6 +16,12 @@
  * Notes:
  * - Keep the open/close contract simple; this component should not own higher-level gallery state.
  * - The portal target must remain `document.body` to avoid clipping inside card containers.
+=======
+ * Opened from `ProjectThumbnail` when visitors request a larger project preview.
+ *
+ * Notes:
+ * The modal is portaled to `document.body` so it can escape local stacking and overflow contexts.
+>>>>>>> Stashed changes
  */
 
 'use client';
@@ -76,8 +83,6 @@ export default function ProjectPreviewModal({
         aria-label={`${title} project preview`}
       >
         <h3 className='text-xl font-semibold'>{title}</h3>
-
-        {/* Responsive preview layout (mobile vs desktop) */}
 
         {isMobilePreview ? (
           <div className='mt-4 flex flex-1 items-center justify-center overflow-hidden rounded-lg border border-border bg-black/40 p-6'>

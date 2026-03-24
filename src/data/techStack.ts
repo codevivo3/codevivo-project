@@ -1,4 +1,5 @@
 /**
+<<<<<<< Updated upstream
  * Tech Stack Metadata
  *
  * Purpose:
@@ -15,6 +16,20 @@
  * - IDs exported from this file are the canonical keys used across the app.
  * - Keep labels concise because they are reused for accessibility text.
  */
+=======
+ * techStack
+ *
+ * Purpose:
+ * Defines the shared technology registry used to render labels and icons.
+ *
+ * Context:
+ * Imported by UI components that need consistent tech metadata across the site.
+ *
+ * Notes:
+ * Keep ids stable because project data and icon rendering depend on them.
+ */
+
+>>>>>>> Stashed changes
 export const techStack = {
   react: { label: 'React', icon: '/logos/tech/react.svg' },
   nextjs: { label: 'Next.js', icon: '/logos/tech/nextjs.svg' },
@@ -28,6 +43,7 @@ export const techStack = {
 
 export type TechId = keyof typeof techStack;
 
+// Derived values
 export const techStackEntries = Object.entries(techStack) as Array<
   [TechId, (typeof techStack)[TechId]]
 >;

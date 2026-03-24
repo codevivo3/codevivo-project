@@ -7,6 +7,7 @@
  * Wraps page content with shared chrome and manages a cosmetic scroll-based background offset.
  *
  * Context:
+<<<<<<< Updated upstream
  * Mounted inside the locale layout so every localized route shares the same header and footer.
  *
  * Dependencies:
@@ -16,6 +17,12 @@
  * Notes:
  * - The scroll effect is purely decorative and must never gate content visibility.
  * - Keep requestAnimationFrame throttling here to avoid high-frequency style writes on scroll.
+=======
+ * Used by the locale layout so every localized page shares the same chrome and background behavior.
+ *
+ * Notes:
+ * The background offset effect is purely cosmetic and must not gate page visibility.
+>>>>>>> Stashed changes
  */
 import { useEffect, type ReactNode } from 'react';
 import Header from '@/components/Header';

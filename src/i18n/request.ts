@@ -1,4 +1,5 @@
 /**
+<<<<<<< Updated upstream
  * i18n Request Configuration
  *
  * Purpose:
@@ -15,6 +16,18 @@
  * Notes:
  * - Unsupported locales fall back to the default locale defined in routing.
  * - Namespace keys come from JSON file names and are merged into one message object.
+=======
+ * request
+ *
+ * Purpose:
+ * Builds the server-side `next-intl` request config and loads locale message bundles.
+ *
+ * Context:
+ * Used during request handling to resolve the active locale and provide translations to the app.
+ *
+ * Notes:
+ * Message files are merged by filename so each JSON file becomes its own namespace.
+>>>>>>> Stashed changes
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -23,6 +36,7 @@ import { hasLocale } from 'next-intl';
 import { routing } from './routing';
 
 async function loadMessages(locale: string) {
+  // Derived values
   const localeDir = join(process.cwd(), 'src', 'messages', locale);
   const files = (await readdir(localeDir))
     .filter((file) => file.endsWith('.json'))
@@ -40,6 +54,7 @@ async function loadMessages(locale: string) {
 }
 
 export default getRequestConfig(async ({ requestLocale }) => {
+  // Derived values
   const requested = await requestLocale;
   // Validate the incoming locale against the shared routing config before loading messages.
   const locale = hasLocale(routing.locales, requested)

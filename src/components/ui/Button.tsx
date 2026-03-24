@@ -5,6 +5,7 @@
  * Provides a single action component that can render as either a link or a native button.
  *
  * Context:
+<<<<<<< Updated upstream
  * Shared across homepage sections, project cards, and utility actions.
  *
  * Dependencies:
@@ -14,6 +15,12 @@
  * Notes:
  * - External URLs are detected here so callers do not repeat target/rel handling.
  * - Keep variant styling centralized to preserve consistency across the site.
+=======
+ * Used across sections and cards wherever the project needs a consistent action style.
+ *
+ * Notes:
+ * External links automatically receive secure target and rel attributes.
+>>>>>>> Stashed changes
  */
 import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode } from 'react';
 import Link from 'next/link';

@@ -10,14 +10,11 @@ import { useGLTF } from '@react-three/drei';
  * Purpose:
  * Renders the 3D hero logo inside a transparent WebGL canvas.
  *
- * Behavior:
- * - Large screens: shows the same centered 3D logo presentation
- * - Medium screens: scales responsively within the same square frame
- * - Mobile: remains visible immediately once mounted; no hidden content state
+ * Context:
+ * Intended for hero-area branding where a WebGL version of the logo is preferred over a static asset.
  *
  * Notes:
- * - This component uses WebGL rendering, not Framer Motion
- * - The transparent canvas preserves the surrounding page layout and background
+ * The transparent canvas preserves the surrounding layout and lets the page background show through.
  */
 
 function LogoModel() {
@@ -26,8 +23,8 @@ function LogoModel() {
   return (
     <primitive
       object={scene}
-      scale={[0.01, 0.01, 0.01]} // force shrink
-      position={[0, -1.7, 0]} // fine-tuned vertical centering
+      scale={[0.01, 0.01, 0.01]} // The source model is large, so it is reduced here instead of altering the asset.
+      position={[0, -1.7, 0]} // The vertical offset keeps the logo centered within the current camera framing.
     />
   );
 }

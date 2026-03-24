@@ -5,6 +5,7 @@
  * Renders the collaboration CTA card with service tags and a mail link.
  *
  * Context:
+<<<<<<< Updated upstream
  * Used on the homepage after featured projects as a conversion-focused section.
  *
  * Dependencies:
@@ -14,6 +15,12 @@
  * Notes:
  * - Message fallbacks are resolved locally so missing optional keys do not break the section.
  * - Keep the CTA as a direct mail link unless the contact flow changes site-wide.
+=======
+ * Used on the homepage as the lead-in to the contact section.
+ *
+ * Notes:
+ * Translation fallbacks are resolved locally so the CTA stays complete even when optional fields are missing.
+>>>>>>> Stashed changes
  */
 import { useTranslations } from 'next-intl';
 

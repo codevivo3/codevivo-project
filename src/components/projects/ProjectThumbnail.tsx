@@ -2,6 +2,7 @@
  * ProjectThumbnail
  *
  * Purpose:
+<<<<<<< Updated upstream
  * Renders the interactive preview surface for a project card.
  *
  * Context:
@@ -15,6 +16,15 @@
  * Notes:
  * - Keep fallback image selection here simple; asset path resolution belongs to the helper layer.
  * - The container must stay keyboard-accessible because it behaves like an interactive control.
+=======
+ * Renders a clickable project preview thumbnail that opens a modal with a larger preview.
+ *
+ * Context:
+ * Used inside project cards wherever a visual preview needs to open a larger modal view.
+ *
+ * Notes:
+ * Desktop and mobile preview layouts are both supported, but modal behavior stays contained here.
+>>>>>>> Stashed changes
  */
 'use client';
 
@@ -68,7 +78,10 @@ export default function ProjectThumbnail({
         tabIndex={0}
         aria-label={`Open ${title} preview`}
       >
+<<<<<<< Updated upstream
         {/* Render the correct device framing without re-resolving asset paths here. */}
+=======
+>>>>>>> Stashed changes
         {isMobilePreview ? (
           imageSrc ? (
             <div className='relative flex h-full items-center justify-center transition-transform duration-300 group-hover:scale-[1.02]'>

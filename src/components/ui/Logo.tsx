@@ -7,6 +7,7 @@
  * Renders the brand logo assets for both theme modes in one shared wrapper.
  *
  * Context:
+<<<<<<< Updated upstream
  * Used in shared navigation and footer branding.
  *
  * Dependencies:
@@ -16,6 +17,12 @@
  * Notes:
  * - Keep both logo assets mounted so theme changes do not require component re-render logic.
  * - Wrapper sizing is shared across header and footer, so changes affect both areas.
+=======
+ * Used in shared branding areas such as the header and footer.
+ *
+ * Notes:
+ * Theme-specific visibility is handled with CSS so the same markup works across both modes.
+>>>>>>> Stashed changes
  */
 import Image from 'next/image';
 

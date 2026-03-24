@@ -5,6 +5,7 @@
  * Renders the homepage hero copy, main CTA, and brand artwork.
  *
  * Context:
+<<<<<<< Updated upstream
  * First section on the localized homepage.
  *
  * Dependencies:
@@ -15,6 +16,12 @@
  * Notes:
  * - Keep the hero ID stable because header/footer links scroll to it.
  * - The artwork is intentionally static here for layout predictability.
+=======
+ * Used as the opening section of the localized homepage.
+ *
+ * Notes:
+ * The hero artwork is rendered as a static image to keep the initial layout stable.
+>>>>>>> Stashed changes
  */
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';

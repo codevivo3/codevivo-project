@@ -2,6 +2,7 @@
  * HomePage
  *
  * Purpose:
+<<<<<<< Updated upstream
  * Composes the localized homepage sections and exports locale-aware metadata.
  *
  * Context:
@@ -16,6 +17,17 @@
  * - Keep section ordering here; individual sections should remain presentation-focused.
  * - Metadata fallback behavior depends on the locale keys defined in `homeMetadata`.
  */
+=======
+ * Renders the localized homepage and builds locale-specific marketing metadata.
+ *
+ * Context:
+ * Serves as the main landing page for each supported locale.
+ *
+ * Notes:
+ * Page composition stays explicit here so section order remains easy to maintain.
+ */
+
+>>>>>>> Stashed changes
 import type { Metadata, ResolvingMetadata } from 'next';
 import Hero from '@/components/Hero';
 import TechStack from '@/components/TechStack';
@@ -51,6 +63,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string }>;
 }, parent: ResolvingMetadata): Promise<Metadata> {
+  // Derived values
   const { locale } = await params;
   // Resolve a stable metadata set per supported locale before merging parent images.
   const currentLocale = locale === 'it' ? homeMetadata.it : homeMetadata.en;
@@ -78,6 +91,7 @@ export async function generateMetadata({
 }
 
 export default function HomePage() {
+  // Render
   return (
     <>
       <main className='text-fg'>

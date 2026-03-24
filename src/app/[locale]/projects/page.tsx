@@ -2,6 +2,7 @@
  * ProjectsPage
  *
  * Purpose:
+<<<<<<< Updated upstream
  * Builds the localized projects page by combining translated copy with project metadata.
  *
  * Context:
@@ -16,6 +17,17 @@
  * - Translation files own editorial text; metadata files own slugs, links, and preview wiring.
  * - Keep the merge between translated content and metadata centralized here.
  */
+=======
+ * Renders the localized projects archive and merges translated copy with curated metadata.
+ *
+ * Context:
+ * Used for the dedicated `/projects` page in each supported locale.
+ *
+ * Notes:
+ * Static metadata ids are filtered against translation data so only curated entries are rendered.
+ */
+
+>>>>>>> Stashed changes
 import { getTranslations } from 'next-intl/server';
 import InProgressSection from '@/components/projects/InProgressSection';
 import LabSection from '@/components/projects/LabSection';
@@ -54,6 +66,7 @@ export default async function ProjectsPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
+  // Derived values
   await params;
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const pageT = await getTranslations('projectsPage');
@@ -84,7 +97,10 @@ export default async function ProjectsPage({
     return {
       ...item,
       ...(meta ?? {}),
+<<<<<<< Updated upstream
       // Preserve a usable slug even if metadata is incomplete so preview resolution stays stable.
+=======
+>>>>>>> Stashed changes
       slug: meta?.slug ?? item.id,
     };
   });
@@ -98,6 +114,7 @@ export default async function ProjectsPage({
     })
     .filter((item): item is InProgressItem => item !== null);
 
+  // Render
   return (
     <main className='text-fg'>
       <section className='section-block'>

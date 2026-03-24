@@ -5,7 +5,12 @@
   "labTitle": "Esperimenti",
   "selectedTitle": "Lavori Selezionati",
   "inProgressTitle": "In Corso",
+<<<<<<< Updated upstream
   "inProgressLink": "Segui sviluppo",
   "inProgressStatus": "In corso",
+=======
+  "inProgressStatus": "In corso",
+  "inProgressLink": "Segui progresso",
+>>>>>>> Stashed changes
   "viewProject": "Guarda il progetto"
 }

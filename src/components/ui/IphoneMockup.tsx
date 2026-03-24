@@ -7,6 +7,7 @@
  * Renders a project screenshot inside a stylized iPhone frame.
  *
  * Context:
+<<<<<<< Updated upstream
  * Used by `ProjectThumbnail` and the modal mobile preview presentation.
  *
  * Dependencies:
@@ -16,6 +17,12 @@
  * Notes:
  * - Keep the frame dimensions stable because surrounding preview layouts are tuned around them.
  * - Only the screen area should clip the image; the outer device shell should remain intact.
+=======
+ * Used by project preview components when a project should be presented in a mobile frame.
+ *
+ * Notes:
+ * The screenshot is clipped only by the phone screen mask so surrounding layouts can remain overflow-visible.
+>>>>>>> Stashed changes
  */
 import Image from 'next/image';
 
@@ -29,15 +36,12 @@ export default function IphoneMockup({ src, alt = 'iPhone mockup preview' }: Pro
   return (
     <div className='flex items-center justify-center h-full scale-[1.08]'>
       <div className='relative h-[390px] w-[180px] rounded-[37px] bg-zinc-900 border border-white/30 p-[4px] shadow-device'>
-        {/* Left Side Buttons */}
         <div className='absolute left-[-4px] top-[80px] w-[3px] h-[22px] bg-zinc-800 rounded-l-sm border border-white/30' />
         <div className='absolute left-[-4px] top-[110px] w-[3px] h-[30px] bg-zinc-800 rounded-l-sm border border-white/30' />
         <div className='absolute left-[-4px] top-[145px] w-[3px] h-[30px] bg-zinc-800 rounded-l-sm border border-white/30' />
 
-        {/* Right Side Button */}
         <div className='absolute right-[-4px] top-[110px] w-[3px] h-[45px] bg-zinc-800 rounded-r-sm border border-white/30' />
 
-        {/* Notch */}
         <div className='absolute top-[11px] left-1/2 -translate-x-1/2 w-[55px] h-[14px] bg-zinc-900 rounded-full z-10' />
 
         {/* Screen */}

@@ -1,5 +1,14 @@
 'use client';
 
+<<<<<<< Updated upstream
+=======
+import { useLocale, useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { Mail, Calendar, Github, Linkedin } from 'lucide-react';
+import LanguageToggle from '@/components/LanguageToggle';
+import Logo from './ui/Logo';
+
+>>>>>>> Stashed changes
 /**
  * Footer
  *
@@ -7,6 +16,7 @@
  * Renders the shared site footer with localized navigation, brand links, and contact shortcuts.
  *
  * Context:
+<<<<<<< Updated upstream
  * Mounted by `ClientShell` on all localized pages.
  *
  * Dependencies:
@@ -17,6 +27,12 @@
  * Notes:
  * - External CTA labels are intentionally static for now; navigation labels remain localized.
  * - Keep the smooth-scroll hero shortcut aligned with the homepage section IDs.
+=======
+ * Shared by the client shell so the same footer appears across localized routes.
+ *
+ * Notes:
+ * External click analytics are handled locally so the shared footer stays presentational.
+>>>>>>> Stashed changes
  */
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -53,7 +69,11 @@ export default function Footer() {
     <footer className='relative text-fg backdrop-blur-md'>
       {/* Footer accent lines */}
 
+<<<<<<< Updated upstream
       <div className='mx-auto relative grid w-full max-w-5xl grid-cols-1 items-start gap-6 px-4 py-6 text-center text-xs text-fg/70 sm:px-6 md:grid-cols-3 md:text-left'>
+=======
+      <div className='mx-auto relative grid w-full max-w-5xl grid-cols-1 md:grid-cols-3 items-start gap-6 px-4 py-6 text-center text-xs text-fg/70 sm:px-6 md:text-left'>
+>>>>>>> Stashed changes
         {/* Vertical dividers */}
         <div className='pointer-events-none hidden md:block absolute left-1/3 top-1/2 h-16 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-[var(--brand-blue)] to-[var(--brand-gold)] opacity-70' />
         <div className='pointer-events-none hidden md:block absolute left-2/3 top-1/2 h-16 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-[var(--brand-blue)] to-[var(--brand-gold)] opacity-70' />
@@ -148,6 +168,10 @@ export default function Footer() {
               Connect on LinkedIn
             </span>
           </a>
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
         </div>
         <div className='order-3 flex justify-center md:hidden'>
           <LanguageToggle />

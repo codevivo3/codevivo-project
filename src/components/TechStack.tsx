@@ -21,6 +21,22 @@ import { useTranslations } from 'next-intl';
 import TechIcon from '@/components/ui/TechIcon';
 import { techStackEntries } from '@/data/techStack';
 
+<<<<<<< Updated upstream
+=======
+/**
+ * TechStack
+ *
+ * Purpose:
+ * Renders the technology stack section using shared icon metadata.
+ *
+ * Context:
+ * Used on the homepage to summarize the tools and platforms represented in project work.
+ *
+ * Notes:
+ * Technology metadata comes from the shared registry in `src/data/techStack.ts`.
+ */
+
+>>>>>>> Stashed changes
 export default function TechStack() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('techStack');

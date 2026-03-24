@@ -2,6 +2,7 @@
  * loadMessages
  *
  * Purpose:
+<<<<<<< Updated upstream
  * Loads and merges all JSON message namespaces for a given locale from disk.
  *
  * Context:
@@ -15,10 +16,22 @@
  * - The locale argument must match an existing folder name under `src/messages`.
  * - Namespace keys are derived from file names (for example `projectsPage.json` -> `projectsPage`).
  */
+=======
+ * Loads and namespaces locale JSON message files from disk.
+ *
+ * Context:
+ * Available as a synchronous helper for places that need raw translation bundles.
+ *
+ * Notes:
+ * Each JSON filename becomes a namespace key in the returned messages object.
+ */
+
+>>>>>>> Stashed changes
 import fs from 'fs';
 import path from 'path';
 
 export function loadMessages(locale: string) {
+  // Derived values
   const messagesDir = path.join(process.cwd(), 'src/messages', locale);
 
   const files = fs.readdirSync(messagesDir);

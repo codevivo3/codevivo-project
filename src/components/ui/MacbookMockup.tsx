@@ -7,6 +7,7 @@
  * Renders a project screenshot inside a stylized desktop device frame.
  *
  * Context:
+<<<<<<< Updated upstream
  * Used by `ProjectThumbnail` for desktop-oriented project previews.
  *
  * Dependencies:
@@ -16,6 +17,12 @@
  * Notes:
  * - Frame dimensions are part of the project card composition and should be changed carefully.
  * - Only the screen cutout should clip the preview image.
+=======
+ * Used by project preview components when a project should be presented in a desktop frame.
+ *
+ * Notes:
+ * Only the screen area clips the screenshot so outer preview wrappers can keep shadows visible.
+>>>>>>> Stashed changes
  */
 import Image from 'next/image';
 

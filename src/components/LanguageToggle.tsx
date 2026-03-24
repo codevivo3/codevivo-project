@@ -7,6 +7,7 @@
  * Switches between supported locales while preserving the current route.
  *
  * Context:
+<<<<<<< Updated upstream
  * Used in shared navigation controls such as the header and footer.
  *
  * Dependencies:
@@ -16,6 +17,12 @@
  * Notes:
  * - Path normalization prevents malformed double-locale URLs.
  * - Keep supported locale options aligned with `src/i18n/routing.ts`.
+=======
+ * Used in shared navigation areas where visitors can swap locale without leaving the current page.
+ *
+ * Notes:
+ * Route normalization prevents duplicated locale prefixes when switching languages.
+>>>>>>> Stashed changes
  */
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';

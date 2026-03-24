@@ -7,6 +7,7 @@
  * Toggles the root `light` class and persists the visual theme in local storage.
  *
  * Context:
+<<<<<<< Updated upstream
  * Used in the shared header as the global theme control.
  *
  * Dependencies:
@@ -16,6 +17,12 @@
  * Notes:
  * - Keep the hydration placeholder so the header layout stays stable before mount.
  * - Any change to the stored theme key must stay in sync with `src/app/layout.tsx`.
+=======
+ * Used in shared navigation areas where visitors need to switch the global site theme.
+ *
+ * Notes:
+ * A placeholder is rendered until hydration so the control does not shift layout on first paint.
+>>>>>>> Stashed changes
  */
 import { useState, useEffect } from 'react';
 import { LightbulbIcon, LightbulbFilamentIcon } from '@phosphor-icons/react';

@@ -1,9 +1,15 @@
-// src/app/[locale]/not-found.tsx
-// -------------------------------
-// File: src/app/[locale]/not-found.tsx
-// Description: Custom 404 page that displays when a route is not found.
-// Localized with next-intl and rendered statically per locale.
-// -------------------------------
+/**
+ * LocaleNotFoundPage
+ *
+ * Purpose:
+ * Renders the localized 404 page and its locale-specific metadata.
+ *
+ * Context:
+ * Used when a route inside a locale segment cannot be resolved by the app router.
+ *
+ * Notes:
+ * Metadata stays in this file so the 404 experience remains localized end to end.
+ */
 import type { Metadata, ResolvingMetadata } from 'next';
 import Button from '@/components/ui/Button';
 import { getTranslations } from 'next-intl/server';
@@ -30,6 +36,7 @@ export async function generateMetadata(
   _props: never,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
+  // Derived values
   const locale = await getLocale();
   const currentLocale = locale === 'it' ? notFoundMetadata.it : notFoundMetadata.en;
   const parentMetadata = await parent;
@@ -60,21 +67,13 @@ export async function generateMetadata(
 }
 
 
-// Force this route to be statically rendered per locale
-// export const dynamic = 'force-static';
-
-// The main NotFound component fetches the user's locale and translation messages,
-// then displays a localized error message with a link back to the homepage.
 export default async function NotFound() {
-  // Detect the current locale from the request context
+  // Derived values
   const locale = await getLocale();
-
-  // Load the translation messages for the current locale
   const t = await getTranslations({ locale });
 
   return (
     <main className='relative min-h-screen flex items-center justify-center px-4 py-16 text-center overflow-hidden'>
-      {/* Background 404 decoration */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
         <span className="text-[12rem] md:text-[16rem] font-bold text-fg/5 select-none">
           404
@@ -91,7 +90,6 @@ export default async function NotFound() {
         <p className='text-base md:text-lg text-fg/70 mb-8'>
           {t('not-found.description')}
         </p>
-        {/* Link back to the localized homepage */}
         <Button href={`/${locale}`}>{t('not-found.homeLink')}</Button>
       </div>
     </main>

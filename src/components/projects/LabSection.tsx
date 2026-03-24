@@ -2,6 +2,7 @@
  * LabSection
  *
  * Purpose:
+<<<<<<< Updated upstream
  * Renders the lightweight lab experiment cards on the projects archive page.
  *
  * Context:
@@ -15,6 +16,17 @@
  * - Keep this section presentation-only; item filtering and ordering belong in the page layer.
  * - Horizontal overflow is intentional for smaller viewports.
  */
+=======
+ * Renders the horizontal list of lab experiments on the projects archive page.
+ *
+ * Context:
+ * Used at the top of the projects page to surface smaller exploratory work before selected projects.
+ *
+ * Notes:
+ * The layout stays intentionally lightweight so the lab section reads as a quick-scan strip.
+ */
+
+>>>>>>> Stashed changes
 type LabItem = {
   id: string;
   title: string;
@@ -28,6 +40,7 @@ type Props = {
 };
 
 export default function LabSection({ items, title }: Props) {
+  // Render
   return (
     <div className='mx-auto w-full max-w-5xl space-y-6'>
       <div className='mx-auto w-full max-w-4xl'>

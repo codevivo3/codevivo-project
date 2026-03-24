@@ -7,6 +7,7 @@
  * Renders the shared sticky header with brand navigation and theme/locale controls.
  *
  * Context:
+<<<<<<< Updated upstream
  * Mounted by `ClientShell` across all localized pages.
  *
  * Dependencies:
@@ -17,6 +18,12 @@
  * Notes:
  * - Section links rely on homepage anchor IDs staying stable.
  * - Keep route generation locale-aware from this component rather than hardcoding paths downstream.
+=======
+ * Shared by the client shell so the same navigation is present across localized pages.
+ *
+ * Notes:
+ * The hero shortcut scroll is handled locally, but the header does not own page-level motion timing.
+>>>>>>> Stashed changes
  */
 import { useEffect, useState, type MouseEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';

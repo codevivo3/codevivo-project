@@ -29,6 +29,22 @@ import ProjectCard from '@/components/projects/ProjectCard';
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
 
+<<<<<<< Updated upstream
+=======
+/**
+ * ProjectPanel
+ *
+ * Purpose:
+ * Wraps a single pinned project card inside the desktop sticky-scroll stage.
+ *
+ * Context:
+ * Used only by `FeaturedProjects` during the desktop pinned-scroll experience.
+ *
+ * Notes:
+ * Outer motion stays here so the inner `ProjectCard` does not need to know about scroll-stage transforms.
+ */
+
+>>>>>>> Stashed changes
 export type ProjectItem = {
   id: string;
   slug: string;
@@ -92,9 +108,17 @@ export default function ProjectPanel({
   secondaryLabel,
   renderContent,
 }: ProjectPanelProps) {
+<<<<<<< Updated upstream
   const [showContent, setShowContent] = useState(false);
   const hasTriggeredRef = useRef(false);
 
+=======
+  // State
+  const [showContent, setShowContent] = useState(false);
+  const hasTriggeredRef = useRef(false);
+
+  // Derived values
+>>>>>>> Stashed changes
   const isLast = index === total - 1;
   const { inputRange, opacityRange, scaleRange, yRange } = getPanelScrollRange(
     index,

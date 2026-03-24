@@ -5,6 +5,7 @@
  * Renders a technology icon from the shared tech stack registry.
  *
  * Context:
+<<<<<<< Updated upstream
  * Used across tech stack displays and project metadata badges.
  *
  * Dependencies:
@@ -14,6 +15,12 @@
  * Notes:
  * - Keep icons metadata-driven so labels and assets stay centralized.
  * - CSS masks let the icon inherit foreground color without maintaining multiple SVG fills.
+=======
+ * Used anywhere project or stack metadata needs a theme-aware technology glyph.
+ *
+ * Notes:
+ * CSS masks are used so icon color follows the active theme automatically.
+>>>>>>> Stashed changes
  */
 
 import type { CSSProperties } from 'react';
