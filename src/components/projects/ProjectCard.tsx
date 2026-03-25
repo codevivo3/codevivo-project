@@ -209,8 +209,8 @@ export default function ProjectCard({
               >
                 <div
                   className={`${
-                    previewType === 'mobile' ? 'max-w-[78%]' : 'max-w-[72%]'
-                  } aspect-[16/9] w-full overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02] my-0 py-2`}
+                    previewType === 'mobile' ? 'max-w-[70%]' : 'max-w-[64%]'
+                  } aspect-[16/9] w-full overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.01] my-0 py-2`}
                 >
                   <ProjectThumbnail
                     title={title}
@@ -223,7 +223,7 @@ export default function ProjectCard({
                   />
                 </div>
               </motion.div>
-              <div className='grid grid-cols-2 items-stretch gap-3 mt-16 sm:flex sm:items-center sm:gap-4'>
+              <div className='grid grid-cols-2 items-stretch gap-3 mt-24 sm:flex sm:items-center sm:gap-4'>
                 <Button href={projectUrl} variant='primary'>
                   {primaryLabel}
                 </Button>
@@ -247,7 +247,7 @@ export default function ProjectCard({
               delay: 0.04,
             }}
           >
-            <div className='aspect-[16/9] w-full max-w-md overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02] md:max-w-[420px]'>
+            <div className='aspect-[16/9] w-full max-w-md overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.01] md:max-w-[380px]'>
               <ProjectThumbnail
                 title={title}
                 previewImage={previewImage}
@@ -273,7 +273,7 @@ export default function ProjectCard({
               ease: [0.22, 1, 0.36, 1],
             }}
           >
-            <div className='aspect-[16/9] w-full max-w-[85%] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02] md:max-w-[420px]'>
+            <div className='aspect-[16/9] w-full max-w-[85%] overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.01] md:max-w-[380px]'>
               <ProjectThumbnail
                 title={title}
                 previewImage={previewImage}
