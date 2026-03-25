@@ -52,7 +52,7 @@ export default function WorkWithMe() {
             {items.map((item) => (
               <span
                 key={item}
-                className='w-full max-w-[240px] text-center md:w-auto md:max-w-none md:min-w-[200px] rounded-full border border-border bg-[var(--brand-gold)] px-3 py-1.5 text-xs font-semibold text-black sm:text-sm'
+                className='w-full max-w-[240px] text-center md:w-auto md:max-w-none md:min-w-[200px] rounded-full border border-border bg-[var(--brand-gold)] px-3 py-1.5 text-sm font-semibold text-black sm:text-sm'
               >
                 {item}
               </span>

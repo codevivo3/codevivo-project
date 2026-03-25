@@ -158,7 +158,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className='mt-6 pb-8 md:pb-6 text-center text-xs text-fg/50'>
+      <div className='mt-6 pb-8 md:pb-6 text-center text-sm text-fg/50'>
         {t('copyright')}
       </div>
     </footer>

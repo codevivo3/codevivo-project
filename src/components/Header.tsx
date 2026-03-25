@@ -158,7 +158,7 @@ export default function Header() {
           </button>
         </div>
 
-        <nav className='mt-12 flex flex-col items-start gap-10 font-mono-var text-4xl tracking-wide md:hidden'>
+        <nav className='mt-12 flex flex-col items-start gap-10 font-mono-var text-3xl tracking-wide md:hidden'>
           <Link
             href='/'
             scroll={true}
