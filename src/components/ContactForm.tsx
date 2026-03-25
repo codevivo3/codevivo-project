@@ -54,17 +54,14 @@ export default function ContactForm() {
         style={{ ['--reveal-delay' as string]: '180ms' }}
       >
         <div className='mb-4 flex flex-col items-center'>
-          <p className='text-center font-mono-var text-[11px] uppercase tracking-[0.22em] text-fg/60'>
-            {t('overline')}
-          </p>
+          <h2 className='text-center text-xl font-semibold sm:text-2xl'>
+            {t('title')}
+          </h2>
           <span className='mt-2 h-px w-10 bg-primary/70 '></span>
+          <p className='mx-auto mt-4 max-w-2xl text-center text-sm leading-snug text-fg/72 sm:text-base'>
+            {t('intro')}
+          </p>
         </div>
-        <h2 className='text-center text-xl font-semibold sm:text-2xl'>
-          {t('title')}
-        </h2>
-        <p className='mx-auto mt-4 max-w-2xl text-center text-sm leading-snug text-fg/72 sm:text-base'>
-          {t('intro')}
-        </p>
         <form
           className='glass-effect mt-5 rounded-xl surface-card bg-[var(--panel-bg)] p-5 sm:mt-6 sm:p-6'
           action={formAction}
@@ -129,10 +126,12 @@ export default function ContactForm() {
           {state.success ? (
             <p className='mt-4 text-sm text-primary'>{t('success')}</p>
           ) : null}
-          <div className='mt-6 flex justify-end'>
-            <Button type='submit' disabled={isPending}>
-              {isPending ? t('sending') : t('cta')}
-            </Button>
+          <div className='mt-6 flex justify-center md:justify-end'>
+            <div className='w-full max-w-[220px] md:w-auto md:max-w-none'>
+              <Button type='submit' disabled={isPending}>
+                {isPending ? t('sending') : t('cta')}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

@@ -63,21 +63,17 @@ export default function FeaturedProjects() {
           <div className='sticky top-16 flex h-screen flex-col items-center justify-start overflow-hidden pt-10'>
             <div className='mx-auto w-full max-w-5xl px-4 sm:px-6'>
               <div className='mb-4 flex flex-col items-center'>
-                <p className='text-center font-mono-var text-[11px] uppercase tracking-[0.22em] text-fg/60'>
-                  {t('overline')}
-                </p>
+                <h2 className='text-center text-xl font-semibold sm:text-2xl'>
+                  {t('title')}
+                </h2>
                 <span className='mt-2 h-px w-10 bg-primary/70'></span>
+                <p className='mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-fg/72 sm:text-base'>
+                  {t('intro')}
+                </p>
               </div>
-
-              <h2 className='text-center text-xl font-semibold sm:text-2xl'>
-                {t('title')}
-              </h2>
-              <p className='mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-fg/72 sm:text-base'>
-                {t('intro')}
-              </p>
             </div>
 
-            <div className='relative mt-4 lg:mt-6 xl:mt-6 2xl:mt-48 flex-1 w-full'>
+            <div className='relative mt-2 lg:mt-2 xl:mt-0 2xl:mt-48 flex-1 w-full'>
               {featured.map((item, index) => (
                 <ProjectPanel
                   key={item.id ?? `${item.title}-${index}`}

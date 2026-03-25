@@ -90,10 +90,10 @@ export default function ProjectThumbnail({
             </div>
           )
         ) : (
-          <div className='flex h-full w-full items-center justify-center p-4'>
+          <div className='flex h-full w-full items-center justify-center p-3 scale-[0.9]'>
             {imageSrc ? (
               <div className='flex h-full w-full items-center justify-center'>
-                <div className='h-full max-h-[85%] flex items-center justify-center [&>*]:h-full [&>*]:w-auto'>
+                <div className='h-full max-h-[55%] flex items-center justify-center [&>*]:h-full [&>*]:w-auto'>
                   <MacbookMockup
                     src={imageSrc}
                     alt={`${title} preview`}

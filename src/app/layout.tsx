@@ -24,6 +24,7 @@ import './globals.css';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import Script from 'next/script';
+import ScrollToTop from '@/components/ui/ScrollToTop';
 
 const montserrat = Montserrat({
   variable: '--font-sans',
@@ -72,6 +73,7 @@ export default function RootLayout({
       <body
         className={`${montserrat.variable} ${robotoMono.variable} antialiased`}
       >
+        <ScrollToTop />
         <Script id='theme-init' strategy='beforeInteractive'>
           {`
   // Apply the persisted theme class before React hydration.

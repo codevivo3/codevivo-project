@@ -1,3 +1,4 @@
+// /Users/Francesco/Dev Projects/CodeVivo/codevivo-project/src/components/projects/ExploreProjects.tsx
 /**
  * ExploreProjects
  *
@@ -24,7 +25,8 @@ import Button from '@/components/ui/Button';
 
 // Styles
 
-const cardClassName = 'mx-auto flex h-[240px] w-full max-w-5xl max-w-full items-center justify-center md:h-[276px]';
+const cardClassName =
+  'mx-auto flex min-h-[40vh] w-full max-w-5xl items-end justify-center md:min-h-[45vh] md:items-center md:pb-0';
 
 const containerVariants = {
   hidden: {},
@@ -61,18 +63,19 @@ export default function ExploreProjects() {
     >
       <div className='flex w-full max-w-full flex-col items-center justify-center space-y-6 px-4 text-center'>
         <motion.div variants={itemVariants}>
-          <h3
-            id='explore-projects-card-title'
-            className='text-xl font-semibold'
-          >
-            {t('title')}
-          </h3>
+          <div className='mb-4 flex flex-col items-center'>
+            <h3
+              id='explore-projects-card-title'
+              className='text-xl font-semibold'
+            >
+              {t('title')}
+            </h3>
+            <span className='mt-2 h-px w-10 bg-primary/70'></span>
+          </div>
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <p className='text-sm leading-5 text-fg/72'>
-            {t('description')}
-          </p>
+          <p className='text-sm leading-5 text-fg/72 -mt-6'>{t('description')}</p>
         </motion.div>
 
         <motion.div variants={itemVariants}>

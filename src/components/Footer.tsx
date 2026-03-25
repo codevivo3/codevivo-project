@@ -58,7 +58,7 @@ export default function Footer() {
         <div className='pointer-events-none hidden md:block absolute left-1/3 top-1/2 h-16 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-[var(--brand-blue)] to-[var(--brand-gold)] opacity-70' />
         <div className='pointer-events-none hidden md:block absolute left-2/3 top-1/2 h-16 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-[var(--brand-blue)] to-[var(--brand-gold)] opacity-70' />
 
-        <div className='order-1 flex flex-col items-center gap-4 md:items-start md:justify-between h-full'>
+        <div className='order-1 flex flex-col items-center gap-4 md:items-start md:justify-between h-full py-2 md:py-3'>
           <Link
             href={`/${locale}`}
             scroll={true}
@@ -71,55 +71,52 @@ export default function Footer() {
               }
             }}
           >
-            <Logo className='opacity-80 hover:opacity-100' />
+            <Logo className='opacity-80 hover:opacity-100 md:h-[22px] lg:h-[24px] 2xl:h-[24px] w-auto' />
           </Link>
-
-          {/* Desktop copyright (aligned with right column) */}
-          <span className='hidden md:block text-fg/50 text-xs'>
-            {t('copyright')}
-          </span>
+          <div className='pt-1 hidden md:block'>
+            <LanguageToggle />
+          </div>
         </div>
 
         <div className='order-2 flex flex-col items-center gap-4 text-xs sm:text-sm'>
           <nav className='flex flex-col items-center gap-4'>
             <Link
               href={`/${locale}#projects`}
-              className='inline-flex min-h-10 items-center font-mono-var text-fg/70 hover:text-primary'
+              className='inline-flex min-h-10 items-center font-mono-var text-base sm:text-sm text-fg/70 hover:text-primary'
             >
               {t('nav.projects')}
             </Link>
             <Link
               href={`/${locale}#tools`}
-              className='inline-flex min-h-10 items-center font-mono-var text-fg/70 hover:text-primary'
+              className='inline-flex min-h-10 items-center font-mono-var text-base sm:text-sm text-fg/70 hover:text-primary'
             >
               {t('nav.tools')}
             </Link>
             <Link
               href={`/${locale}#about`}
-              className='inline-flex min-h-10 items-center font-mono-var text-fg/70 hover:text-primary'
+              className='inline-flex min-h-10 items-center font-mono-var text-base sm:text-sm text-fg/70 hover:text-primary'
             >
               {t('nav.about')}
             </Link>
             <Link
               href={`/${locale}#contact`}
-              className='inline-flex min-h-10 items-center font-mono-var text-fg/70 hover:text-primary'
+              className='inline-flex min-h-10 items-center font-mono-var text-base sm:text-sm text-fg/70 hover:text-primary'
             >
               {t('nav.contact')}
             </Link>
           </nav>
-
-          <div className='pt-1'>
+          <div className='pt-2 md:hidden'>
             <LanguageToggle />
           </div>
         </div>
 
-        <div className='order-3 flex flex-col items-center gap-5 md:items-end'>
+        <div className='order-3 flex flex-col items-center md:items-end gap-4'>
           <a
             href='mailto:hello@codevivo.dev'
             className='group flex min-h-10 items-center gap-3 text-fg/60 transition-colors hover:text-primary'
           >
             <Mail className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
-            <span className='font-mono-var text-xs sm:text-sm'>Email me</span>
+            <span className='font-mono-var text-base sm:text-sm'>Email me</span>
           </a>
 
           <a
@@ -130,7 +127,7 @@ export default function Footer() {
             className='group flex min-h-10 items-center gap-3 text-fg/60 transition-colors hover:text-primary'
           >
             <Calendar className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
-            <span className='font-mono-var text-xs sm:text-sm'>
+            <span className='font-mono-var text-base sm:text-sm'>
               Schedule a call
             </span>
           </a>
@@ -142,7 +139,7 @@ export default function Footer() {
             className='group flex min-h-10 items-center gap-3 text-fg/60 transition-colors hover:text-primary'
           >
             <Github className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
-            <span className='font-mono-var text-xs sm:text-sm'>
+            <span className='font-mono-var text-base sm:text-sm'>
               View my GitHub
             </span>
           </a>
@@ -154,15 +151,14 @@ export default function Footer() {
             className='group flex min-h-10 items-center gap-3 text-fg/60 transition-colors hover:text-primary'
           >
             <Linkedin className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
-            <span className='font-mono-var text-xs sm:text-sm'>
+            <span className='font-mono-var text-base sm:text-sm'>
               Connect on LinkedIn
             </span>
           </a>
         </div>
       </div>
 
-      {/* Mobile copyright (at very bottom) */}
-      <div className='mt-6 text-center text-xs text-fg/50 md:hidden'>
+      <div className='mt-6 pb-8 md:pb-6 text-center text-xs text-fg/50'>
         {t('copyright')}
       </div>
     </footer>

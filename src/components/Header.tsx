@@ -18,9 +18,10 @@
  * - Section links rely on homepage anchor IDs staying stable.
  * - Keep route generation locale-aware from this component rather than hardcoding paths downstream.
  */
-import { useEffect, useState, useRef, type MouseEvent } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import LanguageToggle from './LanguageToggle';
 import ThemeToggle from './ThemeToggle';
@@ -30,6 +31,7 @@ export default function Header() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('header');
   const locale = useLocale();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const scrolledRef = useRef(false);
@@ -70,29 +72,21 @@ export default function Header() {
     setIsOpen(false);
   };
 
-  const handleHomeClick = (e: MouseEvent<HTMLAnchorElement>) => {
-    const el = document.getElementById('hero');
-
-    if (el) {
-      e.preventDefault();
-      closeMenu();
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
-
-    closeMenu();
-  };
-
   return (
     <header className='sticky top-0 z-50 text-fg relative bg-[linear-gradient(to_bottom,var(--surface-main)_0%,var(--surface-main)_57%,transparent_100%)]'>
       <div
         className={`mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-6 sm:px-6 md:origin-top md:transform-gpu md:will-change-transform md:transition-[transform,padding,opacity] md:duration-500 md:ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled ? 'md:scale-[0.94] md:py-4 md:opacity-95' : 'md:scale-100 md:py-6 md:opacity-100'}`}
       >
         <Link
-          href={`/${locale}`}
-          scroll={true}
+          href='/'
+          scroll={false}
           className='text-base font-semibold tracking-tight text-fg sm:text-lg'
-          onClick={handleHomeClick}
+          onClick={(e) => {
+            e.preventDefault();
+            closeMenu();
+            router.push('/');
+            window.scrollTo({ top: 0, behavior: 'instant' });
+          }}
         >
           <Logo priority className='h-4 sm:h-5 md:h-7 lg:h-6 xl:h-6 2xl:h-6' />
         </Link>
@@ -115,7 +109,8 @@ export default function Header() {
             {t('nav.tools')}
           </Link>
           <Link
-            href={`/projects`}
+            href='/projects'
+            scroll={true}
             className='text-fg hover:text-primary transition-colors duration-300'
           >
             {t('nav.projects')}
@@ -165,9 +160,10 @@ export default function Header() {
 
         <nav className='mt-12 flex flex-col items-start gap-10 font-mono-var text-4xl tracking-wide md:hidden'>
           <Link
-            href={`/${locale}`}
+            href='/'
+            scroll={true}
             className='inline-flex min-h-12 items-center text-fg transition-colors duration-300 hover:text-primary'
-            onClick={handleHomeClick}
+            onClick={closeMenu}
           >
             {t('nav.home')}
           </Link>
@@ -180,6 +176,7 @@ export default function Header() {
           </Link>
           <Link
             href='/projects'
+            scroll={true}
             className='inline-flex min-h-12 items-center text-fg transition-colors duration-300 hover:text-primary'
             onClick={closeMenu}
           >

@@ -17,6 +17,7 @@
  *
  * Output:
  * - `previewImage`
+ * - `previewImages`
  * - `previewImageLeft`
  * - `previewImageCenter`
  * - `previewImageRight`
@@ -79,8 +80,17 @@ export function getProjectAssets({
   const resolvedPreviewImage =
     previewImage ?? previewImageCenter ?? resolvedFullPreview ?? '/fallback.png';
 
+  const resolvedPreviewImages =
+    [previewImageLeft, previewImageCenter, previewImageRight].filter(
+      (src): src is string => Boolean(src),
+    );
+
   return {
     previewImage: resolvedPreviewImage,
+    previewImages:
+      resolvedPreviewImages.length > 0
+        ? resolvedPreviewImages
+        : [resolvedPreviewImage],
     previewImageLeft,
     previewImageCenter,
     previewImageRight,

@@ -104,19 +104,16 @@ export default async function ProjectsPage({
     <main className='text-fg'>
       <section className='section-block'>
         <div className='mx-auto w-full max-w-5xl px-4 py-10 pb-24 sm:px-6'>
-          <div className='glass-effect surface-card mx-auto w-full max-w-4xl rounded-xl bg-[var(--panel-bg)] px-6 py-8 text-center sm:px-8'>
+          <div className='glass-effect mx-auto w-full max-w-4xl rounded-xlpx-6 py-8 text-center sm:px-8'>
             <div className='mb-4 flex flex-col items-center'>
-              <p className='text-center font-mono-var text-[11px] uppercase tracking-[0.22em] text-fg/60'>
-                {pageT('overline')}
-              </p>
+              <h1 className='text-xl font-semibold sm:text-2xl'>
+                {pageT('title')}
+              </h1>
               <span className='mt-2 h-px w-10 bg-primary/70'></span>
+              <p className='mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-fg/72 sm:text-base'>
+                {pageT('description')}
+              </p>
             </div>
-            <h1 className='text-xl font-semibold sm:text-2xl'>
-              {pageT('title')}
-            </h1>
-            <p className='mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-fg/72 sm:text-base'>
-              {pageT('description')}
-            </p>
           </div>
 
           <div className='mt-12 space-y-12 md:mt-24 md:space-y-24'>

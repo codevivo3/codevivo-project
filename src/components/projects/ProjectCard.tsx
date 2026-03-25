@@ -30,7 +30,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const cardClassName =
-  'glass-effect surface-card mx-auto w-full max-w-4xl rounded-xl bg-[var(--panel-bg)] p-4';
+  'glass-effect surface-card mx-auto w-full max-w-4xl rounded-xl bg-[var(--panel-bg)] p-5 md:p-4';
 const tagsClassName = 'flex flex-wrap items-center gap-3';
 const tagClassName = 'group flex items-center justify-center';
 const buttonsClassName = 'flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4';
@@ -166,7 +166,7 @@ export default function ProjectCard({
           </motion.div>
         ) : (
           <motion.div
-            className='flex h-full w-full max-w-full flex-col justify-between px-2 py-2 md:py-4'
+            className='flex h-full w-full max-w-full flex-col justify-between px-2 py-4 md:py-4'
             variants={contentVariants}
             initial='hidden'
             whileInView='visible'
@@ -182,8 +182,8 @@ export default function ProjectCard({
               <h3 className='text-xl font-semibold sm:text-2xl md:text-xl'>{title}</h3>
               <p className='text-sm leading-5 text-fg/72'>{description}</p>
             </div>
-            <div className='space-y-4 pt-2'>
-              <ul className={tagsClassName} aria-label={`${title} tech stack`}>
+            <div className='pt-5'>
+              <ul className={tagsClassName + ' mb-16'} aria-label={`${title} tech stack`}>
                 {tags.map((tagId) => {
                   return (
                     <li key={tagId} className={tagClassName}>
@@ -194,7 +194,36 @@ export default function ProjectCard({
                   );
                 })}
               </ul>
-              <div className={buttonsClassName}>
+              <div className="mt-6" />
+              <motion.div
+                className='flex w-full items-center justify-center sm:hidden my-6'
+                variants={contentVariants}
+                initial='hidden'
+                whileInView='visible'
+                viewport={viewportConfig}
+                transition={{
+                  duration: 1.05,
+                  delay: 0.15,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                <div
+                  className={`${
+                    previewType === 'mobile' ? 'max-w-[78%]' : 'max-w-[72%]'
+                  } aspect-[16/9] w-full overflow-visible rounded-md transition-all duration-300 ease-out group-hover:scale-[1.02] my-0 py-2`}
+                >
+                  <ProjectThumbnail
+                    title={title}
+                    previewImage={previewImage}
+                    previewImageLeft={previewImageLeft}
+                    previewImageCenter={previewImageCenter}
+                    previewImageRight={previewImageRight}
+                    fullPreview={fullPreview}
+                    previewType={previewType}
+                  />
+                </div>
+              </motion.div>
+              <div className='grid grid-cols-2 items-stretch gap-3 mt-16 sm:flex sm:items-center sm:gap-4'>
                 <Button href={projectUrl} variant='primary'>
                   {primaryLabel}
                 </Button>
@@ -232,7 +261,7 @@ export default function ProjectCard({
           </motion.div>
         ) : (
           <motion.div
-            className='flex h-full w-full max-w-full items-center justify-center'
+            className='hidden h-full w-full max-w-full items-center justify-center sm:flex'
             variants={contentVariants}
             initial='hidden'
             whileInView='visible'
