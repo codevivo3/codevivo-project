@@ -5,7 +5,6 @@
  * Renders the homepage services summary using translation-provided item lists.
  *
  * Context:
-<<<<<<< Updated upstream
  * Used on the homepage to summarize service areas before the tech and project sections.
  *
  * Dependencies:
@@ -15,12 +14,6 @@
  * Notes:
  * - Optional message keys fall back locally to keep the section resilient.
  * - Item content should remain translation-driven rather than embedded here.
-=======
- * Used on the homepage to summarize the main services and engagement areas.
- *
- * Notes:
- * Translation fallbacks are resolved locally so optional copy can stay sparse without breaking the section.
->>>>>>> Stashed changes
  */
 import { useTranslations } from 'next-intl';
 

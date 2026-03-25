@@ -2,7 +2,6 @@
  * RootLayout
  *
  * Purpose:
-<<<<<<< Updated upstream
  * Defines the global HTML shell, shared metadata, fonts, analytics, and theme bootstrapping.
  *
  * Context:
@@ -16,15 +15,6 @@
  * Notes:
  * - Keep `html` and `body` ownership here; locale layouts should not duplicate them.
  * - The inline theme script must run before hydration to avoid a light/dark flash.
-=======
- * Defines the root HTML shell, global metadata, fonts, analytics, and startup scripts.
- *
- * Context:
- * Wraps every route in the app before locale-specific layout logic runs.
- *
- * Notes:
- * Theme initialization happens before hydration to avoid a visible flash on first paint.
->>>>>>> Stashed changes
  */
 
 import type { Metadata } from 'next';

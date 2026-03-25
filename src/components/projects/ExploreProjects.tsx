@@ -2,7 +2,6 @@
  * ExploreProjects
  *
  * Purpose:
-<<<<<<< Updated upstream
  * Renders a dedicated navigation card that points users to the full projects archive.
  *
  * Context:
@@ -16,15 +15,6 @@
  * Notes:
  * - This should read as a transition card, not as another project entry.
  * - Keep the centered composition distinct from `ProjectCard`.
-=======
- * Renders the CTA card that links visitors from the homepage to the full projects archive.
- *
- * Context:
- * Used after the featured project list as a transition into the dedicated projects page.
- *
- * Notes:
- * The card intentionally echoes the project layout without pretending to be a real project entry.
->>>>>>> Stashed changes
  */
 'use client';
 
@@ -32,13 +22,9 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import Button from '@/components/ui/Button';
 
-<<<<<<< Updated upstream
 // Styles
 
 const cardClassName = 'mx-auto flex h-[240px] w-full max-w-5xl max-w-full items-center justify-center md:h-[276px]';
-=======
-const cardClassName = 'mx-auto w-full max-w-5xl h-[276px] flex items-center justify-center';
->>>>>>> Stashed changes
 
 const containerVariants = {
   hidden: {},
@@ -62,11 +48,7 @@ const itemVariants = {
 };
 
 export default function ExploreProjects() {
-<<<<<<< Updated upstream
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
-=======
-  // Derived values
->>>>>>> Stashed changes
   const t = useTranslations('exploreProjects');
   return (
     <motion.article

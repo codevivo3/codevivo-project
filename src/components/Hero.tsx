@@ -5,7 +5,6 @@
  * Renders the homepage hero copy, main CTA, and brand artwork.
  *
  * Context:
-<<<<<<< Updated upstream
  * First section on the localized homepage.
  *
  * Dependencies:
@@ -16,12 +15,6 @@
  * Notes:
  * - Keep the hero ID stable because header/footer links scroll to it.
  * - The artwork is intentionally static here for layout predictability.
-=======
- * Used as the opening section of the localized homepage.
- *
- * Notes:
- * The hero artwork is rendered as a static image to keep the initial layout stable.
->>>>>>> Stashed changes
  */
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -53,13 +46,13 @@ export default function Hero() {
             <Button href='/projects'>{t('cta')}</Button>
           </div>
         </div>
-        <div className='mx-auto flex w-full max-w-[280px] items-center justify-center md:mx-0 md:max-w-none'>
+        <div className='mx-auto flex w-full max-w-[290px] items-center justify-center md:mx-0 md:max-w-[360px] lg:max-w-[420px]'>
           <Image
             src='/logos/codevivo/codevivo-icon-color.svg'
             alt='Hero Logo'
             width={300}
             height={300}
-            className='hero-logo-float h-auto w-full md:w-auto'
+            className='hero-logo-float h-auto w-full'
           />
         </div>
       </div>

@@ -4,7 +4,6 @@
  * SelectedSection
  *
  * Purpose:
-<<<<<<< Updated upstream
  * Renders the larger selected-work cards on the projects archive page.
  *
  * Context:
@@ -19,17 +18,6 @@
  * - Theme-aware image selection depends on the document root class.
  * - Keep preview resolution inside the shared helper path rather than hardcoding image files here.
  */
-=======
- * Renders the larger featured project cards used on the dedicated projects page.
- *
- * Context:
- * Used in the projects archive between the lab section and in-progress work.
- *
- * Notes:
- * Theme-aware image resolution stays centralized through `getProjectAssets`.
- */
-
->>>>>>> Stashed changes
 import { useEffect, useState } from 'react';
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import Button from '@/components/ui/Button';
@@ -61,11 +49,7 @@ export default function SelectedSection({
   const locale = useLocale();
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
-<<<<<<< Updated upstream
   // Normalize locale for image selection.
-=======
-  // Derived values
->>>>>>> Stashed changes
   const normalizedLocale: 'it' | 'en' = locale.startsWith('it') ? 'it' : 'en';
 
   // Effects

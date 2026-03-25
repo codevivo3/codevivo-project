@@ -1,5 +1,4 @@
 /**
-<<<<<<< Updated upstream
  * Selected Project Metadata
  *
  * Purpose:
@@ -16,20 +15,6 @@
  * - `slug` values must match folders under `/public/projects/`.
  * - Keep URLs and preview-specific settings here so translation files remain content-only.
  */
-=======
- * selectedProjectsMeta
- *
- * Purpose:
- * Defines stable metadata for highlighted projects, including slugs and outbound links.
- *
- * Context:
- * Merged with localized project copy on the projects page and in featured project sections.
- *
- * Notes:
- * Keep ids aligned with translation data so metadata can be attached predictably.
- */
-
->>>>>>> Stashed changes
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 
 export type SelectedProjectMeta = {

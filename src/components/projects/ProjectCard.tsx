@@ -29,22 +29,6 @@ import { useLocale } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-<<<<<<< Updated upstream
-=======
-/**
- * ProjectCard
- *
- * Purpose:
- * Displays a single project entry with copy, actions, tech stack, and preview media.
- *
- * Context:
- * Used in pinned homepage project sections and other project listings that share the same card pattern.
- *
- * Notes:
- * Large screens can opt into parent-controlled animation, while smaller screens stay self-revealing.
- */
-
->>>>>>> Stashed changes
 const cardClassName =
   'glass-effect surface-card mx-auto w-full max-w-4xl rounded-xl bg-[var(--panel-bg)] p-4';
 const tagsClassName = 'flex flex-wrap items-center gap-3';
@@ -80,11 +64,7 @@ export default function ProjectCard({
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
-<<<<<<< Updated upstream
   // Normalize locale for image selection.
-=======
-  // Derived values
->>>>>>> Stashed changes
   const normalizedLocale: 'it' | 'en' = locale.startsWith('it') ? 'it' : 'en';
 
   useEffect(() => {
@@ -110,8 +90,7 @@ export default function ProjectCard({
 
   useEffect(() => {
     const checkScreen = () => {
-      // Use viewport height to decide whether the desktop pinned presentation has enough room.
-      setIsLargeScreen(window.innerHeight > 900);
+      setIsLargeScreen(window.innerWidth >= 1024);
     };
 
     checkScreen();
@@ -122,10 +101,6 @@ export default function ProjectCard({
     };
   }, []);
 
-<<<<<<< Updated upstream
-=======
-  // Derived values
->>>>>>> Stashed changes
   const contentVariants = {
     hidden: { y: 30, opacity: 0 },
     visible: { y: 0, opacity: 1 },

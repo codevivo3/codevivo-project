@@ -1,5 +1,4 @@
 /**
-<<<<<<< Updated upstream
  * Project Image Source Helpers
  *
  * Purpose:
@@ -21,28 +20,6 @@
  * - The returned list is ordered from most specific to most generic.
  * - This helper only generates possible paths; it does not verify file existence.
  */
-=======
- * getProjectImageSources
- *
- * Purpose:
- * Builds a prioritized list of possible image paths for a given project asset.
- *
- * Why this exists:
- * - Project images can vary by theme (light/dark) and locale (en/it)
- * - Not all combinations will exist in /public
- * - We generate multiple candidate paths and let the caller pick the first valid one
- *
- * Example output order (most specific → most generic):
- * /projects/my-project/preview.dark.en.png
- * /projects/my-project/preview.dark.png
- * /projects/my-project/preview.en.png
- * /projects/my-project/preview.png
- *
- * This allows graceful fallback without breaking the UI.
- */
-
-// Supported image variants used across project previews
->>>>>>> Stashed changes
 export type ImageType =
   | 'preview'
   | 'full'
@@ -70,11 +47,7 @@ export function getProjectImageSources({
   // Use a Set to avoid duplicate paths while preserving insertion order
   const candidates = new Set<string>();
 
-<<<<<<< Updated upstream
   // Add the most specific variant first, then progressively relax theme/locale specificity.
-=======
-  // Most specific: theme + locale
->>>>>>> Stashed changes
   if (theme && locale) {
     candidates.add(`${base}/${type}.${theme}.${locale}.png`);
   }

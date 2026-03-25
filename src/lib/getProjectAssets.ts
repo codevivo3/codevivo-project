@@ -1,5 +1,4 @@
 /**
-<<<<<<< Updated upstream
  * Resolves project image assets based on slug, theme, and locale.
  *
  * Purpose:
@@ -27,20 +26,6 @@
  * - This is the single source of truth for asset fallback behavior.
  * - Callers should not build project image paths manually.
  */
-=======
- * getProjectAssets
- *
- * Purpose:
- * Resolves the project preview asset set used by project cards and archive sections.
- *
- * Context:
- * Called by project presentation components that need a consistent fallback chain for images.
- *
- * Notes:
- * This helper intentionally centralizes fallback selection so UI components stay simple.
- */
-
->>>>>>> Stashed changes
 import { getProjectImageSources } from '@/lib/getProjectImage';
 
 export function getProjectAssets({
@@ -52,11 +37,7 @@ export function getProjectAssets({
   theme: 'light' | 'dark';
   locale: 'it' | 'en';
 }) {
-<<<<<<< Updated upstream
   // Choose the most generic candidate returned by the helper as the stable resolved preview.
-=======
-  // Derived values
->>>>>>> Stashed changes
   const previewImage = getProjectImageSources({
     slug,
     type: 'preview',

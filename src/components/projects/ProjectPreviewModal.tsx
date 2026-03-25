@@ -5,7 +5,6 @@
  * Displays a modal with the full project preview in either desktop or mobile framing.
  *
  * Context:
-<<<<<<< Updated upstream
  * Opened from `ProjectThumbnail` when a user requests a larger preview.
  *
  * Dependencies:
@@ -16,12 +15,6 @@
  * Notes:
  * - Keep the open/close contract simple; this component should not own higher-level gallery state.
  * - The portal target must remain `document.body` to avoid clipping inside card containers.
-=======
- * Opened from `ProjectThumbnail` when visitors request a larger project preview.
- *
- * Notes:
- * The modal is portaled to `document.body` so it can escape local stacking and overflow contexts.
->>>>>>> Stashed changes
  */
 
 'use client';

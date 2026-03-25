@@ -7,7 +7,6 @@
  * Renders the brand logo assets for both theme modes in one shared wrapper.
  *
  * Context:
-<<<<<<< Updated upstream
  * Used in shared navigation and footer branding.
  *
  * Dependencies:
@@ -17,12 +16,6 @@
  * Notes:
  * - Keep both logo assets mounted so theme changes do not require component re-render logic.
  * - Wrapper sizing is shared across header and footer, so changes affect both areas.
-=======
- * Used in shared branding areas such as the header and footer.
- *
- * Notes:
- * Theme-specific visibility is handled with CSS so the same markup works across both modes.
->>>>>>> Stashed changes
  */
 import Image from 'next/image';
 
@@ -34,13 +27,13 @@ type LogoProps = {
 export default function Logo({ className = '', priority = false }: LogoProps) {
   // Render
   return (
-    <div className={`relative h-auto w-24 sm:w-32 md:w-36 lg:w-40 ${className}`}>
+    <div className={`relative h-6 sm:h-7 md:h-8 lg:h-9 ${className}`}>
       <Image
         src='/logos/codevivo/codevivo-col-logo-white-text.svg'
         alt='Codevivo logo'
         width={160}
         height={40}
-        className='logo-white transition-transform duration-500 ease-out hover:scale-105'
+        className='logo-white h-full w-auto transition-transform duration-500 ease-out hover:scale-105'
         priority={priority}
       />
       <Image
@@ -48,7 +41,7 @@ export default function Logo({ className = '', priority = false }: LogoProps) {
         alt='Codevivo logo'
         width={160}
         height={40}
-        className='logo-black transition-transform duration-500 ease-out hover:scale-105'
+        className='logo-black h-full w-auto transition-transform duration-500 ease-out hover:scale-105'
         priority={priority}
       />
     </div>

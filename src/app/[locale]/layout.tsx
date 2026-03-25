@@ -3,7 +3,6 @@
  * LocaleLayout
  *
  * Purpose:
-<<<<<<< Updated upstream
  * Validates the active locale, loads locale messages, and provides the localized client shell.
  *
  * Context:
@@ -18,17 +17,6 @@
  * - Keep locale validation here so invalid locale segments fail fast.
  * - Do not introduce `html` or `body` tags here; the root layout owns them.
  */
-=======
- * Validates the active locale and provides locale messages to the shared client shell.
- *
- * Context:
- * Wraps every localized route beneath the root layout.
- *
- * Notes:
- * This layout must not render its own `html` or `body` tags because the root layout owns them.
- */
-
->>>>>>> Stashed changes
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
@@ -46,10 +34,6 @@ const localeMetadata = {
   },
 } as const;
 
-<<<<<<< Updated upstream
-=======
-// Derived values
->>>>>>> Stashed changes
 export function generateStaticParams() {
   return [{ locale: 'en' }, { locale: 'it' }];
 }

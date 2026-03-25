@@ -27,22 +27,6 @@ import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import { type TechId } from '@/data/techStack';
 import ProjectPanel from './ProjectPanel';
 
-<<<<<<< Updated upstream
-=======
-/**
- * FeaturedProjects
- *
- * Purpose:
- * Renders the featured projects section with separate desktop and mobile presentation flows.
- *
- * Context:
- * Used on the homepage to showcase selected work before linking to the full projects archive.
- *
- * Notes:
- * Desktop sticky behavior stays centralized here so child panels can remain focused on card presentation.
- */
-
->>>>>>> Stashed changes
 type RawProjectItem = {
   id: string;
   slug: string;
@@ -55,22 +39,14 @@ type RawProjectItem = {
 };
 
 export default function FeaturedProjects() {
-<<<<<<< Updated upstream
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
-=======
-  // Derived values
->>>>>>> Stashed changes
   const t = useTranslations('projects');
   const featured = useMemo(() => {
     const items = (t.raw('items') as RawProjectItem[] | undefined) ?? [];
     return items.slice(-3);
   }, [t]);
 
-<<<<<<< Updated upstream
   // Drive desktop panel transitions from a single sticky scroll stage.
-=======
-  // State
->>>>>>> Stashed changes
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -84,7 +60,7 @@ export default function FeaturedProjects() {
         style={{ ['--reveal-delay' as string]: '120ms' }}
       >
         <div ref={sectionRef} className='relative hidden h-[300vh] md:block'>
-          <div className='sticky top-10 flex h-screen flex-col items-center justify-start overflow-hidden pt-10'>
+          <div className='sticky top-16 flex h-screen flex-col items-center justify-start overflow-hidden pt-10'>
             <div className='mx-auto w-full max-w-5xl px-4 sm:px-6'>
               <div className='mb-4 flex flex-col items-center'>
                 <p className='text-center font-mono-var text-[11px] uppercase tracking-[0.22em] text-fg/60'>
@@ -101,7 +77,7 @@ export default function FeaturedProjects() {
               </p>
             </div>
 
-            <div className='relative mt-12 flex-1 w-full'>
+            <div className='relative mt-4 lg:mt-6 xl:mt-6 2xl:mt-48 flex-1 w-full'>
               {featured.map((item, index) => (
                 <ProjectPanel
                   key={item.id ?? `${item.title}-${index}`}
@@ -115,7 +91,7 @@ export default function FeaturedProjects() {
               ))}
 
               <ProjectPanel
-                key="explore-projects"
+                key='explore-projects'
                 item={null}
                 index={featured.length}
                 total={featured.length + 1}
@@ -128,12 +104,8 @@ export default function FeaturedProjects() {
           </div>
         </div>
 
-<<<<<<< Updated upstream
         {/* Mobile and tablet stacked list */}
         <div className='mx-auto mt-12 flex w-full max-w-5xl max-w-full flex-col gap-6 px-4 pb-10 sm:px-6 md:hidden'>
-=======
-        <div className='mx-auto mt-12 flex w-full max-w-5xl flex-col gap-10 px-4 pb-10 sm:px-6 md:hidden'>
->>>>>>> Stashed changes
           {featured.map((item, index) => (
             <div
               key={item.id ?? `${item.title}-${index}`}

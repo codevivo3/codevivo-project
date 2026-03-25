@@ -21,22 +21,6 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import Button from './ui/Button';
 
-<<<<<<< Updated upstream
-=======
-/**
- * About
- *
- * Purpose:
- * Renders the about section with supporting copy and a projects CTA.
- *
- * Context:
- * Used on the homepage as the personal introduction section beneath the main service areas.
- *
- * Notes:
- * Visibility is handled by shared section classes rather than local component state.
- */
-
->>>>>>> Stashed changes
 export default function About() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('about');

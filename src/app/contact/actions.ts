@@ -1,17 +1,12 @@
 'use server';
 
 /**
-<<<<<<< Updated upstream
  * Contact Actions
-=======
- * sendContactEmail
->>>>>>> Stashed changes
  *
  * Purpose:
  * Handles contact form submissions, rate limiting, and outbound email delivery.
  *
  * Context:
-<<<<<<< Updated upstream
  * Called by `ContactForm` as a Next.js Server Action.
  *
  * Dependencies:
@@ -22,12 +17,6 @@
  * Notes:
  * - This file must remain server-only because it reads headers and secrets.
  * - Validation, anti-spam checks, and email side effects are intentionally centralized here.
-=======
- * Called by the contact form server action flow when visitors submit the site contact form.
- *
- * Notes:
- * This file runs only on the server and depends on Resend plus the shared Upstash limiter.
->>>>>>> Stashed changes
  */
 
 import { Resend } from 'resend';
@@ -113,11 +102,7 @@ ${message}`,
       },
     });
 
-<<<<<<< Updated upstream
     // Auto-reply in the visitor language after the internal notification succeeds.
-=======
-    // Send a localized confirmation so the visitor gets immediate feedback after submission.
->>>>>>> Stashed changes
     await resend.emails.send({
       from: 'CodeVivo <contact@codevivo.dev>',
       to: [email],

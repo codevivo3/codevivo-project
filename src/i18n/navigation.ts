@@ -1,5 +1,4 @@
 /**
-<<<<<<< Updated upstream
  * i18n Navigation
  *
  * Purpose:
@@ -16,20 +15,6 @@
  * - Keep all locale-aware navigation helpers sourced from the same routing config.
  * - If supported locales change, this file updates automatically through `routing`.
  */
-=======
- * navigation
- *
- * Purpose:
- * Exposes localized navigation helpers generated from the shared routing config.
- *
- * Context:
- * Imported by client components and server utilities that need locale-aware navigation APIs.
- *
- * Notes:
- * Keep this file thin so every navigation helper stays aligned with `routing.ts`.
- */
-
->>>>>>> Stashed changes
 import { createNavigation } from 'next-intl/navigation';
 import { routing } from './routing';
 

@@ -7,7 +7,6 @@
  * Renders the shared sticky header with brand navigation and theme/locale controls.
  *
  * Context:
-<<<<<<< Updated upstream
  * Mounted by `ClientShell` across all localized pages.
  *
  * Dependencies:
@@ -18,14 +17,8 @@
  * Notes:
  * - Section links rely on homepage anchor IDs staying stable.
  * - Keep route generation locale-aware from this component rather than hardcoding paths downstream.
-=======
- * Shared by the client shell so the same navigation is present across localized pages.
- *
- * Notes:
- * The hero shortcut scroll is handled locally, but the header does not own page-level motion timing.
->>>>>>> Stashed changes
  */
-import { useEffect, useState, type MouseEvent } from 'react';
+import { useEffect, useState, useRef, type MouseEvent } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
@@ -38,6 +31,8 @@ export default function Header() {
   const t = useTranslations('header');
   const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const scrolledRef = useRef(false);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
@@ -46,6 +41,30 @@ export default function Header() {
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    const ENTER = 40; // start shrinking after this
+    const EXIT = 12;  // expand back only below this
+
+    const handleScroll = () => {
+      const y = window.scrollY;
+
+      if (!scrolledRef.current && y > ENTER) {
+        scrolledRef.current = true;
+        setIsScrolled(true);
+      } else if (scrolledRef.current && y < EXIT) {
+        scrolledRef.current = false;
+        setIsScrolled(false);
+      }
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   const closeMenu = () => {
     setIsOpen(false);
@@ -66,14 +85,16 @@ export default function Header() {
 
   return (
     <header className='sticky top-0 z-50 text-fg relative bg-[linear-gradient(to_bottom,var(--surface-main)_0%,var(--surface-main)_57%,transparent_100%)]'>
-      <div className='mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-6 sm:px-6 sm:py-6'>
+      <div
+        className={`mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-6 sm:px-6 md:origin-top md:transform-gpu md:will-change-transform md:transition-[transform,padding,opacity] md:duration-500 md:ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled ? 'md:scale-[0.94] md:py-4 md:opacity-95' : 'md:scale-100 md:py-6 md:opacity-100'}`}
+      >
         <Link
           href={`/${locale}`}
           scroll={true}
           className='text-base font-semibold tracking-tight text-fg sm:text-lg'
           onClick={handleHomeClick}
         >
-          <Logo priority />
+          <Logo priority className='h-4 sm:h-5 md:h-7 lg:h-6 xl:h-6 2xl:h-6' />
         </Link>
 
         <button
@@ -123,10 +144,15 @@ export default function Header() {
       />
 
       <div
-        className={`fixed top-0 right-0 z-[70] flex h-screen w-3/4 max-w-sm flex-col border-l border-border bg-[var(--panel-bg)] p-6 glass-effect transition-transform duration-200 md:hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 z-[70] flex h-screen w-3/4 max-w-sm flex-col border-l border-border bg-[var(--panel-bg)] p-6 pt-8 glass-effect transition-transform duration-200 md:hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
         aria-hidden={!isOpen}
       >
-        <div className='flex items-center justify-end'>
+        <div className='flex items-center justify-between'>
+          <div className='flex items-center gap-3 h-10'>
+            <ThemeToggle />
+            <LanguageToggle />
+          </div>
+
           <button
             type='button'
             aria-label='Close navigation menu'
@@ -137,7 +163,7 @@ export default function Header() {
           </button>
         </div>
 
-        <nav className='mt-8 flex flex-col items-start gap-8 font-mono-var text-lg'>
+        <nav className='mt-12 flex flex-col items-start gap-10 font-mono-var text-4xl tracking-wide md:hidden'>
           <Link
             href={`/${locale}`}
             className='inline-flex min-h-12 items-center text-fg transition-colors duration-300 hover:text-primary'
@@ -175,10 +201,6 @@ export default function Header() {
           </Link>
         </nav>
 
-        <div className='mt-auto flex items-center gap-3 pt-8'>
-          <ThemeToggle />
-          <LanguageToggle />
-        </div>
       </div>
     </header>
   );

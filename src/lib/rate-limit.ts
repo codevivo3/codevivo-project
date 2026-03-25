@@ -1,5 +1,4 @@
 /**
-<<<<<<< Updated upstream
  * Contact Rate Limit
  *
  * Purpose:
@@ -15,20 +14,6 @@
  * - Current policy allows 3 requests per 5 minutes per identifier.
  * - Keep this isolated so the contact action stays focused on request handling.
  */
-=======
- * ratelimit
- *
- * Purpose:
- * Configures the shared Upstash rate limiter for server-side request protection.
- *
- * Context:
- * Imported by server actions and API-facing code that need a common throttling policy.
- *
- * Notes:
- * Thresholds are centralized here so contact form protection stays consistent.
- */
-
->>>>>>> Stashed changes
 import { Ratelimit } from '@upstash/ratelimit';
 import { Redis } from '@upstash/redis';
 

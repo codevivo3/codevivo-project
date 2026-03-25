@@ -25,22 +25,6 @@ import { track } from '@vercel/analytics';
 import Button from '@/components/ui/Button';
 import { sendContactEmail } from '@/app/contact/actions';
 
-<<<<<<< Updated upstream
-=======
-/**
- * ContactForm
- *
- * Purpose:
- * Renders the contact section form with validation, analytics, and submission state.
- *
- * Context:
- * Used on the homepage to submit messages to the server action in `src/app/contact/actions.ts`.
- *
- * Notes:
- * A hidden honeypot field is included to reduce spam without changing the visible form flow.
- */
-
->>>>>>> Stashed changes
 export default function ContactForm() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('contact');

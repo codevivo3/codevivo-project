@@ -9,7 +9,6 @@
  * Context:
  * Used only on the projects page below selected work and lab experiments.
  *
-<<<<<<< Updated upstream
  * Dependencies:
  * - next-intl for localized status/link labels
  * - centralized preview resolution via `getProjectAssets`
@@ -18,10 +17,6 @@
  * Notes:
  * - Preview selection must continue to flow through the existing helper system.
  * - Keep this compact card pattern isolated here; do not couple it to `SelectedSection`.
-=======
- * Notes:
- * Preview selection stays centralized in `getProjectAssets` so archive sections share the same fallback behavior.
->>>>>>> Stashed changes
  */
 import { getProjectAssets } from '@/lib/getProjectAssets';
 import { useLocale, useTranslations } from 'next-intl';
@@ -41,11 +36,7 @@ type Props = {
 };
 
 export default function InProgressSection({ items, title }: Props) {
-<<<<<<< Updated upstream
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
-=======
-  // Derived values
->>>>>>> Stashed changes
   const t = useTranslations('projectsPage');
   const locale = useLocale();
 

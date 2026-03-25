@@ -7,7 +7,6 @@
  * Switches between supported locales while preserving the current route.
  *
  * Context:
-<<<<<<< Updated upstream
  * Used in shared navigation controls such as the header and footer.
  *
  * Dependencies:
@@ -17,12 +16,6 @@
  * Notes:
  * - Path normalization prevents malformed double-locale URLs.
  * - Keep supported locale options aligned with `src/i18n/routing.ts`.
-=======
- * Used in shared navigation areas where visitors can swap locale without leaving the current page.
- *
- * Notes:
- * Route normalization prevents duplicated locale prefixes when switching languages.
->>>>>>> Stashed changes
  */
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
@@ -44,7 +37,7 @@ export default function LanguageToggle() {
   const baseButton =
     'relative flex h-full flex-col items-center justify-center px-1.5 text-[11px] font-mono-var uppercase tracking-[0.2em] transition-colors duration-200 hover:text-fg/80';
   return (
-    <div className='surface-card inline-flex h-8 items-center gap-2 rounded-lg bg-surface/60 px-2 text-xs font-mono-var backdrop-blur-md'>
+    <div className='surface-card inline-flex h-10 md:h-8 items-center gap-2 rounded-lg bg-surface/60 px-2 text-xs font-mono-var backdrop-blur-md'>
       <button
         type='button'
         aria-pressed={locale === 'en'}

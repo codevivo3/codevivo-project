@@ -7,7 +7,6 @@
  * Renders a project screenshot inside a stylized iPhone frame.
  *
  * Context:
-<<<<<<< Updated upstream
  * Used by `ProjectThumbnail` and the modal mobile preview presentation.
  *
  * Dependencies:
@@ -17,12 +16,6 @@
  * Notes:
  * - Keep the frame dimensions stable because surrounding preview layouts are tuned around them.
  * - Only the screen area should clip the image; the outer device shell should remain intact.
-=======
- * Used by project preview components when a project should be presented in a mobile frame.
- *
- * Notes:
- * The screenshot is clipped only by the phone screen mask so surrounding layouts can remain overflow-visible.
->>>>>>> Stashed changes
  */
 import Image from 'next/image';
 
