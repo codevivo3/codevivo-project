@@ -3,11 +3,7 @@
   "title": "Work With Me",
   "description": "I'm available for selected freelance work.",
   "intro": "I'm available for selected freelance work.",
-  "items": [
-    "Small web applications",
-    "MVP development",
-    "UI-focused projects"
-  ],
+  "items": ["Web apps", "MVPs", "Refined UI"],
   "cta": "Let's talk: hello@codevivo.dev",
   "ctaLabel": "Let's talk:"
 }

@@ -14,7 +14,7 @@
       "id": "project-001",
       "slug": "paguro",
       "title": "The Paguro Journey",
-      "description": "A travel platform for publishing destination guides, stories, and video-led content in a cleaner, more structured way. Built for independent travelers and travel-focused creators.",
+      "description": "A digital space to share journeys, explore off‑the‑beaten‑path destinations, and tell real travel stories. Blending articles, video, and itineraries for people drawn to a more intentional way of traveling.",
       "projectUrl": "https://thepagurojourney.com",
       "githubUrl": "https://github.com/codevivo3/the_paguro_journey",
       "tags": ["nextjs", "typescript", "tailwind", "vercel"],

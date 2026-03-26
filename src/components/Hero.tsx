@@ -37,7 +37,7 @@ export default function Hero() {
             <p className='whitespace-pre-line text-sm text-fg/72 sm:text-base md:mt-4'>
               {t('subtitle')}
             </p>
-            <p className='text-sm font-medium text-fg/84 sm:text-base md:mt-4'>
+            <p className='whitespace-pre-line text-sm font-medium text-fg/84 sm:text-base md:mt-4'>
               {t('story')}
             </p>
           </div>

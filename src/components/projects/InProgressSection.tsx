@@ -19,6 +19,7 @@
  * - Keep this compact card pattern isolated here; do not couple it to `SelectedSection`.
  */
 import { getProjectAssets } from '@/lib/getProjectAssets';
+import { ArrowRightIcon } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 
@@ -59,11 +60,11 @@ export default function InProgressSection({ items, title }: Props) {
         {items.map((item) => {
           // Resolve preview image using the centralized helper (single source of truth).
           const previewImage = item.slug
-            ? getProjectAssets({
+            ? (getProjectAssets({
                 slug: item.slug,
                 theme,
                 locale: normalizedLocale,
-              }).previewImage ?? '/fallback.png'
+              }).previewImage ?? '/fallback.png')
             : null;
 
           return (
@@ -99,13 +100,22 @@ export default function InProgressSection({ items, title }: Props) {
                         href={item.link}
                         target='_blank'
                         rel='noopener noreferrer'
-                        className='inline-flex min-h-10 items-center text-sm text-primary transition-colors hover:text-primary/80 cursor-pointer'
+                        className='group inline-flex min-h-10 items-center gap-1 text-sm text-primary transition-all hover:font-semibold cursor-pointer'
                       >
-                        {t('inProgressLink')} →
+                        <span className='inline-flex items-center gap-1'>
+                          {t('inProgressLink')}
+                          <ArrowRightIcon
+                            size={16}
+                            className='transition-transform group-hover:translate-x-0.5'
+                          />
+                        </span>
                       </a>
                     ) : (
                       <span className='inline-flex min-h-10 items-center text-sm text-fg/40'>
-                        {t('inProgressLink')} →
+                        <span className='inline-flex items-center gap-1'>
+                          {t('inProgressLink')}
+                          <ArrowRightIcon size={16} />
+                        </span>
                       </span>
                     )}
                   </div>

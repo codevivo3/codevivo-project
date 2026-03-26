@@ -37,7 +37,7 @@ export default function WhatIDo() {
           </h2>
           <span className='mt-2 h-px w-10 bg-primary/70'></span>
           {intro ? (
-            <p className='mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-fg/72 sm:text-base'>
+            <p className='whitespace-pre-line mx-auto mt-4 max-w-2xl text-center text-sm leading-relaxed text-fg/72 sm:text-base'>
               {intro}
             </p>
           ) : null}

@@ -15,7 +15,6 @@
  * - shared `surface-card` styling and footer layout tokens
  *
  * Notes:
- * - External CTA labels are intentionally static for now; navigation labels remain localized.
  * - Keep the smooth-scroll hero shortcut aligned with the homepage section IDs.
  */
 import { useLocale, useTranslations } from 'next-intl';
@@ -116,7 +115,9 @@ export default function Footer() {
             className='group flex min-h-10 items-center gap-3 text-fg/60 transition-colors hover:text-primary'
           >
             <Mail className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
-            <span className='font-mono-var text-base sm:text-sm'>Email me</span>
+            <span className='font-mono-var text-base sm:text-sm'>
+              {t('links.email')}
+            </span>
           </a>
 
           <a
@@ -128,7 +129,7 @@ export default function Footer() {
           >
             <Calendar className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-base sm:text-sm'>
-              Schedule a call
+              {t('links.call')}
             </span>
           </a>
 
@@ -140,7 +141,7 @@ export default function Footer() {
           >
             <Github className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-base sm:text-sm'>
-              View my GitHub
+              {t('links.github')}
             </span>
           </a>
 
@@ -152,7 +153,7 @@ export default function Footer() {
           >
             <Linkedin className='h-4 w-4 opacity-70 transition-transform duration-200 group-hover:scale-110' />
             <span className='font-mono-var text-base sm:text-sm'>
-              Connect on LinkedIn
+              {t('links.linkedin')}
             </span>
           </a>
         </div>

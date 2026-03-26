@@ -6,5 +6,11 @@
     "tools": "Strumenti",
     "contact": "Contatto"
   },
+  "links": {
+    "email": "Scrivimi",
+    "call": "Prenota una call",
+    "github": "Guarda il mio GitHub",
+    "linkedin": "Connettiti su LinkedIn"
+  },
   "copyright": "© 2026 CodeVivo · Tutti i diritti riservati."
 }

@@ -75,7 +75,7 @@ export default function Header() {
   return (
     <header className='sticky top-0 z-50 text-fg relative bg-[linear-gradient(to_bottom,var(--surface-main)_0%,var(--surface-main)_57%,transparent_100%)]'>
       <div
-        className={`mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-6 sm:px-6 md:origin-top md:transform-gpu md:will-change-transform md:transition-[transform,padding,opacity] md:duration-500 md:ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled ? 'md:scale-[0.94] md:py-4 md:opacity-95' : 'md:scale-100 md:py-6 md:opacity-100'}`}
+        className={`mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6 md:origin-top md:transform-gpu md:will-change-transform md:transition-[transform,padding,opacity] md:duration-500 md:ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled ? 'md:scale-[0.94] md:py-4 md:opacity-95' : 'md:scale-100 md:py-6 md:opacity-100'}`}
       >
         <Link
           href='/'
@@ -88,18 +88,11 @@ export default function Header() {
             window.scrollTo({ top: 0, behavior: 'instant' });
           }}
         >
-          <Logo priority className='h-4 sm:h-5 md:h-7 lg:h-6 xl:h-6 2xl:h-6' />
+          <Logo
+            priority
+            className='h-4 top-2 px-4 sm:h-5 md:h-7 lg:h-6 xl:h-6 2xl:h-6'
+          />
         </Link>
-
-        <button
-          type='button'
-          aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          aria-expanded={isOpen}
-          onClick={() => setIsOpen((open) => !open)}
-          className='surface-card flex h-10 w-10 items-center justify-center rounded-lg bg-surface/60 text-fg backdrop-blur-md transition-colors hover:text-primary md:hidden'
-        >
-          {isOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
-        </button>
 
         <nav className='hidden items-center gap-4 font-mono-var text-sm md:flex'>
           <Link
@@ -132,33 +125,34 @@ export default function Header() {
         </nav>
       </div>
 
+      <button
+        type='button'
+        aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((open) => !open)}
+        className='absolute top-4 right-4 z-[80] pointer-events-auto surface-card flex h-10 w-10 items-center justify-center rounded-lg bg-surface/60 text-fg backdrop-blur-md transition-colors hover:text-primary md:hidden'
+      >
+        {isOpen ? <X className='h-5 w-5' /> : <Menu className='h-5 w-5' />}
+      </button>
+
       <div
-        className={`fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm transition-opacity duration-200 md:hidden ${isOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'}`}
+        className={`fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm transition-opacity duration-200 md:hidden ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none invisible'}`}
         onClick={closeMenu}
         aria-hidden={!isOpen}
       />
 
       <div
-        className={`fixed top-0 right-0 z-[70] flex h-screen w-3/4 max-w-sm flex-col border-l border-border bg-[var(--panel-bg)] p-6 pt-8 glass-effect transition-transform duration-200 md:hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 z-[70] flex h-screen w-3/4 max-w-sm flex-col border-l border-border bg-[var(--panel-bg)] px-4 py-4 glass-effect transition-transform duration-200 md:hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
         aria-hidden={!isOpen}
       >
-        <div className='flex items-center justify-between'>
-          <div className='flex items-center gap-3 h-10'>
+        <div className='flex items-start justify-between'>
+          <div className='flex items-center gap-4'>
             <ThemeToggle />
             <LanguageToggle />
           </div>
-
-          <button
-            type='button'
-            aria-label='Close navigation menu'
-            onClick={closeMenu}
-            className='surface-card flex h-10 w-10 items-center justify-center rounded-lg bg-surface/60 text-fg backdrop-blur-md transition-colors hover:text-primary'
-          >
-            <X className='h-5 w-5' />
-          </button>
         </div>
 
-        <nav className='mt-12 flex flex-col items-start gap-10 font-mono-var text-3xl tracking-wide md:hidden'>
+        <nav className='mt-6 flex flex-col items-start gap-10 font-mono-var text-3xl tracking-wide md:hidden'>
           <Link
             href='/'
             scroll={true}
@@ -197,7 +191,6 @@ export default function Header() {
             {t('nav.contact')}
           </Link>
         </nav>
-
       </div>
     </header>
   );

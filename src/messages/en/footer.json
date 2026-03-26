@@ -6,5 +6,11 @@
     "tools": "Tools",
     "contact": "Contact"
   },
+  "links": {
+    "email": "Email me",
+    "call": "Schedule a call",
+    "github": "View my GitHub",
+    "linkedin": "Connect on LinkedIn"
+  },
   "copyright": "© 2026 CodeVivo · All rights reserved."
 }

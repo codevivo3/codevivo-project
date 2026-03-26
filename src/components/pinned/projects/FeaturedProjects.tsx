@@ -79,7 +79,7 @@ export default function FeaturedProjects() {
                   key={item.id ?? `${item.title}-${index}`}
                   item={{
                     ...item,
-                    description: `${item.description} ${t('status.inDevelopment')}.`,
+                    description: `${item.description}`,
                   }}
                   index={index}
                   total={featured.length + 1}
@@ -114,7 +114,7 @@ export default function FeaturedProjects() {
               <ProjectCard
                 slug={item.slug}
                 title={item.title}
-                description={`${item.description} ${t('status.inDevelopment')}.`}
+                description={`${item.description}.`}
                 tags={item.tags}
                 projectUrl={item.projectUrl}
                 githubUrl={item.githubUrl}
