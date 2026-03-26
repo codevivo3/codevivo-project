@@ -17,6 +17,7 @@
  */
 import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode } from 'react';
 import Link from 'next/link';
+import { Github } from 'lucide-react';
 
 type ButtonVariant = 'primary' | 'accent';
 
@@ -39,7 +40,7 @@ type NativeButtonProps = SharedProps & {
 type ButtonProps = LinkButtonProps | NativeButtonProps;
 
 const baseClassName =
-  'inline-flex w-full cursor-pointer items-center justify-center rounded-md border px-3 py-1.5 text-xs font-semibold transition hover:bg-surface hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto';
+  'inline-flex w-full cursor-pointer items-center justify-center group rounded-md border px-3 py-1.5 text-xs font-semibold transition hover:bg-surface hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:w-auto';
 
 const variantClassNames: Record<ButtonVariant, string> = {
   primary: 'border-primary bg-primary text-[var(--brand-honeydew)]',
@@ -83,7 +84,12 @@ export default function Button(props: ButtonProps) {
           onClick={onClick}
           {...rest}
         >
-          {children}
+          <span className="flex items-center gap-2">
+            {children}
+            {variant === 'accent' && (
+              <Github className="h-4 w-4 opacity-60 transition-all duration-200 group-hover:opacity-100 group-hover:scale-110" />
+            )}
+          </span>
         </a>
       );
     }
@@ -95,7 +101,12 @@ export default function Button(props: ButtonProps) {
         onClick={onClick}
         {...rest}
       >
-        {children}
+        <span className="flex items-center gap-2">
+          {children}
+          {variant === 'accent' && (
+            <Github className="h-4 w-4 opacity-60 transition-all duration-200 group-hover:opacity-100 group-hover:scale-110" />
+          )}
+        </span>
       </Link>
     );
   }
@@ -109,7 +120,12 @@ export default function Button(props: ButtonProps) {
       onClick={onClick}
       {...rest}
     >
-      {children}
+      <span className="flex items-center gap-2">
+        {children}
+        {variant === 'accent' && (
+          <Github className="h-4 w-4 transition-all duration-200 group-hover:opacity-100 group-hover:scale-110" />
+        )}
+      </span>
     </button>
   );
 }

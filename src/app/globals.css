@@ -29,7 +29,7 @@
   --brand-honeydew: #fafcfc;
   --brand-shadow: #1d1d1f;
   --panel-bg: rgba(20, 20, 22, 0.68);
-  --shadow-device: 0 20px 60px rgba(255, 255, 255, 0.12), 0 0 20px rgba(255, 255, 255, 0.08);
+  --shadow-device: 0 14px 25px rgba(255, 255, 255, 0.10), 0 0 10px rgba(255, 255, 255, 0.05);
 
   /* Surface background used by the layout */
   --surface-main: var(--brand-shadow);
@@ -79,7 +79,7 @@
 
 :root.light {
   --brand-shadow: var(--brand-ash);
-  --shadow-device: 0 20px 60px rgba(0, 0, 0, 0.25), 0 0 20px rgba(0, 0, 0, 0.12);
+  --shadow-device: 0 14px 25px rgba(0, 0, 0, 0.20), 0 0 10px rgba(0, 0, 0, 0.10);
   --color-bg: var(--brand-ash);
 
   --surface-main: color-mix(in srgb, var(--brand-ash) 30%, white);
@@ -223,7 +223,6 @@ html.light .brand-border {
 /* ==================================================
    12. Logo Utilities
    ================================================== */
-
 
 /* ==================================================
    13. Floating Animation

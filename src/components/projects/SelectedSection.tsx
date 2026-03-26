@@ -22,7 +22,7 @@ import { useEffect, useState } from 'react';
 import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import Button from '@/components/ui/Button';
 import { getProjectAssets } from '@/lib/getProjectAssets';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import TechIcon from '@/components/ui/TechIcon';
 import { techStack, type TechId } from '@/data/techStack';
@@ -46,6 +46,7 @@ type Props = {
 
 export default function SelectedSection({ projects, title, viewLabel }: Props) {
   // State
+  const t = useTranslations('projects');
   const locale = useLocale();
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
@@ -81,10 +82,10 @@ export default function SelectedSection({ projects, title, viewLabel }: Props) {
 
   const getPreviewHeightClassName = (count: number, isDesktop: boolean) => {
     if (isDesktop) {
-      if (count <= 1) return 'h-[360px]';
-      if (count === 2) return 'h-[340px]';
-      if (count === 3) return 'h-[320px]';
-      return 'h-[300px]';
+      if (count <= 1) return 'h-[300px] min-[1100px]:h-[320px] min-[1400px]:h-[340px]';
+      if (count === 2) return 'h-[280px] min-[1100px]:h-[300px] min-[1400px]:h-[320px]';
+      if (count === 3) return 'h-[260px] min-[1100px]:h-[280px] min-[1400px]:h-[300px]';
+      return 'h-[240px] min-[1100px]:h-[260px] min-[1400px]:h-[280px]';
     }
 
     if (count <= 1) return 'h-[200px]';
@@ -117,16 +118,16 @@ export default function SelectedSection({ projects, title, viewLabel }: Props) {
           return (
             <div
               key={project.id}
-              className='glass-effect surface-card mx-auto flex w-full max-w-4xl max-w-full flex-col justify-center rounded-xl bg-[var(--panel-bg)] p-4 min-h-[50vh] md:min-h-[55vh] lg:min-h-[50vh]'
+              className='glass-effect surface-card mx-auto flex w-full max-w-4xl max-w-full flex-col justify-center rounded-xl bg-[var(--panel-bg)] py-3 px-4 min-h-[45vh] md:min-h-[50vh] lg:min-h-[45vh]'
             >
-              <div className='mx-auto flex w-full max-w-3xl max-w-full flex-col justify-center gap-5 text-center'>
+              <div className='mx-auto flex w-full max-w-3xl max-w-full flex-col justify-center gap-2 text-center'>
                 <div className='flex flex-col items-center'>
                   <h3 className='text-xl font-semibold sm:text-2xl'>
                     {project.title}
                   </h3>
                   <span className='mt-2 h-px w-10 bg-primary/70'></span>
-                  <p className='mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-fg/72'>
-                    {project.description}
+                  <p className='mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-fg/72'>
+                    {project.description} {t('status.inDevelopment')}.
                   </p>
 
                   {project.techStack && project.techStack.length > 0 && (
@@ -138,7 +139,7 @@ export default function SelectedSection({ projects, title, viewLabel }: Props) {
                   )}
                 </div>
 
-                <div className='flex w-full max-w-full items-center justify-center overflow-hidden rounded-lg'>
+                <div className='flex w-full max-w-full items-center justify-center rounded-lg p-2 md:p-3'>
                   {previewKind === 'mobile' ? (
                     <>
                       <div
@@ -163,7 +164,7 @@ export default function SelectedSection({ projects, title, viewLabel }: Props) {
                             className={`${getPreviewHeightClassName(
                               mobilePreviewImages.length,
                               false,
-                            )} w-auto object-contain`}
+                            )} w-auto object-contain rounded-2xl shadow-device`}
                             priority={false}
                           />
                         ))}
@@ -174,45 +175,48 @@ export default function SelectedSection({ projects, title, viewLabel }: Props) {
                         )} md:flex`}
                       >
                         {desktopPreviewImages.map((src, index) => (
-                          <Image
-                            key={`${project.id}-desktop-${index}`}
-                            src={src}
-                            alt={`${project.title} mobile preview ${index + 1}`}
-                            width={900}
-                            height={1800}
-                            sizes='(min-width: 768px) 20vw, 33vw'
-                            className={`${getPreviewHeightClassName(
-                              desktopPreviewImages.length,
-                              true,
-                            )} w-auto object-contain`}
-                            priority={false}
-                          />
+                          <div key={`${project.id}-desktop-${index}`} className="flex items-center justify-center">
+                            <Image
+                              src={src}
+                              alt={`${project.title} mobile preview ${index + 1}`}
+                              width={900}
+                              height={1800}
+                              sizes='(min-width: 768px) 20vw, 33vw'
+                              className={`${getPreviewHeightClassName(
+                                desktopPreviewImages.length,
+                                true,
+                              )} w-auto object-contain rounded-2xl shadow-device`}
+                              priority={false}
+                            />
+                          </div>
                         ))}
                       </div>
                     </>
                   ) : (
-                    <div className='relative aspect-[16/9] w-full max-w-[85%] overflow-hidden rounded-lg md:max-w-[600px]'>
-                      <Image
-                        src={previewImage ?? fullPreview ?? '/fallback.png'}
-                        alt={project.title}
-                        fill
-                        sizes='(max-width: 768px) 100vw, 800px'
-                        className='object-contain'
-                        priority={false}
-                      />
+                    <div className='relative aspect-[16/9] w-full max-w-[85%] rounded-xl shadow-device md:max-w-[600px]'>
+                      <div className='relative h-full w-full overflow-hidden rounded-xl'>
+                        <Image
+                          src={previewImage ?? fullPreview ?? '/fallback.png'}
+                          alt={project.title}
+                          fill
+                          sizes='(max-width: 768px) 100vw, 800px'
+                          className='object-cover'
+                          priority={false}
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
 
-                <div className='mt-2 flex w-full justify-center gap-4'>
+                <div className=' flex w-full justify-center gap-4'>
                   {project.projectUrl ? (
                     <Button href={project.projectUrl} variant='primary'>
-                      {viewLabel}
+                      {t('actions.primary')}
                     </Button>
                   ) : null}
                   {project.githubUrl ? (
                     <Button href={project.githubUrl} variant='accent'>
-                      Source
+                      {t('actions.secondary')}
                     </Button>
                   ) : null}
                 </div>

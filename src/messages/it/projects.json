@@ -2,14 +2,19 @@
   "overline": "Progetti",
   "title": "Progetti recenti",
   "intro": "Una selezione di prodotti e strumenti che sto sviluppando attivamente. Ogni progetto parte da un problema concreto, un pubblico chiaro e scelte di interfaccia curate.",
-  "primaryAction": "Guarda il progetto",
-  "secondaryAction": "Source",
+  "actions": {
+    "primary": "Guarda il progetto",
+    "secondary": "Codice"
+  },
+  "status": {
+    "inDevelopment": "In corso"
+  },
   "items": [
     {
       "id": "project-001",
       "slug": "paguro",
       "title": "The Paguro Journey",
-      "description": "Una piattaforma travel per pubblicare guide, racconti e contenuti video in modo piu ordinato e strutturato. Pensata per viaggiatori indipendenti e creator nel mondo travel. In Development.",
+      "description": "Una piattaforma travel per pubblicare guide, racconti e contenuti video in modo piu ordinato e strutturato. Pensata per viaggiatori indipendenti e creator nel mondo travel.",
       "projectUrl": "https://thepagurojourney.com",
       "githubUrl": "https://github.com/codevivo3/the_paguro_journey",
       "tags": ["nextjs", "typescript", "tailwind", "vercel"],
@@ -19,7 +24,7 @@
       "id": "project-002",
       "slug": "position-size-calculator",
       "title": "Position Size Calculator",
-      "description": "Uno strumento focalizzato per calcolare rapidamente rischio e dimensione della posizione prima di entrare in un trade. Pensato per trader e investitori retail che vogliono decisioni piu chiare senza attrito da fogli di calcolo. In Development.",
+      "description": "Uno strumento focalizzato per calcolare rapidamente rischio e dimensione della posizione prima di entrare in un trade. Pensato per trader e investitori retail che vogliono decisioni piu chiare senza attrito da fogli di calcolo.",
       "projectUrl": "#",
       "githubUrl": "#",
       "tags": ["react", "nodejs", "github"]
@@ -28,7 +33,7 @@
       "id": "project-003",
       "slug": "recipe-planner",
       "title": "Recipe Planner",
-      "description": "Un'interfaccia di pianificazione per organizzare ricette, ingredienti e scelte settimanali con meno confusione. Pensata per chi vuole gestire i pasti in modo piu semplice e tenere le idee ordinate. In Development.",
+      "description": "Un'interfaccia di pianificazione per organizzare ricette, ingredienti e scelte settimanali con meno confusione. Pensata per chi vuole gestire i pasti in modo piu semplice e tenere le idee ordinate.",
       "projectUrl": "#",
       "githubUrl": "#",
       "tags": ["nextjs", "typescript", "vercel"],

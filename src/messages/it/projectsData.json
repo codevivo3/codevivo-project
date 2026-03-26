@@ -23,7 +23,7 @@
     {
       "id": "project-001",
       "title": "The Paguro Journey",
-      "description": "Una piattaforma travel per pubblicare guide, racconti e contenuti video in modo piu ordinato e strutturato. Pensata per viaggiatori indipendenti e creator nel mondo travel. In Development.",
+      "description": "Una piattaforma travel per pubblicare guide, racconti e contenuti video in modo piu ordinato e strutturato. Pensata per viaggiatori indipendenti e creator nel mondo travel.",
       "longDescription": "Un prodotto travel guidato dai contenuti, progettato per organizzare conoscenza sulle destinazioni, storytelling e publishing editoriale in un percorso utente piu coerente.",
       "challenge": "I contenuti travel diventano spesso frammentati tra post, guide e media, rendendo piu difficile la scoperta e la struttura per chi legge.",
       "solution": "Il progetto riunisce guide, racconti e contenuti video in un sistema editoriale piu pulito, con gerarchia e navigazione piu intenzionali.",
@@ -32,7 +32,7 @@
     {
       "id": "project-002",
       "title": "Position Size Calculator",
-      "description": "Uno strumento focalizzato per calcolare rapidamente rischio e dimensione della posizione prima di entrare in un trade. Pensato per trader e investitori retail che vogliono decisioni piu chiare senza attrito da fogli di calcolo. In Development.",
+      "description": "Uno strumento focalizzato per calcolare rapidamente rischio e dimensione della posizione prima di entrare in un trade. Pensato per trader e investitori retail che vogliono decisioni piu chiare senza attrito da fogli di calcolo.",
       "longDescription": "Una utility compatta pensata per semplificare i calcoli pre-trade e ridurre l'attrito nel processo decisionale.",
       "challenge": "Il position sizing viene spesso gestito con fogli di calcolo manuali o stime approssimative, rallentando l'esecuzione e aumentando gli errori.",
       "solution": "Il calcolatore trasforma pochi input chiave in indicazioni immediate sulla size attraverso un'interfaccia piu semplice e focalizzata.",
@@ -41,7 +41,7 @@
     {
       "id": "project-003",
       "title": "Recipe Planner",
-      "description": "Un'interfaccia di pianificazione per organizzare ricette, ingredienti e scelte settimanali con meno confusione. Pensata per chi vuole gestire i pasti in modo piu semplice e tenere le idee ordinate. In Development.",
+      "description": "Un'interfaccia di pianificazione per organizzare ricette, ingredienti e scelte settimanali con meno confusione. Pensata per chi vuole gestire i pasti in modo piu semplice e tenere le idee ordinate.",
       "longDescription": "Un prodotto leggero di pianificazione pensato per rendere l'organizzazione dei pasti piu calma, chiara e facile da mantenere nel tempo.",
       "challenge": "La pianificazione dei pasti diventa facilmente caotica quando ricette, ingredienti e decisioni settimanali sono distribuiti tra note e app diverse.",
       "solution": "L'interfaccia unisce organizzazione delle ricette e pianificazione settimanale in un flusso piu semplice con meno confusione visiva.",

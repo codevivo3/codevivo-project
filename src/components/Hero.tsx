@@ -1,4 +1,3 @@
-
 /**
  * Hero
  *
@@ -22,7 +21,6 @@ import Image from 'next/image';
 import Button from '@/components/ui/Button';
 
 export default function Hero() {
-
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('hero');
   return (
@@ -49,13 +47,14 @@ export default function Hero() {
             </div>
           </div>
         </div>
-        <div className='mx-auto mt-10 flex w-full max-w-[240px] items-center justify-center sm:max-w-[290px] md:mx-0 md:mt-0 md:max-w-[320px] lg:max-w-[380px]'>
+        <div className='mx-auto mt-10 flex w-full max-w-[240px] items-center justify-center overflow-visible sm:max-w-[290px] md:mx-0 md:mt-0 md:max-w-[320px] lg:max-w-[380px]'>
           <Image
             src='/logos/codevivo/codevivo-icon-color.svg'
-            alt='Hero Logo'
-            width={300}
-            height={300}
-            className='hero-logo-float h-auto w-full'
+            alt='CodeVivo Logo'
+            width={380}
+            height={380}
+            className='hero-logo-float w-full h-auto'
+            priority
           />
         </div>
       </div>

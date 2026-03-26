@@ -77,12 +77,15 @@ export default function FeaturedProjects() {
               {featured.map((item, index) => (
                 <ProjectPanel
                   key={item.id ?? `${item.title}-${index}`}
-                  item={item}
+                  item={{
+                    ...item,
+                    description: `${item.description} ${t('status.inDevelopment')}.`,
+                  }}
                   index={index}
                   total={featured.length + 1}
                   scrollYProgress={scrollYProgress}
-                  primaryLabel={t('primaryAction')}
-                  secondaryLabel={t('secondaryAction')}
+                  primaryLabel={t('actions.primary')}
+                  secondaryLabel={t('actions.secondary')}
                 />
               ))}
 
@@ -92,8 +95,8 @@ export default function FeaturedProjects() {
                 index={featured.length}
                 total={featured.length + 1}
                 scrollYProgress={scrollYProgress}
-                primaryLabel={t('primaryAction')}
-                secondaryLabel={t('secondaryAction')}
+                primaryLabel={t('actions.primary')}
+                secondaryLabel={t('actions.secondary')}
                 renderContent={<ExploreProjects />}
               />
             </div>
@@ -111,13 +114,13 @@ export default function FeaturedProjects() {
               <ProjectCard
                 slug={item.slug}
                 title={item.title}
-                description={item.description}
+                description={`${item.description} ${t('status.inDevelopment')}.`}
                 tags={item.tags}
                 projectUrl={item.projectUrl}
                 githubUrl={item.githubUrl}
                 previewType={item.previewType}
-                primaryLabel={t('primaryAction')}
-                secondaryLabel={t('secondaryAction')}
+                primaryLabel={t('actions.primary')}
+                secondaryLabel={t('actions.secondary')}
               />
             </div>
           ))}
