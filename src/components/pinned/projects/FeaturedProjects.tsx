@@ -23,28 +23,17 @@ import { useTranslations } from 'next-intl';
 import { useScroll } from 'framer-motion';
 import ProjectCard from '@/components/projects/ProjectCard';
 import ExploreProjects from '@/components/projects/ExploreProjects';
-import { type PreviewType } from '@/components/projects/ProjectThumbnail';
-import { type TechId } from '@/data/techStack';
+import { getProjects, type LocalizedProjectContent } from '@/lib/getProjects';
 import ProjectPanel from './ProjectPanel';
-
-type RawProjectItem = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  tags: TechId[];
-  projectUrl: string;
-  githubUrl: string;
-  previewType?: PreviewType;
-};
 
 export default function FeaturedProjects() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('projects');
+  const dataT = useTranslations('projectsData');
   const featured = useMemo(() => {
-    const items = (t.raw('items') as RawProjectItem[] | undefined) ?? [];
-    return items.slice(-3);
-  }, [t]);
+    const items = (dataT.raw('selected') as LocalizedProjectContent[] | undefined) ?? [];
+    return getProjects(items).slice(-3);
+  }, [dataT]);
 
   // Drive desktop panel transitions from a single sticky scroll stage.
   const sectionRef = useRef<HTMLDivElement | null>(null);
@@ -77,10 +66,7 @@ export default function FeaturedProjects() {
               {featured.map((item, index) => (
                 <ProjectPanel
                   key={item.id ?? `${item.title}-${index}`}
-                  item={{
-                    ...item,
-                    description: `${item.description}`,
-                  }}
+                  item={item}
                   index={index}
                   total={featured.length + 1}
                   scrollYProgress={scrollYProgress}
@@ -114,8 +100,8 @@ export default function FeaturedProjects() {
               <ProjectCard
                 slug={item.slug}
                 title={item.title}
-                description={`${item.description}.`}
-                tags={item.tags}
+                description={item.description}
+                tags={item.techStack ?? []}
                 projectUrl={item.projectUrl}
                 githubUrl={item.githubUrl}
                 previewType={item.previewType}

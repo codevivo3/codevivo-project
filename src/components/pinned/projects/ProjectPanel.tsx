@@ -26,19 +26,7 @@ import {
 } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
 import ProjectCard from '@/components/projects/ProjectCard';
-import { type PreviewType } from '@/components/projects/ProjectThumbnail';
-import { type TechId } from '@/data/techStack';
-
-export type ProjectItem = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  tags: TechId[];
-  projectUrl: string;
-  githubUrl: string;
-  previewType?: PreviewType;
-};
+import { type Project as ProjectItem } from '@/lib/getProjects';
 
 type ProjectPanelProps = {
   item: ProjectItem | null;
@@ -153,7 +141,7 @@ export default function ProjectPanel({
             slug={item!.slug}
             title={item!.title}
             description={item!.description}
-            tags={item!.tags}
+            tags={item!.techStack ?? []}
             projectUrl={item!.projectUrl}
             githubUrl={item!.githubUrl}
             previewType={item!.previewType}

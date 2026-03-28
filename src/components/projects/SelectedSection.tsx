@@ -19,32 +19,19 @@
  * - Keep preview resolution inside the shared helper path rather than hardcoding image files here.
  */
 import { useEffect, useState } from 'react';
-import { type PreviewType } from '@/components/projects/ProjectThumbnail';
 import Button from '@/components/ui/Button';
 import { getProjectAssets } from '@/lib/getProjectAssets';
+import { type Project } from '@/lib/getProjects';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import TechIcon from '@/components/ui/TechIcon';
-import { techStack, type TechId } from '@/data/techStack';
-
-type SelectedProject = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  projectUrl?: string;
-  githubUrl?: string;
-  previewType?: PreviewType;
-  techStack?: string[];
-};
 
 type Props = {
-  projects: SelectedProject[];
+  projects: Project[];
   title: string;
-  viewLabel: string;
 };
 
-export default function SelectedSection({ projects, title, viewLabel }: Props) {
+export default function SelectedSection({ projects, title }: Props) {
   // State
   const t = useTranslations('projects');
   const locale = useLocale();
@@ -133,7 +120,7 @@ export default function SelectedSection({ projects, title, viewLabel }: Props) {
                   {project.techStack && project.techStack.length > 0 && (
                     <div className='mt-3 flex flex-wrap items-center justify-center gap-4'>
                       {project.techStack.map((tech) => (
-                        <TechIcon key={tech} id={tech as TechId} size='sm' />
+                        <TechIcon key={tech} id={tech} size='sm' />
                       ))}
                     </div>
                   )}

@@ -22,23 +22,13 @@ import LabSection from '@/components/projects/LabSection';
 import SelectedSection from '@/components/projects/SelectedSection';
 import { inProgressItemsMeta } from '@/data/projects/inProgress';
 import { labItemsMeta } from '@/data/projects/lab';
-import { selectedProjectsMeta } from '@/data/projects/selected';
+import { getProjects, type LocalizedProjectContent } from '@/lib/getProjects';
 
 type LabItem = {
   id: string;
   title: string;
   description?: string;
   tag?: string;
-};
-
-type SelectedItem = {
-  id: string;
-  title: string;
-  description: string;
-  longDescription?: string;
-  challenge?: string;
-  solution?: string;
-  outcome?: string;
 };
 
 type InProgressItem = {
@@ -68,7 +58,7 @@ export default async function ProjectsPage({
     ? (rawLabItems as LabItem[])
     : [];
   const translatedSelectedItems = Array.isArray(rawSelectedItems)
-    ? (rawSelectedItems as SelectedItem[])
+    ? (rawSelectedItems as LocalizedProjectContent[])
     : [];
   const translatedInProgressItems = Array.isArray(rawInProgressItems)
     ? (rawInProgressItems as InProgressItem[])
@@ -79,16 +69,7 @@ export default async function ProjectsPage({
     labItemsMeta.some((meta) => meta.id === item.id),
   );
 
-  const selectedProjects = translatedSelectedItems.map((item) => {
-    const meta = selectedProjectsMeta.find((project) => project.id === item.id);
-
-    return {
-      ...item,
-      ...(meta ?? {}),
-      // Preserve a usable slug even if metadata is incomplete so preview resolution stays stable.
-      slug: meta?.slug ?? item.id,
-    };
-  });
+  const selectedProjects = getProjects(translatedSelectedItems);
 
   // Merge optional preview/link metadata into translated in-progress entries.
   const inProgressItems = translatedInProgressItems
@@ -121,7 +102,6 @@ export default async function ProjectsPage({
             <SelectedSection
               projects={selectedProjects}
               title={pageT('selectedTitle')}
-              viewLabel={pageT('viewProject')}
             />
             <InProgressSection
               // Keep the compact in-progress area intentionally limited.

@@ -43,8 +43,8 @@ type ProjectCardProps = {
   tags: TechId[];
   primaryLabel: string;
   secondaryLabel: string;
-  projectUrl: string;
-  githubUrl: string;
+  projectUrl?: string;
+  githubUrl?: string;
   previewType?: PreviewType;
 };
 
@@ -155,12 +155,16 @@ export default function ProjectCard({
                 })}
               </ul>
               <div className={buttonsClassName}>
-                <Button href={projectUrl} variant='primary'>
-                  {primaryLabel}
-                </Button>
-                <Button href={githubUrl} variant='accent'>
-                  {secondaryLabel}
-                </Button>
+                {projectUrl ? (
+                  <Button href={projectUrl} variant='primary'>
+                    {primaryLabel}
+                  </Button>
+                ) : null}
+                {githubUrl ? (
+                  <Button href={githubUrl} variant='accent'>
+                    {secondaryLabel}
+                  </Button>
+                ) : null}
               </div>
             </div>
           </motion.div>
@@ -224,12 +228,16 @@ export default function ProjectCard({
                 </div>
               </motion.div>
               <div className='grid grid-cols-2 items-stretch gap-3 mt-24 sm:flex sm:items-center sm:gap-4'>
-                <Button href={projectUrl} variant='primary'>
-                  {primaryLabel}
-                </Button>
-                <Button href={githubUrl} variant='accent'>
-                  {secondaryLabel}
-                </Button>
+                {projectUrl ? (
+                  <Button href={projectUrl} variant='primary'>
+                    {primaryLabel}
+                  </Button>
+                ) : null}
+                {githubUrl ? (
+                  <Button href={githubUrl} variant='accent'>
+                    {secondaryLabel}
+                  </Button>
+                ) : null}
               </div>
             </div>
           </motion.div>
