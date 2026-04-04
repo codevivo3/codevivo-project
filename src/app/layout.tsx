@@ -23,7 +23,6 @@ import { Montserrat, Roboto_Mono } from 'next/font/google';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
-import Script from 'next/script';
 import ScrollToTop from '@/components/ui/ScrollToTop';
 
 const montserrat = Montserrat({
@@ -70,23 +69,24 @@ export default function RootLayout({
 }) {
   return (
     <html lang='en' suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (!isDark) {
+                  document.documentElement.classList.add('light');
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${montserrat.variable} ${robotoMono.variable} antialiased`}
       >
         <ScrollToTop />
-        <Script id='theme-init' strategy='beforeInteractive'>
-          {`
-  // Apply the persisted theme class before React hydration.
-  (function() {
-    try {
-      var theme = localStorage.getItem('theme');
-      if (theme === 'light') {
-        document.documentElement.classList.add('light');
-      }
-    } catch (e) {}
-  })();
-`}
-        </Script>
         {children}
         <GoogleAnalytics gaId='G-9PQ705W0XS' />
         <Analytics />

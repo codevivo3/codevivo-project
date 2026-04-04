@@ -18,13 +18,13 @@
  * - Theme-aware image selection depends on the document root class.
  * - Keep preview resolution inside the shared helper path rather than hardcoding image files here.
  */
-import { useEffect, useState } from 'react';
 import Button from '@/components/ui/Button';
+import TechIcon from '@/components/ui/TechIcon';
+import { useTheme } from '@/hooks/useTheme';
 import { getProjectAssets } from '@/lib/getProjectAssets';
 import { type Project } from '@/lib/getProjects';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
-import TechIcon from '@/components/ui/TechIcon';
 
 type Props = {
   projects: Project[];
@@ -35,30 +35,10 @@ export default function SelectedSection({ projects, title }: Props) {
   // State
   const t = useTranslations('projects');
   const locale = useLocale();
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const { theme } = useTheme();
 
   // Normalize locale for image selection.
   const normalizedLocale: 'it' | 'en' = locale.startsWith('it') ? 'it' : 'en';
-
-  // Effects
-  useEffect(() => {
-    const updateTheme = () => {
-      setTheme(
-        document.documentElement.classList.contains('light') ? 'light' : 'dark',
-      );
-    };
-
-    updateTheme();
-
-    // Detect current theme from document root so preview variants stay aligned with the UI theme.
-    const observer = new MutationObserver(updateTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   const getPreviewGapClassName = (count: number) => {
     if (count <= 1) return 'gap-0';

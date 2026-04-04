@@ -4,44 +4,45 @@
  * ThemeToggle
  *
  * Purpose:
- * Toggles the root `light` class and persists the visual theme in local storage.
+ * Cycles between system, light, and dark theme modes through the shared theme store.
  *
  * Context:
  * Used in the shared header as the global theme control.
  *
  * Dependencies:
- * - document root class list for theme state
- * - local storage key `theme` shared with the root layout bootstrap script
+ * - shared `useTheme` hook for global mode and resolved-theme sync
  *
  * Notes:
  * - Keep the hydration placeholder so the header layout stays stable before mount.
- * - Any change to the stored theme key must stay in sync with `src/app/layout.tsx`.
+ * - Dark remains the default base theme; light is enabled only through the root `light` class.
  */
 import { useState, useEffect } from 'react';
-import { LightbulbIcon, LightbulbFilamentIcon } from '@phosphor-icons/react';
+import {
+  DesktopIcon,
+  LightbulbFilamentIcon,
+  LightbulbIcon,
+} from '@phosphor-icons/react';
+import { useTheme } from '@/hooks/useTheme';
+import { type ThemeMode } from '@/lib/theme';
 
 export default function ThemeToggle() {
-  const [isLight, setIsLight] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { mode, setThemeMode } = useTheme();
 
   useEffect(() => {
-    const root = document.documentElement;
-
-    // Read the theme after mount so server markup stays deterministic.
     requestAnimationFrame(() => {
       setMounted(true);
-      setIsLight(root.classList.contains('light'));
     });
   }, []);
 
+  const nextModeByCurrent: Record<ThemeMode, ThemeMode> = {
+    system: 'light',
+    light: 'dark',
+    dark: 'system',
+  };
+
   const handleToggle = () => {
-    const root = document.documentElement;
-    const next = !root.classList.contains('light');
-
-    root.classList.toggle('light', next);
-    localStorage.setItem('theme', next ? 'light' : 'dark');
-
-    setIsLight(next);
+    setThemeMode(nextModeByCurrent[mode]);
   };
 
   const DarkIcon = (
@@ -60,13 +61,39 @@ export default function ThemeToggle() {
     />
   );
 
+  const SystemIcon = (
+    <DesktopIcon
+      size={18}
+      className='text-fg/80 transition-colors'
+      weight='duotone'
+    />
+  );
+
+  const labelsByMode: Record<ThemeMode, string> = {
+    system: 'Theme: system',
+    light: 'Theme: light',
+    dark: 'Theme: dark',
+  };
+
+  const nextLabelsByMode: Record<ThemeMode, string> = {
+    system: 'Switch to light mode',
+    light: 'Switch to dark mode',
+    dark: 'Switch to system mode',
+  };
+
+  const iconByMode: Record<ThemeMode, ReturnType<typeof LightbulbIcon>> = {
+    system: SystemIcon,
+    light: LightIcon,
+    dark: DarkIcon,
+  };
+
   if (!mounted) {
     return (
       <button
         type='button'
         className='surface-card flex h-10 w-10 md:h-8 md:w-8 items-center justify-center rounded-lg bg-surface/60 text-sm font-mono backdrop-blur-md'
-        aria-label='Toggle theme'
-        title='Toggle theme'
+        aria-label='Theme toggle'
+        title='Theme toggle'
       />
     );
   }
@@ -76,10 +103,10 @@ export default function ThemeToggle() {
       type='button'
       className='surface-card flex h-10 w-10 md:h-8 md:w-8 cursor-pointer items-center justify-center rounded-lg bg-surface/60 text-sm font-mono backdrop-blur-md'
       onClick={handleToggle}
-      aria-label={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
-      title={isLight ? 'Switch to dark mode' : 'Switch to light mode'}
+      aria-label={nextLabelsByMode[mode]}
+      title={`${labelsByMode[mode]}. ${nextLabelsByMode[mode]}`}
     >
-      {isLight ? LightIcon : DarkIcon}
+      {iconByMode[mode]}
     </button>
   );
 }

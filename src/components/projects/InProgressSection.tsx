@@ -18,6 +18,7 @@
  * - Preview selection must continue to flow through the existing helper system.
  * - Keep this compact card pattern isolated here; do not couple it to `SelectedSection`.
  */
+import { useTheme } from '@/hooks/useTheme';
 import { getProjectAssets } from '@/lib/getProjectAssets';
 import { ArrowRightIcon } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
@@ -40,16 +41,10 @@ export default function InProgressSection({ items, title }: Props) {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('projectsPage');
   const locale = useLocale();
+  const { theme } = useTheme();
 
   // Normalize locale for image selection.
   const normalizedLocale: 'it' | 'en' = locale.startsWith('it') ? 'it' : 'en';
-
-  // Detect current theme from document root for theme-specific preview variants.
-  const theme: 'light' | 'dark' =
-    typeof document !== 'undefined' &&
-    document.documentElement.classList.contains('light')
-      ? 'light'
-      : 'dark';
 
   return (
     <div className='space-y-6'>

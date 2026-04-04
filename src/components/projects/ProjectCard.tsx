@@ -24,6 +24,7 @@ import ProjectThumbnail, {
 } from '@/components/projects/ProjectThumbnail';
 import TechIcon from '@/components/ui/TechIcon';
 import { type TechId } from '@/data/techStack';
+import { useTheme } from '@/hooks/useTheme';
 import { getProjectAssets } from '@/lib/getProjectAssets';
 import { useLocale } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -62,31 +63,10 @@ export default function ProjectCard({
 }: ProjectCardProps) {
   const locale = useLocale();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const { theme } = useTheme();
 
   // Normalize locale for image selection.
   const normalizedLocale: 'it' | 'en' = locale.startsWith('it') ? 'it' : 'en';
-
-  useEffect(() => {
-    const updateTheme = () => {
-      setTheme(
-        document.documentElement.classList.contains('light') ? 'light' : 'dark'
-      );
-    };
-
-    updateTheme();
-
-    // Detect current theme from document root so preview variants stay in sync with the UI theme.
-    const observer = new MutationObserver(updateTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     const checkScreen = () => {
