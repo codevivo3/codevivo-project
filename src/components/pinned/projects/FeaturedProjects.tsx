@@ -32,7 +32,9 @@ export default function FeaturedProjects() {
   const dataT = useTranslations('projectsData');
   const featured = useMemo(() => {
     const items = (dataT.raw('selected') as LocalizedProjectContent[] | undefined) ?? [];
-    return getProjects(items).slice(-3);
+    return getProjects(items)
+      .filter((item) => item.isVisible !== false)
+      .slice(-3);
   }, [dataT]);
 
   // Drive desktop panel transitions from a single sticky scroll stage.
@@ -105,6 +107,7 @@ export default function FeaturedProjects() {
                 projectUrl={item.projectUrl}
                 githubUrl={item.githubUrl}
                 previewType={item.previewType}
+                hasFullPreview={item.hasFullPreview}
                 primaryLabel={t('actions.primary')}
                 secondaryLabel={t('actions.secondary')}
               />

@@ -31,12 +31,12 @@
     },
     {
       "id": "project-002",
-      "title": "Position Size Calculator",
-      "description": "A focused tool for calculating risk and position sizing quickly before entering a trade. Built for retail investors and traders who want clearer decisions without spreadsheet friction.",
-      "longDescription": "A compact utility built to simplify pre-trade calculations and reduce friction in the decision process.",
-      "challenge": "Risk sizing is often handled through manual spreadsheets or rough estimates, which slows down execution and increases mistakes.",
-      "solution": "The calculator turns a few core inputs into immediate sizing guidance in a simpler, more focused interface.",
-      "outcome": "A practical in-progress tool aimed at making trading decisions faster and more disciplined."
+      "title": "Nine2Fire",
+      "description": "A personal finance and FIRE platform exploring investing, intentional living and the pursuit of greater freedom. Part educational resource, part public experiment documenting the journey along the way.",
+      "longDescription": "Nine2Fire is a platform exploring financial independence, long-term investing and alternative approaches to work and lifestyle. Combining educational content, practical tools and personal experience, the project aims to make the path toward greater freedom more accessible and more intentional.",
+      "challenge": "Financial independence, investing and intentional living are often discussed in isolation, making it difficult for people to connect ideas into a practical path they can actually follow.",
+      "solution": "Nine2Fire brings educational content, personal experiences and practical tools together in one place, creating a more coherent framework for learning and long-term decision making.",
+      "outcome": "A growing resource that combines knowledge, experimentation and real-world experience to make the journey toward greater freedom more accessible."
     },
     {
       "id": "project-003",

@@ -33,10 +33,12 @@ export function getProjectAssets({
   slug,
   theme,
   locale,
+  hasFullPreview = false,
 }: {
   slug: string;
   theme: 'light' | 'dark';
   locale: 'it' | 'en';
+  hasFullPreview?: boolean;
 }) {
   // Choose the most generic candidate returned by the helper as the stable resolved preview.
   const previewImage = getProjectImageSources({
@@ -67,18 +69,20 @@ export function getProjectAssets({
     locale,
   }).at(-1);
 
-  // Full preview prefers an explicit full asset, then falls back to center/mobile or preview imagery.
-  const resolvedFullPreview =
-    getProjectImageSources({
-      slug,
-      type: 'full',
-      theme,
-      locale,
-    })[0] ?? previewImageCenter ?? previewImage;
+  const previewFallback = previewImageCenter ?? previewImage ?? '/fallback.png';
+
+  // Only opt into theme/locale-specific full preview assets when metadata confirms they exist.
+  const resolvedFullPreview = hasFullPreview
+    ? getProjectImageSources({
+        slug,
+        type: 'full',
+        theme,
+        locale,
+      })[0] ?? previewFallback
+    : previewFallback;
 
   // Guarantee a usable image path even when project-specific assets are incomplete.
-  const resolvedPreviewImage =
-    previewImage ?? previewImageCenter ?? resolvedFullPreview ?? '/fallback.png';
+  const resolvedPreviewImage = previewImage ?? previewImageCenter ?? resolvedFullPreview;
 
   const resolvedPreviewImages =
     [previewImageLeft, previewImageCenter, previewImageRight].filter(
@@ -94,6 +98,6 @@ export function getProjectAssets({
     previewImageLeft,
     previewImageCenter,
     previewImageRight,
-    fullPreview: resolvedFullPreview ?? '/fallback.png',
+    fullPreview: resolvedFullPreview,
   };
 }

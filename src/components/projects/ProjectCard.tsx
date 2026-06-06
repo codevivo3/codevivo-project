@@ -47,6 +47,7 @@ type ProjectCardProps = {
   projectUrl?: string;
   githubUrl?: string;
   previewType?: PreviewType;
+  hasFullPreview?: boolean;
 };
 
 export default function ProjectCard({
@@ -60,6 +61,7 @@ export default function ProjectCard({
   projectUrl,
   githubUrl,
   previewType = 'desktop',
+  hasFullPreview = false,
 }: ProjectCardProps) {
   const locale = useLocale();
   const [isLargeScreen, setIsLargeScreen] = useState(false);
@@ -101,6 +103,7 @@ export default function ProjectCard({
     slug,
     theme,
     locale: normalizedLocale,
+    hasFullPreview,
   });
 
   return (

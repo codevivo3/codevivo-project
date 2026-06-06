@@ -145,6 +145,7 @@ export default function ProjectPanel({
             projectUrl={item!.projectUrl}
             githubUrl={item!.githubUrl}
             previewType={item!.previewType}
+            hasFullPreview={item!.hasFullPreview}
             primaryLabel={primaryLabel}
             secondaryLabel={secondaryLabel}
           />

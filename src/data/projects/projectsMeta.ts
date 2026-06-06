@@ -6,6 +6,8 @@ export type ProjectMeta = {
   slug: string;
   projectUrl?: string;
   githubUrl?: string;
+  isVisible?: boolean;
+  hasFullPreview?: boolean;
   previewType?: PreviewType;
   techStack?: TechId[];
 };
@@ -16,21 +18,41 @@ export const projectsMeta: ProjectMeta[] = [
     slug: 'paguro',
     projectUrl: 'https://thepagurojourney.com',
     githubUrl: 'https://github.com/codevivo3/the_paguro_journey',
+    isVisible: true,
+    hasFullPreview: true,
     previewType: 'desktop',
-    techStack: ['nextjs', 'react', 'typescript', 'tailwind', 'sanity', 'vercel'],
+    techStack: [
+      'nextjs',
+      'react',
+      'typescript',
+      'tailwind',
+      'sanity',
+      'vercel',
+    ],
   },
   {
     id: 'project-002',
-    slug: 'position-size-calculator',
-    projectUrl: '#',
-    githubUrl: '#',
-    techStack: ['react', 'typescript', 'tailwind'],
+    slug: 'nine2fire',
+    projectUrl: 'https://www.nine2fire.com/',
+    githubUrl: 'https://github.com/codevivo3/nine2fire-project',
+    isVisible: true,
+    hasFullPreview: true,
+    previewType: 'desktop',
+    techStack: [
+      'nextjs',
+      'react',
+      'typescript',
+      'tailwind',
+      'sanity',
+      'vercel',
+    ],
   },
   {
     id: 'project-003',
     slug: 'recipe-planner',
     projectUrl: '#',
     githubUrl: '#',
+    isVisible: false,
     previewType: 'mobile',
     techStack: ['react', 'typescript', 'tailwind'],
   },

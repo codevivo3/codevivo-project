@@ -31,12 +31,12 @@
     },
     {
       "id": "project-002",
-      "title": "Position Size Calculator",
-      "description": "Uno strumento focalizzato per calcolare rapidamente rischio e dimensione della posizione prima di entrare in un trade. Pensato per trader e investitori retail che vogliono decisioni piu chiare senza attrito da fogli di calcolo.",
-      "longDescription": "Una utility compatta pensata per semplificare i calcoli pre-trade e ridurre l'attrito nel processo decisionale.",
-      "challenge": "Il position sizing viene spesso gestito con fogli di calcolo manuali o stime approssimative, rallentando l'esecuzione e aumentando gli errori.",
-      "solution": "Il calcolatore trasforma pochi input chiave in indicazioni immediate sulla size attraverso un'interfaccia piu semplice e focalizzata.",
-      "outcome": "Uno strumento pratico in sviluppo pensato per rendere le decisioni di trading piu rapide e disciplinate."
+      "title": "Nine2Fire",
+      "description": "Una piattaforma dedicata alla finanza personale e al movimento FIRE che esplora investimenti, consapevolezza e ricerca di una maggiore libertà. Un progetto che unisce contenuti educativi ed esperienze reali per documentare il viaggio passo dopo passo.",
+      "longDescription":"Nine2Fire è un progetto dedicato all’indipendenza finanziaria, agli investimenti di lungo periodo e a modi alternativi di vivere e lavorare. Attraverso contenuti educativi, strumenti pratici ed esperienze personali, mira a rendere il percorso verso una maggiore libertà più accessibile, comprensibile ed intenzionale.",
+      "challenge": "Indipendenza finanziaria, investimenti e determinazione vengono spesso trattati come argomenti separati, rendendo difficile trasformare idee e principi in un percorso concreto e applicabile nella vita reale.",
+      "solution": "Nine2Fire riunisce contenuti educativi, esperienze personali e strumenti pratici in un unico spazio, offrendo una struttura più coerente per imparare, riflettere e prendere decisioni di lungo periodo.",
+      "outcome": "Una risorsa in continua evoluzione che combina conoscenza, sperimentazione ed esperienza diretta per trasformare idee e principi in azioni concrete nel mondo reale."
     },
     {
       "id": "project-003",

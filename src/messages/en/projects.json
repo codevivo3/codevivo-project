@@ -8,36 +8,5 @@
   },
   "status": {
     "inDevelopment": "In Progress"
-  },
-  "items": [
-    {
-      "id": "project-001",
-      "slug": "paguro",
-      "title": "The Paguro Journey",
-      "description": "A digital space to share journeys, explore off‑the‑beaten‑path destinations, and tell real travel stories. Blending articles, video, and itineraries for people drawn to a more intentional way of traveling.",
-      "projectUrl": "https://thepagurojourney.com",
-      "githubUrl": "https://github.com/codevivo3/the_paguro_journey",
-      "tags": ["nextjs", "typescript", "tailwind", "vercel"],
-      "previewType": "desktop"
-    },
-    {
-      "id": "project-002",
-      "slug": "position-size-calculator",
-      "title": "Position Size Calculator",
-      "description": "A focused tool for calculating risk and position sizing quickly before entering a trade. Built for retail investors and traders who want clearer decisions without spreadsheet friction.",
-      "projectUrl": "#",
-      "githubUrl": "#",
-      "tags": ["react", "nodejs", "github"]
-    },
-    {
-      "id": "project-003",
-      "slug": "recipe-planner",
-      "title": "Recipe Planner",
-      "description": "A planning interface for organizing recipes, ingredients, and weekly meal decisions with less clutter. Built for people who want a simpler way to plan meals and keep ideas structured.",
-      "projectUrl": "#",
-      "githubUrl": "#",
-      "tags": ["nextjs", "typescript", "vercel"],
-      "previewType": "mobile"
-    }
-  ]
+  }
 }

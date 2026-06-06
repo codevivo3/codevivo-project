@@ -69,7 +69,9 @@ export default async function ProjectsPage({
     labItemsMeta.some((meta) => meta.id === item.id),
   );
 
-  const selectedProjects = getProjects(translatedSelectedItems);
+  const selectedProjects = getProjects(translatedSelectedItems).filter(
+    (project) => project.isVisible !== false,
+  );
 
   // Merge optional preview/link metadata into translated in-progress entries.
   const inProgressItems = translatedInProgressItems

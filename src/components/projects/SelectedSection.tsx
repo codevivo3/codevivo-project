@@ -74,6 +74,7 @@ export default function SelectedSection({ projects, title }: Props) {
               slug: project.slug,
               theme,
               locale: normalizedLocale,
+              hasFullPreview: project.hasFullPreview,
             },
           );
 

@@ -30,6 +30,5 @@ export const inProgressItemsMeta: InProgressItemMeta[] = [
   },
   {
     id: 'in-progress-002',
-    slug: 'recipe-planner',
   },
 ];

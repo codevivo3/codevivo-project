@@ -68,18 +68,18 @@ export default function InProgressSection({ items, title }: Props) {
               className='glass-effect surface-card w-full max-w-full rounded-xl bg-[var(--panel-bg)] p-3.5 cursor-default transition-colors duration-200 hover:border-primary/40'
             >
               <div className='flex flex-col gap-4 sm:flex-row sm:items-center'>
-                <div className='relative h-20 w-20 flex-shrink-0 self-center overflow-hidden rounded-md sm:self-auto'>
-                  {item.slug ? (
+                {previewImage ? (
+                  <div className='relative h-20 w-20 flex-shrink-0 self-center overflow-hidden rounded-md sm:self-auto'>
                     <Image
-                      src={previewImage ?? '/fallback.png'}
+                      src={previewImage}
                       alt={item.title}
                       fill
                       sizes='80px'
                       className='object-cover'
                       priority={false}
                     />
-                  ) : null}
-                </div>
+                  </div>
+                ) : null}
 
                 <div className='flex w-full max-w-full flex-col justify-center gap-1 text-center sm:text-left'>
                   <span className='text-[11px] font-mono uppercase tracking-wide text-fg/50'>
