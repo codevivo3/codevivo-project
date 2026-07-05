@@ -22,6 +22,7 @@
  */
 export type ImageType =
   | 'preview'
+  | 'icon-preview'
   | 'full'
   | 'mobile-left'
   | 'mobile-center'

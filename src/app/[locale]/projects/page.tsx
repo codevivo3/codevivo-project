@@ -31,12 +31,12 @@ type LabItem = {
   tag?: string;
 };
 
-type InProgressItem = {
+type LocalizedInProgressItem = {
   id: string;
   title: string;
   description: string;
-  slug?: string;
-  link?: string;
+  milestones?: Record<string, string>;
+  stageLabels?: Record<string, string>;
 };
 
 export default async function ProjectsPage({
@@ -61,7 +61,7 @@ export default async function ProjectsPage({
     ? (rawSelectedItems as LocalizedProjectContent[])
     : [];
   const translatedInProgressItems = Array.isArray(rawInProgressItems)
-    ? (rawInProgressItems as InProgressItem[])
+    ? (rawInProgressItems as LocalizedInProgressItem[])
     : [];
 
   // Only render items explicitly registered in local metadata.
@@ -78,9 +78,33 @@ export default async function ProjectsPage({
     .map((item) => {
       const meta = inProgressItemsMeta.find((entry) => entry.id === item.id);
 
-      return meta ? { ...item, ...meta } : null;
+      if (!meta) {
+        return null;
+      }
+
+      const currentStageLabel =
+        meta.currentStage && item.stageLabels
+          ? item.stageLabels[meta.currentStage]
+          : undefined;
+      const stageLabels = meta.stages?.length
+        ? meta.stages
+            .map((stage) => item.stageLabels?.[stage])
+            .filter((stageLabel): stageLabel is string => !!stageLabel)
+        : undefined;
+      const milestoneLabel =
+        meta.milestone && item.milestones
+          ? item.milestones[meta.milestone]
+          : undefined;
+
+      return {
+        ...item,
+        ...meta,
+        currentStageLabel,
+        stageLabels,
+        milestoneLabel,
+      };
     })
-    .filter((item): item is InProgressItem => item !== null);
+    .filter((item): item is NonNullable<typeof item> => item !== null);
 
   // Render
   return (

@@ -51,13 +51,36 @@
   "inProgress": [
     {
       "id": "in-progress-001",
-      "title": "Portfolio Content System",
-      "description": "Structuring project documentation, screenshots, and supporting content so new work can be published more consistently."
+      "title": "Nine2Fire",
+      "description": "Building a personal finance and FIRE platform around long-term investing, intentional living and practical tools for financial independence.",
+      "milestones": {
+        "editorial-system": "Editorial System"
+      },
+      "stageLabels": {
+        "idea": "Idea",
+        "brand-foundation": "Brand Foundation",
+        "content-system": "Content System",
+        "tools": "Tools",
+        "newsletter": "Newsletter",
+        "monetization": "Monetization"
+      }
     },
     {
       "id": "in-progress-002",
-      "title": "Internal UI Refinements",
-      "description": "Ongoing cleanup of spacing, interaction details, and reusable section patterns across the site."
+      "title": "deckLog",
+      "description": "Building an operations platform for sailing charter fleets, documenting the evolution from idea to product through architecture, interface design and technical decisions.",
+      "milestones": {
+        "product-architecture": "Product Architecture"
+      },
+      "stageLabels": {
+        "idea": "Idea",
+        "research": "Research",
+        "product-architecture": "Product Architecture",
+        "core-features": "Core Features",
+        "mvp": "MVP",
+        "beta": "Beta",
+        "production": "Production"
+      }
     }
   ]
 }

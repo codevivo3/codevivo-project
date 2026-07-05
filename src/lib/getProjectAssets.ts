@@ -17,6 +17,7 @@
  *
  * Output:
  * - `previewImage`
+ * - `iconPreviewImage`
  * - `previewImages`
  * - `previewImageLeft`
  * - `previewImageCenter`
@@ -48,6 +49,13 @@ export function getProjectAssets({
     locale,
   }).at(-1);
 
+  const iconPreviewImage = getProjectImageSources({
+    slug,
+    type: 'icon-preview',
+    theme,
+    locale,
+  }).at(-1);
+
   const previewImageLeft = getProjectImageSources({
     slug,
     type: 'mobile-left',
@@ -70,6 +78,7 @@ export function getProjectAssets({
   }).at(-1);
 
   const previewFallback = previewImageCenter ?? previewImage ?? '/fallback.png';
+  const resolvedIconPreviewImage = iconPreviewImage ?? previewImage ?? '/fallback.png';
 
   // Only opt into theme/locale-specific full preview assets when metadata confirms they exist.
   const resolvedFullPreview = hasFullPreview
@@ -90,6 +99,7 @@ export function getProjectAssets({
     );
 
   return {
+    iconPreviewImage: resolvedIconPreviewImage,
     previewImage: resolvedPreviewImage,
     previewImages:
       resolvedPreviewImages.length > 0

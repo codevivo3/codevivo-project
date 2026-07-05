@@ -6,6 +6,9 @@
   "selectedTitle": "Selected Work",
   "inProgressTitle": "In Progress",
   "inProgressLink": "Follow progress",
+  "inProgressJournalLink": "Follow development",
+  "inProgressLatestEntryLink": "Read latest update",
   "inProgressStatus": "In progress",
+  "inProgressCurrentStage": "Product Journey",
   "viewProject": "View Project"
 }
