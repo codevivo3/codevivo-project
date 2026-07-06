@@ -21,7 +21,7 @@
 import { useTheme } from '@/hooks/useTheme';
 import { Link } from '@/i18n/navigation';
 import { getProjectAssets } from '@/lib/getProjectAssets';
-import { ArrowRightIcon } from 'lucide-react';
+import { ArrowRightIcon, ArrowUpRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { useState } from 'react';
@@ -116,13 +116,8 @@ export default function InProgressSection({ items, title }: Props) {
               ? `/projects/${item.journalSlug}/${item.latestEntrySlug}`
               : `/projects/${item.journalSlug}`
             : null;
-          const ctaLabel = item.link
-            ? t('inProgressLink')
-            : journalHref
-              ? item.latestEntrySlug
-                ? t('inProgressLatestEntryLink')
-                : t('inProgressJournalLink')
-              : t('inProgressLink');
+          const primaryCtaLabel = t('followProgress');
+          const secondaryCtaLabel = t('visitWebsite');
           const currentStageIndex =
             item.currentStage && item.stages?.length
               ? item.stages.indexOf(item.currentStage)
@@ -141,7 +136,7 @@ export default function InProgressSection({ items, title }: Props) {
               <div className='flex h-full flex-col gap-4 p-2'>
                   {item.milestoneLabel ? (
                     <div className='flex flex-wrap justify-center text-[11px] font-mono uppercase tracking-wide sm:justify-start'>
-                      <span className='rounded-full border border-primary/20 bg-primary/10 px-4 py-0.5 text-primary/80'>
+                      <span className='rounded-full border border-primary/40 bg-primary/15 px-4 py-0.5 text-primary font-medium'>
                         {item.milestoneLabel}
                       </span>
                     </div>
@@ -193,39 +188,68 @@ export default function InProgressSection({ items, title }: Props) {
                   </div>
                 ) : null}
 
-                <div className='mt-auto flex w-full justify-center sm:justify-end'>
-                  {item.link ? (
-                    <a
-                      href={item.link}
-                      target='_blank'
-                      rel='noopener noreferrer'
-                      className='group inline-flex min-h-10 items-center gap-1 text-sm text-primary transition-all hover:font-semibold cursor-pointer'
-                    >
-                      <span className='inline-flex items-center gap-1'>
-                        {ctaLabel}
-                        <ArrowRightIcon
-                          size={16}
-                          className='transition-transform group-hover:translate-x-0.5'
-                        />
-                      </span>
-                    </a>
+                <div className='mt-auto flex w-full flex-col gap-1.5'>
+                  {journalHref && item.link ? (
+                    <div className='flex w-full items-center justify-between'>
+                      <Link
+                        href={journalHref}
+                        className='group inline-flex min-h-10 items-center gap-1 text-sm font-medium text-accent transition-all hover:font-semibold cursor-pointer'
+                      >
+                        <span className='inline-flex items-center gap-1'>
+                          {primaryCtaLabel}
+                          <ArrowRightIcon
+                            size={16}
+                            className='transition-transform group-hover:translate-x-0.5'
+                          />
+                        </span>
+                      </Link>
+                      <a
+                        href={item.link}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                        className='group inline-flex items-center gap-1 text-sm font-medium text-accent transition-all hover:font-semibold cursor-pointer'
+                      >
+                        <span className='inline-flex items-center gap-1'>
+                          {secondaryCtaLabel}
+                          <ArrowUpRight
+                            size={16}
+                            className='text-current transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5'
+                          />
+                        </span>
+                      </a>
+                    </div>
                   ) : journalHref ? (
                     <Link
                       href={journalHref}
-                      className='group inline-flex min-h-10 items-center gap-1 text-sm text-primary transition-all hover:font-semibold cursor-pointer'
+                      className='group inline-flex min-h-10 items-center gap-1 text-sm font-medium text-accent transition-all hover:font-semibold cursor-pointer'
                     >
                       <span className='inline-flex items-center gap-1'>
-                        {ctaLabel}
+                        {primaryCtaLabel}
                         <ArrowRightIcon
                           size={16}
                           className='transition-transform group-hover:translate-x-0.5'
                         />
                       </span>
                     </Link>
-                  ) : (
-                    <span className='inline-flex min-h-10 items-center text-sm text-fg/40'>
+                  ) : item.link ? (
+                    <a
+                      href={item.link}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='group inline-flex min-h-10 items-center gap-1 text-sm font-medium text-accent transition-all hover:font-semibold cursor-pointer'
+                    >
                       <span className='inline-flex items-center gap-1'>
-                        {ctaLabel}
+                        {secondaryCtaLabel}
+                        <ArrowUpRight
+                          size={16}
+                          className='text-current transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5'
+                        />
+                      </span>
+                    </a>
+                  ) : (
+                    <span className='inline-flex min-h-10 items-center text-sm text-fg/0'>
+                      <span className='inline-flex items-center gap-1'>
+                        {primaryCtaLabel}
                         <ArrowRightIcon size={16} />
                       </span>
                     </span>

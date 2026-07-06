@@ -51,6 +51,7 @@ export const inProgressItemsMeta: InProgressItemMeta[] = [
     status: 'building',
     currentStage: 'beta',
     stages: [...GLOBAL_PRODUCT_JOURNEY_STAGES],
+    journalSlug: 'nine2fire',
   },
   {
     id: 'in-progress-002',
@@ -63,5 +64,6 @@ export const inProgressItemsMeta: InProgressItemMeta[] = [
     currentStage: 'product-architecture',
     stages: [...GLOBAL_PRODUCT_JOURNEY_STAGES],
     journalSlug: 'decklog',
+    latestEntrySlug: 'fleet-explorer',
   },
 ];

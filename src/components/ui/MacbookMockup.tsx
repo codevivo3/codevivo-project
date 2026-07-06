@@ -40,7 +40,7 @@ export default function MacbookMockup({
               src={src}
               alt={alt}
               fill
-              className='object-cover object-top'
+              className='object-contain object-center'
               sizes='(max-width: 768px) 100vw, 520px'
             />
           </div>

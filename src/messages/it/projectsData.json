@@ -59,18 +59,18 @@
       "production": "Produzione"
     },
     "milestoneLabels": {
-      "brand-foundation": "Brand Foundation",
-      "research-complete": "Research Complete",
-      "product-architecture": "Product Architecture",
+      "brand-foundation": "Fondazione brand",
+      "research-complete": "Ricerca completata",
+      "product-architecture": "Architettura prodotto",
       "design-system": "Design System",
-      "editorial-system": "Editorial System",
-      "core-workflows": "Core Workflows",
-      "cms-integration": "CMS Integration",
-      "authentication": "Authentication",
-      "payments": "Payments",
-      "public-beta": "Public Beta",
-      "first-users": "First Users",
-      "production-launch": "Production Launch"
+      "editorial-system": "Sistema editoriale",
+      "core-workflows": "Workflow principali",
+      "cms-integration": "Integrazione CMS",
+      "authentication": "Autenticazione",
+      "payments": "Pagamenti",
+      "public-beta": "Beta pubblica",
+      "first-users": "Primi utenti",
+      "production-launch": "Lancio in produzione"
     }
   },
   "inProgress": [

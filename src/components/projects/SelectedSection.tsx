@@ -17,6 +17,9 @@
  * Notes:
  * - Theme-aware image selection depends on the document root class.
  * - Keep preview resolution inside the shared helper path rather than hardcoding image files here.
+ * - `preview.png` is the canonical hero preview asset for web projects.
+ * - Hero preview assets must be exported in a true 16:9 aspect ratio.
+ * - The preview container intentionally matches the asset ratio; avoid compensating with custom image dimensions.
  */
 import Button from '@/components/ui/Button';
 import TechIcon from '@/components/ui/TechIcon';
@@ -49,9 +52,12 @@ export default function SelectedSection({ projects, title }: Props) {
 
   const getPreviewHeightClassName = (count: number, isDesktop: boolean) => {
     if (isDesktop) {
-      if (count <= 1) return 'h-[300px] min-[1100px]:h-[320px] min-[1400px]:h-[340px]';
-      if (count === 2) return 'h-[280px] min-[1100px]:h-[300px] min-[1400px]:h-[320px]';
-      if (count === 3) return 'h-[260px] min-[1100px]:h-[280px] min-[1400px]:h-[300px]';
+      if (count <= 1)
+        return 'h-[300px] min-[1100px]:h-[320px] min-[1400px]:h-[340px]';
+      if (count === 2)
+        return 'h-[280px] min-[1100px]:h-[300px] min-[1400px]:h-[320px]';
+      if (count === 3)
+        return 'h-[260px] min-[1100px]:h-[280px] min-[1400px]:h-[300px]';
       return 'h-[240px] min-[1100px]:h-[260px] min-[1400px]:h-[280px]';
     }
 
@@ -108,6 +114,9 @@ export default function SelectedSection({ projects, title }: Props) {
                 </div>
 
                 <div className='flex w-full max-w-full items-center justify-center rounded-lg p-2 md:p-3'>
+                  {/* Preview rendering is split between mobile app previews and web project previews.
+                  Web previews assume a standardized `preview.png` asset exported at 16:9. */}
+
                   {previewKind === 'mobile' ? (
                     <>
                       <div
@@ -115,10 +124,10 @@ export default function SelectedSection({ projects, title }: Props) {
                           mobilePreviewImages.length <= 1
                             ? 'gap-0'
                             : mobilePreviewImages.length === 2
-                            ? 'gap-8'
-                            : mobilePreviewImages.length === 3
-                            ? 'gap-7'
-                            : 'gap-6'
+                              ? 'gap-8'
+                              : mobilePreviewImages.length === 3
+                                ? 'gap-7'
+                                : 'gap-6'
                         } md:hidden`}
                       >
                         {mobilePreviewImages.map((src, index) => (
@@ -143,7 +152,10 @@ export default function SelectedSection({ projects, title }: Props) {
                         )} md:flex`}
                       >
                         {desktopPreviewImages.map((src, index) => (
-                          <div key={`${project.id}-desktop-${index}`} className="flex items-center justify-center">
+                          <div
+                            key={`${project.id}-desktop-${index}`}
+                            className='flex items-center justify-center'
+                          >
                             <Image
                               src={src}
                               alt={`${project.title} mobile preview ${index + 1}`}
@@ -161,17 +173,20 @@ export default function SelectedSection({ projects, title }: Props) {
                       </div>
                     </>
                   ) : (
-                    <div className='relative aspect-[16/9] w-full max-w-[85%] rounded-xl shadow-device md:max-w-[600px]'>
-                      <div className='relative h-full w-full overflow-hidden rounded-xl'>
-                        <Image
-                          src={previewImage ?? fullPreview ?? '/fallback.png'}
-                          alt={project.title}
-                          fill
-                          sizes='(max-width: 768px) 100vw, 800px'
-                          className='object-cover'
-                          priority={false}
-                        />
-                      </div>
+                    // Standard web preview.
+                    // Every web project should provide:
+                    //   public/projects/<slug>/preview.png
+                    // exported as a true 16:9 image (recommended: 1920×1080 or 1600×900).
+                    <div className='w-full max-w-[85%] md:max-w-[600px]'>
+                      <Image
+                        src={previewImage ?? fullPreview ?? '/fallback.png'}
+                        alt={project.title}
+                        width={1920}
+                        height={1080}
+                        sizes='(max-width: 768px) 100vw, 800px'
+                        className='h-auto w-full rounded-xl shadow-device'
+                        priority={false}
+                      />
                     </div>
                   )}
                 </div>

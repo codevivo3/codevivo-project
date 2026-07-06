@@ -5,6 +5,8 @@
   "labTitle": "Lab Experiments",
   "selectedTitle": "Selected Work",
   "inProgressTitle": "In Progress",
+  "followProgress": "Follow progress",
+  "visitWebsite": "Visit website",
   "inProgressLink": "Follow progress",
   "inProgressJournalLink": "Follow development",
   "inProgressLatestEntryLink": "Read latest update",

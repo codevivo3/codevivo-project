@@ -35,11 +35,11 @@ type LocalizedInProgressItem = {
   id: string;
   title: string;
   description: string;
-  milestones?: Record<string, string>;
 };
 
 type ProductJourneyContent = {
   stageLabels?: Record<string, string>;
+  milestoneLabels?: Record<string, string>;
 };
 
 export default async function ProjectsPage({
@@ -100,10 +100,9 @@ export default async function ProjectsPage({
       const stageLabels = meta.stages?.map(
         (stage) => globalStageLabels?.[stage] ?? stage,
       );
-      const milestoneLabel =
-        meta.milestone && item.milestones
-          ? item.milestones[meta.milestone]
-          : undefined;
+      const milestoneLabel = meta.milestone
+        ? productJourney?.milestoneLabels?.[meta.milestone]
+        : undefined;
 
       return {
         ...item,
