@@ -36,6 +36,9 @@ type LocalizedInProgressItem = {
   title: string;
   description: string;
   milestones?: Record<string, string>;
+};
+
+type ProductJourneyContent = {
   stageLabels?: Record<string, string>;
 };
 
@@ -52,6 +55,7 @@ export default async function ProjectsPage({
 
   const rawLabItems = dataT.raw('lab');
   const rawSelectedItems = dataT.raw('selected');
+  const rawProductJourney = dataT.raw('productJourney');
   const rawInProgressItems = dataT.raw('inProgress');
 
   const translatedLabItems = Array.isArray(rawLabItems)
@@ -63,6 +67,12 @@ export default async function ProjectsPage({
   const translatedInProgressItems = Array.isArray(rawInProgressItems)
     ? (rawInProgressItems as LocalizedInProgressItem[])
     : [];
+  const productJourney =
+    rawProductJourney &&
+    typeof rawProductJourney === 'object' &&
+    !Array.isArray(rawProductJourney)
+      ? (rawProductJourney as ProductJourneyContent)
+      : undefined;
 
   // Only render items explicitly registered in local metadata.
   const labItems = translatedLabItems.filter((item) =>
@@ -82,15 +92,14 @@ export default async function ProjectsPage({
         return null;
       }
 
+      const globalStageLabels = productJourney?.stageLabels;
       const currentStageLabel =
-        meta.currentStage && item.stageLabels
-          ? item.stageLabels[meta.currentStage]
+        meta.currentStage && globalStageLabels
+          ? globalStageLabels[meta.currentStage]
           : undefined;
-      const stageLabels = meta.stages?.length
-        ? meta.stages
-            .map((stage) => item.stageLabels?.[stage])
-            .filter((stageLabel): stageLabel is string => !!stageLabel)
-        : undefined;
+      const stageLabels = meta.stages?.map(
+        (stage) => globalStageLabels?.[stage] ?? stage,
+      );
       const milestoneLabel =
         meta.milestone && item.milestones
           ? item.milestones[meta.milestone]

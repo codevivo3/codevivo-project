@@ -29,6 +29,16 @@ export type InProgressItemMeta = {
   latestEntrySlug?: string;
 };
 
+export const GLOBAL_PRODUCT_JOURNEY_STAGES = [
+  'idea',
+  'research',
+  'product-architecture',
+  'core-features',
+  'mvp',
+  'beta',
+  'production',
+] as const;
+
 // Derived values
 export const inProgressItemsMeta: InProgressItemMeta[] = [
   {
@@ -39,15 +49,8 @@ export const inProgressItemsMeta: InProgressItemMeta[] = [
     updatedAt: '2026-07-05',
     milestone: 'editorial-system',
     status: 'building',
-    currentStage: 'content-system',
-    stages: [
-      'idea',
-      'brand-foundation',
-      'content-system',
-      'tools',
-      'newsletter',
-      'monetization',
-    ],
+    currentStage: 'beta',
+    stages: [...GLOBAL_PRODUCT_JOURNEY_STAGES],
   },
   {
     id: 'in-progress-002',
@@ -58,15 +61,7 @@ export const inProgressItemsMeta: InProgressItemMeta[] = [
     milestone: 'product-architecture',
     status: 'building',
     currentStage: 'product-architecture',
-    stages: [
-      'idea',
-      'research',
-      'product-architecture',
-      'core-features',
-      'mvp',
-      'beta',
-      'production',
-    ],
+    stages: [...GLOBAL_PRODUCT_JOURNEY_STAGES],
     journalSlug: 'decklog',
   },
 ];

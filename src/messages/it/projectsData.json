@@ -48,39 +48,41 @@
       "outcome": "Un concept in fase iniziale focalizzato su chiarezza, struttura e pianificazione settimanale ripetibile."
     }
   ],
+  "productJourney": {
+    "stageLabels": {
+      "idea": "Idea",
+      "research": "Ricerca",
+      "product-architecture": "Architettura prodotto",
+      "core-features": "Funzionalità principali",
+      "mvp": "MVP",
+      "beta": "Beta",
+      "production": "Produzione"
+    },
+    "milestoneLabels": {
+      "brand-foundation": "Brand Foundation",
+      "research-complete": "Research Complete",
+      "product-architecture": "Product Architecture",
+      "design-system": "Design System",
+      "editorial-system": "Editorial System",
+      "core-workflows": "Core Workflows",
+      "cms-integration": "CMS Integration",
+      "authentication": "Authentication",
+      "payments": "Payments",
+      "public-beta": "Public Beta",
+      "first-users": "First Users",
+      "production-launch": "Production Launch"
+    }
+  },
   "inProgress": [
     {
       "id": "in-progress-001",
       "title": "Nine2Fire",
-      "description": "Sto costruendo una piattaforma di finanza personale e FIRE dedicata a investimenti di lungo periodo, vita intenzionale e strumenti pratici per l'indipendenza finanziaria.",
-      "milestones": {
-        "editorial-system": "Sistema editoriale"
-      },
-      "stageLabels": {
-        "idea": "Idea",
-        "brand-foundation": "Fondazione brand",
-        "content-system": "Sistema contenuti",
-        "tools": "Strumenti",
-        "newsletter": "Newsletter",
-        "monetization": "Monetizzazione"
-      }
+      "description": "Sto costruendo una piattaforma di finanza personale e FIRE dedicata a investimenti di lungo periodo, vita intenzionale e strumenti pratici per l'indipendenza finanziaria."
     },
     {
       "id": "in-progress-002",
       "title": "deckLog",
-      "description": "Sto costruendo una piattaforma operativa per flotte charter, documentando l'evoluzione da idea a prodotto attraverso architettura, interfaccia e decisioni tecniche.",
-      "milestones": {
-        "product-architecture": "Architettura prodotto"
-      },
-      "stageLabels": {
-        "idea": "Idea",
-        "research": "Ricerca",
-        "product-architecture": "Architettura prodotto",
-        "core-features": "Funzionalità principali",
-        "mvp": "MVP",
-        "beta": "Beta",
-        "production": "Produzione"
-      }
+      "description": "Sto costruendo una piattaforma operativa per flotte charter, documentando l'evoluzione da idea a prodotto attraverso architettura, interfaccia e decisioni tecniche."
     }
   ]
 }

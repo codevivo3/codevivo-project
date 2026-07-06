@@ -130,7 +130,8 @@ export default function InProgressSection({ items, title }: Props) {
           const hasStageProgress =
             currentStageIndex >= 0 &&
             !!item.currentStageLabel &&
-            item.stages?.length === item.stageLabels?.length;
+            !!item.stages?.length &&
+            item.stages.length === item.stageLabels?.length;
 
           return (
             <div
