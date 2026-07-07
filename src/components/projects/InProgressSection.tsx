@@ -112,9 +112,7 @@ export default function InProgressSection({ items, title }: Props) {
               })
             : null;
           const journalHref = item.journalSlug
-            ? item.latestEntrySlug
-              ? `/projects/${item.journalSlug}/${item.latestEntrySlug}`
-              : `/projects/${item.journalSlug}`
+            ? `/projects/${item.journalSlug}/development`
             : null;
           const primaryCtaLabel = t('followProgress');
           const secondaryCtaLabel = t('visitWebsite');

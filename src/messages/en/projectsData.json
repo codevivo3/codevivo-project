@@ -77,12 +77,12 @@
     {
       "id": "in-progress-001",
       "title": "Nine2Fire",
-      "description": "Building a personal finance and FIRE platform around long-term investing, intentional living and practical tools for financial independence."
+      "description": "An editorial platform exploring personal finance, long-term investing and the FIRE movement through practical tools and real-world experiences."
     },
     {
       "id": "in-progress-002",
       "title": "deckLog",
-      "description": "Building an operations platform for sailing charter fleets, documenting the evolution from idea to product through architecture, interface design and technical decisions."
+      "description": "Operational software for sailing fleet management, designed to simplify maintenance, documentation and day-to-day operations."
     }
   ]
 }

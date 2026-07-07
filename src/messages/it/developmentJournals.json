@@ -1,0 +1,50 @@
+{
+  "page": {
+    "title": "Diario di sviluppo",
+    "description": "Segui come questo prodotto sta evolvendo tra milestone, decisioni di prodotto e passi di implementazione.",
+    "journeyTitle": "Percorso del prodotto",
+    "latestUpdateTitle": "Ultimo aggiornamento",
+    "logTitle": "Registro di sviluppo",
+    "nextStepsTitle": "Prossimi passi",
+    "backToProjects": "Torna ai progetti",
+    "visitWebsite": "Visita il sito",
+    "currentStageLabel": "Fase attuale"
+  },
+  "nine2fire": {
+    "entries": {
+      "editorial-system": {
+        "title": "Milestone del sistema editoriale",
+        "summary": "Nine2Fire ha iniziato a passare dal solo posizionamento iniziale a un sistema editoriale piu solido, chiarendo come contenuti approfonditi, strumenti pratici e apprendimento pubblico possano convivere nello stesso prodotto."
+      }
+    },
+    "categories": {
+      "content": "Contenuti"
+    },
+    "nextSteps": {
+      "publish-foundation-articles": "Pubblicare gli articoli fondamentali",
+      "refine-fire-tracker": "Rifinire l'esperienza del FIRE tracker",
+      "prepare-market-launch": "Preparare il lancio pubblico sul mercato"
+    }
+  },
+  "decklog": {
+    "entries": {
+      "product-architecture": {
+        "title": "Milestone di architettura prodotto",
+        "summary": "deckLog ha superato la fase delle sole schermate e ha iniziato a definire linguaggio di prodotto, confini del dominio e struttura operativa."
+      },
+      "fleet-explorer": {
+        "title": "Fleet Explorer",
+        "summary": "La prima vista d'insieme della flotta ha iniziato a prendere forma con card riutilizzabili, copy localizzato e una struttura piu chiara per esplorare barche e stato operativo."
+      }
+    },
+    "categories": {
+      "architecture": "Architettura",
+      "feature": "Funzionalita"
+    },
+    "nextSteps": {
+      "maintenance-workflow": "Costruire il workflow di manutenzione",
+      "boat-details": "Ampliare Boat Details",
+      "issue-reporting": "Definire il flusso di segnalazione problemi"
+    }
+  }
+}

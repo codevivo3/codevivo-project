@@ -77,12 +77,12 @@
     {
       "id": "in-progress-001",
       "title": "Nine2Fire",
-      "description": "Sto costruendo una piattaforma di finanza personale e FIRE dedicata a investimenti di lungo periodo, vita intenzionale e strumenti pratici per l'indipendenza finanziaria."
+      "description": "Un progetto editoriale dedicato alla finanza personale, agli investimenti di lungo periodo e al movimento FIRE, attraverso contenuti, strumenti pratici ed esperienze reali."
     },
     {
       "id": "in-progress-002",
       "title": "deckLog",
-      "description": "Sto costruendo una piattaforma operativa per flotte charter, documentando l'evoluzione da idea a prodotto attraverso architettura, interfaccia e decisioni tecniche."
+      "description": "Software per la gestione operativa delle flotte nautiche, progettato per semplificare manutenzione, documentazione e attività quotidiane."
     }
   ]
 }

@@ -1,0 +1,50 @@
+{
+  "page": {
+    "title": "Development Journal",
+    "description": "Follow how this product is evolving through milestones, product decisions and implementation notes.",
+    "journeyTitle": "Product Journey",
+    "latestUpdateTitle": "Latest update",
+    "logTitle": "Development log",
+    "nextStepsTitle": "Next steps",
+    "backToProjects": "Back to projects",
+    "visitWebsite": "Visit website",
+    "currentStageLabel": "Current stage"
+  },
+  "nine2fire": {
+    "entries": {
+      "editorial-system": {
+        "title": "Editorial System Milestone",
+        "summary": "Nine2Fire moved from early positioning into a more structured editorial system, shaping how long-form content, practical tools and public learning can live together in one product."
+      }
+    },
+    "categories": {
+      "content": "Content"
+    },
+    "nextSteps": {
+      "publish-foundation-articles": "Publish the foundation articles",
+      "refine-fire-tracker": "Refine the FIRE tracker experience",
+      "prepare-market-launch": "Prepare the public market launch"
+    }
+  },
+  "decklog": {
+    "entries": {
+      "product-architecture": {
+        "title": "Product Architecture Milestone",
+        "summary": "deckLog moved beyond interface ideas and started defining its product vocabulary, domain boundaries and operational structure."
+      },
+      "fleet-explorer": {
+        "title": "Fleet Explorer",
+        "summary": "The first fleet overview started taking shape with reusable cards, localized copy and a clearer structure for browsing boats and operational status."
+      }
+    },
+    "categories": {
+      "architecture": "Architecture",
+      "feature": "Feature"
+    },
+    "nextSteps": {
+      "maintenance-workflow": "Build the maintenance workflow",
+      "boat-details": "Expand Boat Details",
+      "issue-reporting": "Define the issue reporting flow"
+    }
+  }
+}

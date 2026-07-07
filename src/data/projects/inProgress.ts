@@ -52,6 +52,7 @@ export const inProgressItemsMeta: InProgressItemMeta[] = [
     currentStage: 'beta',
     stages: [...GLOBAL_PRODUCT_JOURNEY_STAGES],
     journalSlug: 'nine2fire',
+    latestEntrySlug: 'editorial-system',
   },
   {
     id: 'in-progress-002',
