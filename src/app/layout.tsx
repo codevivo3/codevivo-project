@@ -45,6 +45,9 @@ export const metadata: Metadata = {
   description:
     'CodeVivo is the portfolio of Francesco De Vivo, focused on modern web development using React, Next.js, and TypeScript.',
   metadataBase: new URL('https://codevivo.dev'),
+  other: {
+    'impact-site-verification': '07481aca-8710-4a81-a829-1621f336d78c',
+  },
   openGraph: {
     title: 'CodeVivo — Modern Web Development with React & Next.js',
     description:
