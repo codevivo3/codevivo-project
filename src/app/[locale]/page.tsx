@@ -27,24 +27,45 @@ import ContactForm from '@/components/ContactForm';
 
 const homeMetadata = {
   en: {
-    title: 'CodeVivo — Professional Websites & Custom Web Applications',
+    title: 'CodeVivo — Francesco De Vivo | Web Developer',
     description:
-      'Professional websites and custom web applications by Francesco De Vivo, built with React, Next.js, and TypeScript.',
+      'Francesco De Vivo is the developer behind CodeVivo, creating professional websites and custom web applications with React and Next.js.',
     openGraphDescription:
-      'Professional websites and custom web applications by Francesco De Vivo.',
+      'Francesco De Vivo is the developer behind CodeVivo, creating professional websites and custom web applications with React and Next.js.',
     url: 'https://codevivo.dev/en',
     locale: 'en_US',
   },
   it: {
-    title: 'CodeVivo — Siti Web Professionali e Applicazioni su Misura',
+    title: 'CodeVivo — Francesco De Vivo | Sviluppatore Web',
     description:
-      'Siti web professionali e applicazioni web su misura realizzati da Francesco De Vivo con React, Next.js e TypeScript.',
+      'Francesco De Vivo è lo sviluppatore di CodeVivo. Realizza siti web professionali e applicazioni web su misura con React e Next.js.',
     openGraphDescription:
-      'Siti web professionali e applicazioni web su misura realizzati da Francesco De Vivo.',
+      'Francesco De Vivo è lo sviluppatore di CodeVivo. Realizza siti web professionali e applicazioni web su misura con React e Next.js.',
     url: 'https://codevivo.dev/it',
     locale: 'it_IT',
   },
 } as const;
+
+const homepageStructuredData = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Person',
+      '@id': 'https://codevivo.dev/#person',
+      name: 'Francesco De Vivo',
+      url: 'https://codevivo.dev',
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://codevivo.dev/#website',
+      name: 'CodeVivo',
+      url: 'https://codevivo.dev',
+      creator: {
+        '@id': 'https://codevivo.dev/#person',
+      },
+    },
+  ],
+}).replace(/</g, '\\u003c');
 
 export async function generateMetadata({
   params,
@@ -93,6 +114,10 @@ export default function HomePage() {
   // Render
   return (
     <>
+      <script
+        type='application/ld+json'
+        dangerouslySetInnerHTML={{ __html: homepageStructuredData }}
+      />
       <main className='text-fg'>
         <Hero />
         <WhatIDo />
