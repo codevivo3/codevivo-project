@@ -16,13 +16,14 @@
  * - Keep the hero ID stable because header/footer links scroll to it.
  * - The artwork is intentionally static here for layout predictability.
  */
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Button from '@/components/ui/Button';
 
 export default function Hero() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('hero');
+  const locale = useLocale();
   return (
     <section id='hero' className='section-block scroll-mt-32 md:scroll-mt-32'>
       <div
@@ -43,7 +44,7 @@ export default function Hero() {
           </div>
           <div className='mt-14 flex justify-center md:mt-8 md:justify-start'>
             <div className='w-full max-w-[220px] md:w-auto md:max-w-none'>
-              <Button href='/projects'>{t('cta')}</Button>
+              <Button href={`/${locale}/projects`}>{t('cta')}</Button>
             </div>
           </div>
         </div>

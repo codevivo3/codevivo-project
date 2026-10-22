@@ -19,9 +19,8 @@
  * - Keep route generation locale-aware from this component rather than hardcoding paths downstream.
  */
 import { useEffect, useState, useRef } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Link, useRouter } from '@/i18n/navigation';
 import { Menu, X } from 'lucide-react';
 import LanguageToggle from './LanguageToggle';
 import ThemeToggle from './ThemeToggle';
@@ -30,7 +29,6 @@ import Logo from './ui/Logo';
 export default function Header() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('header');
-  const locale = useLocale();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -96,7 +94,7 @@ export default function Header() {
 
         <nav className='hidden items-center gap-4 font-mono-var text-sm md:flex'>
           <Link
-            href={`/${locale}#tools`}
+            href='/#tools'
             className='text-fg hover:text-primary transition-colors duration-300'
           >
             {t('nav.tools')}
@@ -109,13 +107,13 @@ export default function Header() {
             {t('nav.projects')}
           </Link>
           <Link
-            href={`/${locale}#about`}
+            href='/#about'
             className='text-fg hover:text-primary transition-colors duration-300'
           >
             {t('nav.about')}
           </Link>
           <Link
-            href={`/${locale}#contact`}
+            href='/#contact'
             className='text-fg hover:text-primary transition-colors duration-300'
           >
             {t('nav.contact')}
@@ -162,7 +160,7 @@ export default function Header() {
             {t('nav.home')}
           </Link>
           <Link
-            href={`/${locale}#tools`}
+            href='/#tools'
             className='inline-flex min-h-12 items-center text-fg transition-colors duration-300 hover:text-primary'
             onClick={closeMenu}
           >
@@ -177,14 +175,14 @@ export default function Header() {
             {t('nav.projects')}
           </Link>
           <Link
-            href={`/${locale}#about`}
+            href='/#about'
             className='inline-flex min-h-12 items-center text-fg transition-colors duration-300 hover:text-primary'
             onClick={closeMenu}
           >
             {t('nav.about')}
           </Link>
           <Link
-            href={`/${locale}#contact`}
+            href='/#contact'
             className='inline-flex min-h-12 items-center text-fg transition-colors duration-300 hover:text-primary'
             onClick={closeMenu}
           >

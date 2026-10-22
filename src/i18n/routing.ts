@@ -19,4 +19,7 @@ import { defineRouting } from 'next-intl/routing';
 export const routing = defineRouting({
   locales: ['en', 'it'],
   defaultLocale: 'en',
+  // Page metadata owns hreflang so valid pages can emit canonical and alternate
+  // URLs together without adding alternate headers to 404 responses.
+  alternateLinks: false,
 });

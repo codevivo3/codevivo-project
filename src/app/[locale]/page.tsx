@@ -32,7 +32,7 @@ const homeMetadata = {
       'CodeVivo is the portfolio of Francesco De Vivo, focused on modern web development using React, Next.js, and TypeScript.',
     openGraphDescription:
       'Portfolio of Francesco De Vivo — modern web development with React and Next.js.',
-    url: 'https://codevivo.dev',
+    url: 'https://codevivo.dev/en',
     locale: 'en_US',
   },
   it: {
@@ -54,14 +54,25 @@ export async function generateMetadata({
   // Derived values
   const { locale } = await params;
   // Resolve a stable metadata set per supported locale before merging parent images.
-  const currentLocale = locale === 'it' ? homeMetadata.it : homeMetadata.en;
+  const normalizedLocale = locale === 'it' ? 'it' : 'en';
+  const currentLocale = homeMetadata[normalizedLocale];
   const parentMetadata = await parent;
 
   return {
-    title: currentLocale.title,
+    title: {
+      absolute: currentLocale.title,
+    },
     description: currentLocale.description,
+    alternates: {
+      canonical: `/${normalizedLocale}`,
+      languages: {
+        en: '/en',
+        it: '/it',
+        'x-default': '/',
+      },
+    },
     openGraph: {
-      title: 'CodeVivo',
+      title: currentLocale.title,
       description: currentLocale.openGraphDescription,
       url: currentLocale.url,
       siteName: 'CodeVivo',
@@ -71,7 +82,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'CodeVivo',
+      title: currentLocale.title,
       description: currentLocale.openGraphDescription,
       images: parentMetadata.twitter?.images,
     },

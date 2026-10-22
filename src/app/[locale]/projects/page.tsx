@@ -16,6 +16,7 @@
  * - Translation files own editorial text; metadata files own slugs, links, and preview wiring.
  * - Keep the merge between translated content and metadata centralized here.
  */
+import type { Metadata, ResolvingMetadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import InProgressSection from '@/components/projects/InProgressSection';
 import LabSection from '@/components/projects/LabSection';
@@ -41,6 +42,50 @@ type ProductJourneyContent = {
   stageLabels?: Record<string, string>;
   milestoneLabels?: Record<string, string>;
 };
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ locale: string }> },
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const { locale } = await params;
+  const normalizedLocale = locale === 'it' ? 'it' : 'en';
+  const t = await getTranslations({
+    locale: normalizedLocale,
+    namespace: 'projectsPage',
+  });
+  const parentMetadata = await parent;
+  const title = t('title');
+  const description = t('description');
+  const canonicalPath = `/${normalizedLocale}/projects`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: canonicalPath,
+      languages: {
+        en: '/en/projects',
+        it: '/it/projects',
+        'x-default': '/projects',
+      },
+    },
+    openGraph: {
+      title: `CodeVivo — ${title}`,
+      description,
+      url: canonicalPath,
+      siteName: 'CodeVivo',
+      locale: normalizedLocale === 'it' ? 'it_IT' : 'en_US',
+      type: 'website',
+      images: parentMetadata.openGraph?.images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `CodeVivo — ${title}`,
+      description,
+      images: parentMetadata.twitter?.images,
+    },
+  };
+}
 
 export default async function ProjectsPage({
   params,

@@ -23,17 +23,6 @@ import { notFound } from 'next/navigation';
 import { getMessages } from 'next-intl/server';
 import ClientShell from '@/components/layout/ClientShell';
 
-const localeMetadata = {
-  en: {
-    canonical: 'https://codevivo.dev',
-    openGraphLocale: 'en_US',
-  },
-  it: {
-    canonical: 'https://codevivo.dev/it',
-    openGraphLocale: 'it_IT',
-  },
-} as const;
-
 export function generateStaticParams() {
   return [{ locale: 'en' }, { locale: 'it' }];
 }

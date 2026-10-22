@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Metadata, ResolvingMetadata } from 'next';
 import { developmentJournals } from '@/data/projects/developmentJournals';
 import { inProgressItemsMeta } from '@/data/projects/inProgress';
 import { ArrowUpRight, ArrowLeft } from 'lucide-react';
@@ -26,6 +27,86 @@ type JournalTranslation = {
   categories?: Record<string, string>;
   nextSteps?: Record<string, string>;
 };
+
+export async function generateMetadata(
+  {
+    params,
+  }: {
+    params: Promise<{ locale: string; slug: string }>;
+  },
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const normalizedLocale = locale === 'it' ? 'it' : 'en';
+  const projectMeta = inProgressItemsMeta.find(
+    (item) => item.journalSlug === slug,
+  );
+  const journalMeta = developmentJournals[slug];
+
+  if (!projectMeta || !journalMeta) {
+    notFound();
+  }
+
+  const projectsDataT = await getTranslations({
+    locale: normalizedLocale,
+    namespace: 'projectsData',
+  });
+  const journalsT = await getTranslations({
+    locale: normalizedLocale,
+    namespace: 'developmentJournals',
+  });
+  const rawInProgressItems = projectsDataT.raw('inProgress');
+  const rawPageCopy = journalsT.raw('page');
+  const translatedInProgressItems = Array.isArray(rawInProgressItems)
+    ? (rawInProgressItems as LocalizedInProgressItem[])
+    : [];
+  const pageCopy =
+    rawPageCopy &&
+    typeof rawPageCopy === 'object' &&
+    !Array.isArray(rawPageCopy)
+      ? (rawPageCopy as Record<string, string>)
+      : null;
+  const projectCopy = translatedInProgressItems.find(
+    (item) => item.id === projectMeta.id,
+  );
+
+  if (!projectCopy || !pageCopy?.title) {
+    notFound();
+  }
+
+  const parentMetadata = await parent;
+  const title = `${projectCopy.title} — ${pageCopy.title}`;
+  const canonicalPath = `/${normalizedLocale}/projects/${slug}/development`;
+  const alternatePath = `/projects/${slug}/development`;
+
+  return {
+    title,
+    description: projectCopy.description,
+    alternates: {
+      canonical: canonicalPath,
+      languages: {
+        en: `/en${alternatePath}`,
+        it: `/it${alternatePath}`,
+        'x-default': alternatePath,
+      },
+    },
+    openGraph: {
+      title: `CodeVivo — ${title}`,
+      description: projectCopy.description,
+      url: canonicalPath,
+      siteName: 'CodeVivo',
+      locale: normalizedLocale === 'it' ? 'it_IT' : 'en_US',
+      type: 'website',
+      images: parentMetadata.openGraph?.images,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `CodeVivo — ${title}`,
+      description: projectCopy.description,
+      images: parentMetadata.twitter?.images,
+    },
+  };
+}
 
 function formatJournalDate(date: string, locale: string) {
   return new Intl.DateTimeFormat(locale === 'it' ? 'it-IT' : 'en-US', {

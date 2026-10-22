@@ -20,7 +20,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Button from '@/components/ui/Button';
 
 // Styles
@@ -52,6 +52,7 @@ const itemVariants = {
 export default function ExploreProjects() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('exploreProjects');
+  const locale = useLocale();
   return (
     <motion.article
       className={cardClassName}
@@ -79,7 +80,7 @@ export default function ExploreProjects() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <Button href='/projects' variant='primary'>
+          <Button href={`/${locale}/projects`} variant='primary'>
             {t('cta')}
           </Button>
         </motion.div>
