@@ -27,20 +27,20 @@ import ContactForm from '@/components/ContactForm';
 
 const homeMetadata = {
   en: {
-    title: 'CodeVivo — Web Development & Digital Projects',
+    title: 'CodeVivo — Professional Websites & Custom Web Applications',
     description:
-      'CodeVivo is the portfolio of Francesco De Vivo, focused on modern web development using React, Next.js, and TypeScript.',
+      'Professional websites and custom web applications by Francesco De Vivo, built with React, Next.js, and TypeScript.',
     openGraphDescription:
-      'Portfolio of Francesco De Vivo — modern web development with React and Next.js.',
+      'Professional websites and custom web applications by Francesco De Vivo.',
     url: 'https://codevivo.dev/en',
     locale: 'en_US',
   },
   it: {
-    title: 'CodeVivo — Sviluppo Web e Progetti Digitali',
+    title: 'CodeVivo — Siti Web Professionali e Applicazioni su Misura',
     description:
-      'CodeVivo e il portfolio di Francesco De Vivo, focalizzato sullo sviluppo web moderno con React, Next.js e TypeScript.',
+      'Siti web professionali e applicazioni web su misura realizzati da Francesco De Vivo con React, Next.js e TypeScript.',
     openGraphDescription:
-      'Portfolio di Francesco De Vivo — sviluppo web moderno con React e Next.js.',
+      'Siti web professionali e applicazioni web su misura realizzati da Francesco De Vivo.',
     url: 'https://codevivo.dev/it',
     locale: 'it_IT',
   },

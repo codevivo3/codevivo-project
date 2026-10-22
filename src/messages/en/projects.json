@@ -6,6 +6,12 @@
     "primary": "View Project",
     "secondary": "Source"
   },
+  "details": {
+    "summary": "Project details",
+    "challenge": "Challenge",
+    "solution": "Approach",
+    "outcome": "Current outcome"
+  },
   "status": {
     "inDevelopment": "In Progress"
   }

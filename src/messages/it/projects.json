@@ -6,6 +6,12 @@
     "primary": "Guarda il progetto",
     "secondary": "Codice"
   },
+  "details": {
+    "summary": "Dettagli del progetto",
+    "challenge": "Esigenza",
+    "solution": "Approccio",
+    "outcome": "Stato attuale"
+  },
   "status": {
     "inDevelopment": "In corso"
   }

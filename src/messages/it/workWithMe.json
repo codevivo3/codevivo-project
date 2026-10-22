@@ -1,12 +1,12 @@
 {
   "overline": "Lavoriamo Insieme",
   "title": "Lavoriamo Insieme",
-  "description": "Sono disponibile per collaborazioni freelance selezionate.",
-  "intro": "Sono disponibile per collaborazioni freelance selezionate.",
+  "description": "Sono disponibile per progetti freelance selezionati, dai siti web professionali alle applicazioni web più avanzate.",
+  "intro": "Sono disponibile per progetti freelance selezionati, dai siti web professionali alle applicazioni web più avanzate.",
   "items": [
-    "App web",
-    "MVP",
-    "UI curate"
+    "Siti web professionali",
+    "Applicazioni web su misura",
+    "MVP e dashboard"
   ],
   "cta": "Parliamone: hello@codevivo.dev",
   "ctaLabel": "Scrivimi:"

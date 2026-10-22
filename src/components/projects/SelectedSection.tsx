@@ -101,7 +101,7 @@ export default function SelectedSection({ projects, title }: Props) {
                   </h3>
                   <span className='mt-2 h-px w-10 bg-primary/70'></span>
                   <p className='mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-fg/72'>
-                    {project.description} {t('status.inDevelopment')}.
+                    {project.description}
                   </p>
 
                   {project.techStack && project.techStack.length > 0 && (
@@ -111,6 +111,46 @@ export default function SelectedSection({ projects, title }: Props) {
                       ))}
                     </div>
                   )}
+
+                  {project.longDescription ||
+                  project.challenge ||
+                  project.solution ||
+                  project.outcome ? (
+                    <details className='mt-4 w-full max-w-2xl rounded-lg border border-border/70 bg-surface/30 px-4 py-3 text-left'>
+                      <summary className='cursor-pointer text-sm font-medium text-accent'>
+                        {t('details.summary')}
+                      </summary>
+                      <div className='mt-4 space-y-4 text-sm leading-relaxed text-fg/72'>
+                        {project.longDescription ? (
+                          <p>{project.longDescription}</p>
+                        ) : null}
+                        {project.challenge ? (
+                          <div>
+                            <h4 className='font-semibold text-fg'>
+                              {t('details.challenge')}
+                            </h4>
+                            <p className='mt-1'>{project.challenge}</p>
+                          </div>
+                        ) : null}
+                        {project.solution ? (
+                          <div>
+                            <h4 className='font-semibold text-fg'>
+                              {t('details.solution')}
+                            </h4>
+                            <p className='mt-1'>{project.solution}</p>
+                          </div>
+                        ) : null}
+                        {project.outcome ? (
+                          <div>
+                            <h4 className='font-semibold text-fg'>
+                              {t('details.outcome')}
+                            </h4>
+                            <p className='mt-1'>{project.outcome}</p>
+                          </div>
+                        ) : null}
+                      </div>
+                    </details>
+                  ) : null}
                 </div>
 
                 <div className='flex w-full max-w-full items-center justify-center rounded-lg p-2 md:p-3'>

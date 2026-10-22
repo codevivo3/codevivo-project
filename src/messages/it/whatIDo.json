@@ -1,10 +1,10 @@
 {
   "overline": "Cosa Faccio",
-  "title": "Cosa Faccio",
-  "intro": "Lavoro sulle parti che rendono utile un prodotto: \nstruttura, chiarezza dell'interfaccia e implementazione funzionale.",
+  "title": "Siti e Applicazioni Web",
+  "intro": "Realizzo esperienze digitali chiare e funzionali per due esigenze complementari: una presenza web professionale e funzionalità di prodotto su misura.",
   "items": [
-    "Sviluppo applicazioni web con React e Next.js",
-    "Progetto interfacce intuitive e ben strutturate",
-    "Trasformo idee in prodotti digitali funzionali"
+    "Siti moderni e responsive per aziende, professionisti e personal brand",
+    "Applicazioni web su misura, dashboard e strumenti orientati ai flussi di lavoro",
+    "MVP e interfacce di prodotto con struttura chiara e implementazione manutenibile"
   ]
 }

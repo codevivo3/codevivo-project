@@ -1,9 +1,9 @@
 {
   "overline": "Work With Me",
   "title": "Work With Me",
-  "description": "I'm available for selected freelance work.",
-  "intro": "I'm available for selected freelance work.",
-  "items": ["Web apps", "MVPs", "Refined UI"],
+  "description": "I'm available for selected freelance projects, from professional websites to more advanced web applications.",
+  "intro": "I'm available for selected freelance projects, from professional websites to more advanced web applications.",
+  "items": ["Professional websites", "Custom web apps", "MVPs and dashboards"],
   "cta": "Let's talk: hello@codevivo.dev",
   "ctaLabel": "Let's talk:"
 }

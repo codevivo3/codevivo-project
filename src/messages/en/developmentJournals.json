@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Development Journal",
-    "description": "Follow how this product is evolving through milestones, product decisions and implementation notes.",
+    "description": "A record of product architecture, interface decisions, implementation milestones, and the next steps shaping this project.",
     "journeyTitle": "Product Journey",
     "latestUpdateTitle": "Latest update",
     "logTitle": "Development log",
@@ -14,7 +14,7 @@
     "entries": {
       "editorial-system": {
         "title": "Editorial System Milestone",
-        "summary": "Nine2Fire moved from early positioning into a more structured editorial system, shaping how long-form content, practical tools and public learning can live together in one product."
+        "summary": "This milestone established a more structured editorial system for Nine2Fire, defining how long-form content, practical tools and public learning can work together within one product."
       }
     },
     "categories": {
@@ -30,11 +30,11 @@
     "entries": {
       "product-architecture": {
         "title": "Product Architecture Milestone",
-        "summary": "deckLog moved beyond interface ideas and started defining its product vocabulary, domain boundaries and operational structure."
+        "summary": "This milestone moved deckLog beyond interface concepts by defining its product vocabulary, domain boundaries and operational structure."
       },
       "fleet-explorer": {
         "title": "Fleet Explorer",
-        "summary": "The first fleet overview started taking shape with reusable cards, localized copy and a clearer structure for browsing boats and operational status."
+        "summary": "The first fleet overview uses reusable cards, localized copy and a clearer information structure for browsing boats and their operational status."
       }
     },
     "categories": {

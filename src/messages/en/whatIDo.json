@@ -1,10 +1,10 @@
 {
   "overline": "What I Do",
-  "title": "What I Do",
-  "intro": "I work on the parts that make a product useful: \nstructure, interface clarity, and functional implementation.",
+  "title": "Websites and Web Applications",
+  "intro": "I build clear, useful digital experiences around two complementary needs: a professional web presence and custom product functionality.",
   "items": [
-    "Build web apps with React and Next.js",
-    "Design clean and structured interfaces",
-    "Turn ideas into functional digital products"
+    "Modern, responsive websites for businesses, independent professionals, and personal brands",
+    "Custom web applications, dashboards, and workflow-focused tools",
+    "MVPs and product interfaces with clear structure and maintainable implementation"
   ]
 }

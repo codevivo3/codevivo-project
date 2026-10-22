@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Diario di sviluppo",
-    "description": "Segui come questo prodotto sta evolvendo tra milestone, decisioni di prodotto e passi di implementazione.",
+    "description": "Un percorso tra architettura di prodotto, decisioni di interfaccia, fasi di implementazione e prossimi passi del progetto.",
     "journeyTitle": "Percorso del prodotto",
     "latestUpdateTitle": "Ultimo aggiornamento",
     "logTitle": "Registro di sviluppo",
@@ -14,7 +14,7 @@
     "entries": {
       "editorial-system": {
         "title": "Milestone del sistema editoriale",
-        "summary": "Nine2Fire ha iniziato a passare dal solo posizionamento iniziale a un sistema editoriale piu solido, chiarendo come contenuti approfonditi, strumenti pratici e apprendimento pubblico possano convivere nello stesso prodotto."
+        "summary": "Questa fase ha definito un sistema editoriale più strutturato per Nine2Fire, chiarendo come contenuti approfonditi, strumenti pratici e apprendimento pubblico possano convivere nello stesso prodotto."
       }
     },
     "categories": {
@@ -30,16 +30,16 @@
     "entries": {
       "product-architecture": {
         "title": "Milestone di architettura prodotto",
-        "summary": "deckLog ha superato la fase delle sole schermate e ha iniziato a definire linguaggio di prodotto, confini del dominio e struttura operativa."
+        "summary": "Questa fase ha portato deckLog oltre i primi concetti di interfaccia, definendo linguaggio di prodotto, confini del dominio e struttura operativa."
       },
       "fleet-explorer": {
         "title": "Fleet Explorer",
-        "summary": "La prima vista d'insieme della flotta ha iniziato a prendere forma con card riutilizzabili, copy localizzato e una struttura piu chiara per esplorare barche e stato operativo."
+        "summary": "La prima vista d'insieme della flotta utilizza card riutilizzabili, testi localizzati e una struttura informativa più chiara per esplorare le imbarcazioni e il loro stato operativo."
       }
     },
     "categories": {
       "architecture": "Architettura",
-      "feature": "Funzionalita"
+      "feature": "Funzionalità"
     },
     "nextSteps": {
       "maintenance-workflow": "Costruire il workflow di manutenzione",

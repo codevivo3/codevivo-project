@@ -1,9 +1,9 @@
 {
   "overline": "Projects",
-  "title": "Projects",
-  "description": "A broader view of selected work, lightweight experiments, and ideas currently in progress.",
+  "title": "Web Development Projects",
+  "description": "Selected websites, web applications, experiments, and products in progress that show how I approach structure, interfaces, and implementation.",
   "labTitle": "Lab Experiments",
-  "selectedTitle": "Recent Projects",
+  "selectedTitle": "Selected Work",
   "inProgressTitle": "In Progress",
   "followProgress": "Follow progress",
   "visitWebsite": "Visit website",

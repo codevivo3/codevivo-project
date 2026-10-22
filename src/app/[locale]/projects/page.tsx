@@ -124,8 +124,12 @@ export default async function ProjectsPage({
     labItemsMeta.some((meta) => meta.id === item.id),
   );
 
+  const inProgressSlugs = new Set(
+    inProgressItemsMeta.map((project) => project.slug).filter(Boolean),
+  );
   const selectedProjects = getProjects(translatedSelectedItems).filter(
-    (project) => project.isVisible !== false,
+    (project) =>
+      project.isVisible !== false && !inProgressSlugs.has(project.slug),
   );
 
   // Merge optional preview/link metadata into translated in-progress entries.
