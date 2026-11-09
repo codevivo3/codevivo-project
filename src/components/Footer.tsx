@@ -27,6 +27,7 @@ export default function Footer() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('footer');
   const locale = useLocale();
+  const homeHref = locale === 'en' ? '/' : `/${locale}`;
 
   const handleCalendlyClick = () => {
     const gtag = (
@@ -59,7 +60,7 @@ export default function Footer() {
 
         <div className='order-1 flex flex-col items-center gap-4 md:items-start md:justify-between h-full py-2 md:py-3'>
           <Link
-            href={`/${locale}`}
+            href={homeHref}
             scroll={true}
             className='text-base font-semibold tracking-tight text-fg sm:text-lg'
             onClick={(e) => {
@@ -80,25 +81,25 @@ export default function Footer() {
         <div className='order-2 flex flex-col items-center gap-4 text-xs sm:text-sm'>
           <nav className='flex flex-col items-center gap-4'>
             <Link
-              href={`/${locale}#projects`}
+              href={`${homeHref}#projects`}
               className='inline-flex min-h-10 items-center font-mono-var text-base sm:text-sm text-fg/70 hover:text-primary'
             >
               {t('nav.projects')}
             </Link>
             <Link
-              href={`/${locale}#tools`}
+              href={`${homeHref}#tools`}
               className='inline-flex min-h-10 items-center font-mono-var text-base sm:text-sm text-fg/70 hover:text-primary'
             >
               {t('nav.tools')}
             </Link>
             <Link
-              href={`/${locale}#about`}
+              href={`${homeHref}#about`}
               className='inline-flex min-h-10 items-center font-mono-var text-base sm:text-sm text-fg/70 hover:text-primary'
             >
               {t('nav.about')}
             </Link>
             <Link
-              href={`/${locale}#contact`}
+              href={`${homeHref}#contact`}
               className='inline-flex min-h-10 items-center font-mono-var text-base sm:text-sm text-fg/70 hover:text-primary'
             >
               {t('nav.contact')}

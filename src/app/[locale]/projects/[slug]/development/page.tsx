@@ -76,8 +76,11 @@ export async function generateMetadata(
 
   const parentMetadata = await parent;
   const title = `${projectCopy.title} — ${pageCopy.title}`;
-  const canonicalPath = `/${normalizedLocale}/projects/${slug}/development`;
   const alternatePath = `/projects/${slug}/development`;
+  const canonicalPath =
+    normalizedLocale === 'en'
+      ? alternatePath
+      : `/${normalizedLocale}${alternatePath}`;
 
   return {
     title,
@@ -85,7 +88,7 @@ export async function generateMetadata(
     alternates: {
       canonical: canonicalPath,
       languages: {
-        en: `/en${alternatePath}`,
+        en: alternatePath,
         it: `/it${alternatePath}`,
         'x-default': alternatePath,
       },
@@ -231,7 +234,7 @@ export default async function DevelopmentJournalPage({
         <div className='mx-auto w-full max-w-5xl px-4 py-10 pb-24 sm:px-6'>
           <div className='space-y-6'>
             <Link
-              href={`/${locale}/projects`}
+              href={locale === 'en' ? '/projects' : `/${locale}/projects`}
               className='group inline-flex w-fit items-center gap-1 text-sm font-medium text-accent transition-all hover:font-semibold'
             >
               <span className='inline-flex items-center gap-1'>

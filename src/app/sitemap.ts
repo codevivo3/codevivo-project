@@ -17,13 +17,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return indexablePaths.flatMap((path) => {
     const languageAlternates = {
-      en: `${siteUrl}/en${path}`,
+      en: `${siteUrl}${path}`,
       it: `${siteUrl}/it${path}`,
       'x-default': path ? `${siteUrl}${path}` : siteUrl,
     };
 
     return locales.map((locale) => ({
-      url: `${siteUrl}/${locale}${path}`,
+      url: locale === 'en' ? `${siteUrl}${path}` : `${siteUrl}/${locale}${path}`,
       alternates: {
         languages: languageAlternates,
       },

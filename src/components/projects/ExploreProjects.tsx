@@ -80,7 +80,10 @@ export default function ExploreProjects() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <Button href={`/${locale}/projects`} variant='primary'>
+          <Button
+            href={locale === 'en' ? '/projects' : `/${locale}/projects`}
+            variant='primary'
+          >
             {t('cta')}
           </Button>
         </motion.div>

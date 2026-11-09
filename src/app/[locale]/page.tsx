@@ -32,7 +32,7 @@ const homeMetadata = {
       'Francesco De Vivo is the developer behind CodeVivo, creating professional websites and custom web applications with React and Next.js.',
     openGraphDescription:
       'Francesco De Vivo is the developer behind CodeVivo, creating professional websites and custom web applications with React and Next.js.',
-    url: 'https://codevivo.dev/en',
+    url: 'https://codevivo.dev',
     locale: 'en_US',
   },
   it: {
@@ -85,9 +85,9 @@ export async function generateMetadata({
     },
     description: currentLocale.description,
     alternates: {
-      canonical: `/${normalizedLocale}`,
+      canonical: normalizedLocale === 'en' ? '/' : `/${normalizedLocale}`,
       languages: {
-        en: '/en',
+        en: '/',
         it: '/it',
         'x-default': '/',
       },

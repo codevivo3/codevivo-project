@@ -19,6 +19,9 @@ import { defineRouting } from 'next-intl/routing';
 export const routing = defineRouting({
   locales: ['en', 'it'],
   defaultLocale: 'en',
+  // English is canonical at unprefixed URLs. Locale detection remains enabled
+  // so Italian visitors reaching an unprefixed URL can still be sent to /it.
+  localePrefix: 'as-needed',
   // Page metadata owns hreflang so valid pages can emit canonical and alternate
   // URLs together without adding alternate headers to 404 responses.
   alternateLinks: false,

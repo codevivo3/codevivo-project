@@ -90,7 +90,9 @@ export default async function NotFound() {
         <p className='text-base md:text-lg text-fg/70 mb-8'>
           {t('not-found.description')}
         </p>
-        <Button href={`/${locale}`}>{t('not-found.homeLink')}</Button>
+        <Button href={locale === 'en' ? '/' : `/${locale}`}>
+          {t('not-found.homeLink')}
+        </Button>
       </div>
     </main>
   );

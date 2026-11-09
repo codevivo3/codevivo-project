@@ -56,7 +56,8 @@ export async function generateMetadata(
   const parentMetadata = await parent;
   const title = t('title');
   const description = t('description');
-  const canonicalPath = `/${normalizedLocale}/projects`;
+  const canonicalPath =
+    normalizedLocale === 'en' ? '/projects' : `/${normalizedLocale}/projects`;
 
   return {
     title,
@@ -64,7 +65,7 @@ export async function generateMetadata(
     alternates: {
       canonical: canonicalPath,
       languages: {
-        en: '/en/projects',
+        en: '/projects',
         it: '/it/projects',
         'x-default': '/projects',
       },
