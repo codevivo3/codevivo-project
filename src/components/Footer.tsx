@@ -53,12 +53,12 @@ export default function Footer() {
     <footer className='relative text-fg backdrop-blur-md'>
       {/* Footer accent lines */}
 
-      <div className='mx-auto relative grid w-full max-w-5xl grid-cols-1 items-start gap-6 px-4 py-6 text-center text-xs text-fg/70 sm:px-6 md:grid-cols-3 md:text-left'>
+      <div className='footer-grid mx-auto relative grid w-full max-w-5xl grid-cols-1 items-start gap-6 px-4 py-6 text-center text-xs text-fg/70 sm:px-6 md:grid-cols-3 md:text-left'>
         {/* Vertical dividers */}
         <div className='pointer-events-none hidden md:block absolute left-1/3 top-1/2 h-16 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-[var(--brand-blue)] to-[var(--brand-gold)] opacity-70' />
         <div className='pointer-events-none hidden md:block absolute left-2/3 top-1/2 h-16 w-px -translate-x-1/2 -translate-y-1/2 bg-gradient-to-b from-[var(--brand-blue)] to-[var(--brand-gold)] opacity-70' />
 
-        <div className='order-1 flex flex-col items-center gap-4 md:items-start md:justify-between h-full py-2 md:py-3'>
+        <div className='footer-brand-column order-1 flex h-full flex-col items-center gap-4 py-2 md:items-start md:justify-between md:py-3'>
           <Link
             href={homeHref}
             scroll={true}
@@ -73,13 +73,13 @@ export default function Footer() {
           >
             <Logo className='opacity-80 hover:opacity-100 md:h-[22px] lg:h-[24px] 2xl:h-[24px] w-auto' />
           </Link>
-          <div className='pt-1 hidden md:block'>
+          <div className='footer-language hidden pt-1 md:block'>
             <LanguageToggle />
           </div>
         </div>
 
         <div className='order-2 flex flex-col items-center gap-4 text-xs sm:text-sm'>
-          <nav className='flex flex-col items-center gap-4'>
+          <nav className='footer-nav flex flex-col items-center gap-4'>
             <Link
               href={`${homeHref}#projects`}
               className='inline-flex min-h-10 items-center font-mono-var text-base sm:text-sm text-fg/70 hover:text-primary'
@@ -110,7 +110,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className='order-3 flex flex-col items-center md:items-end gap-4'>
+        <div className='footer-links order-3 flex flex-col items-center gap-4 md:items-end'>
           <a
             href='mailto:hello@codevivo.dev'
             className='group flex min-h-10 items-center gap-3 text-fg/60 transition-colors hover:text-primary'
@@ -160,7 +160,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className='mt-6 pb-8 md:pb-6 text-center text-sm text-fg/50'>
+      <div className='footer-copyright mt-6 pb-8 text-center text-sm text-fg/50 md:pb-6'>
         {t('copyright')}
       </div>
     </footer>

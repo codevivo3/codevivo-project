@@ -18,9 +18,16 @@
  * - Keep the hidden honeypot field in place; it supports the anti-spam flow on the server.
  * - Form labels and validation text should remain message-driven.
  */
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { track } from '@vercel/analytics';
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from 'framer-motion';
 
 import Button from '@/components/ui/Button';
 import { sendContactEmail } from '@/app/contact/actions';
@@ -36,6 +43,18 @@ export default function ContactForm() {
     sendContactEmail,
     initialContactFormState,
   );
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: contentRef,
+    offset: ['start end', 'end end'],
+  });
+  const scrollOffset = useTransform(scrollYProgress, [0, 0.8], [18, 0]);
+  const springOffset = useSpring(scrollOffset, {
+    stiffness: 140,
+    damping: 24,
+    mass: 0.5,
+  });
 
   useEffect(() => {
     track('contact_form_viewed');
@@ -49,9 +68,13 @@ export default function ContactForm() {
 
   return (
     <section id='contact' className='section-block'>
-      <div
-        className='section-reveal mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 '
-        style={{ ['--reveal-delay' as string]: '180ms' }}
+      <motion.div
+        ref={contentRef}
+        className='section-reveal relative mx-auto w-full max-w-3xl px-4 py-8 sm:px-6'
+        style={{
+          ['--reveal-delay' as string]: '180ms',
+          y: prefersReducedMotion ? 0 : springOffset,
+        }}
       >
         <div className='mb-4 flex flex-col items-center'>
           <h2 className='text-center text-xl font-semibold sm:text-2xl'>
@@ -134,7 +157,7 @@ export default function ContactForm() {
             </div>
           </div>
         </form>
-      </div>
+      </motion.div>
     </section>
   );
 }

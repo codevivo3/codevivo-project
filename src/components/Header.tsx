@@ -71,7 +71,7 @@ export default function Header() {
   };
 
   return (
-    <header className='sticky top-0 z-50 text-fg relative bg-[linear-gradient(to_bottom,var(--surface-main)_0%,var(--surface-main)_57%,transparent_100%)]'>
+    <header className='sticky top-0 z-50 isolate text-fg bg-[linear-gradient(to_bottom,var(--surface-main)_0%,var(--surface-main)_57%,transparent_100%)]'>
       <div
         className={`mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6 md:origin-top md:transform-gpu md:will-change-transform md:transition-[transform,padding,opacity] md:duration-500 md:ease-[cubic-bezier(0.22,1,0.36,1)] ${isScrolled ? 'md:scale-[0.94] md:py-4 md:opacity-95' : 'md:scale-100 md:py-6 md:opacity-100'}`}
       >
@@ -140,7 +140,11 @@ export default function Header() {
       />
 
       <div
-        className={`fixed top-0 right-0 z-[70] flex h-screen w-3/4 max-w-sm flex-col border-l border-border bg-[var(--panel-bg)] px-4 py-4 glass-effect transition-transform duration-200 md:hidden ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 z-[70] flex h-screen w-3/4 max-w-sm flex-col border-l border-border bg-[var(--panel-bg)] px-4 py-4 glass-effect transition-transform duration-200 md:hidden ${
+          isOpen
+            ? 'translate-x-0 pointer-events-auto'
+            : 'translate-x-full pointer-events-none'
+        }`}
         aria-hidden={!isOpen}
       >
         <div className='flex items-start justify-between'>

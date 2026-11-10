@@ -118,14 +118,24 @@ export default function HomePage() {
         type='application/ld+json'
         dangerouslySetInnerHTML={{ __html: homepageStructuredData }}
       />
-      <main className='text-fg'>
+      <main className='homepage text-fg'>
         <Hero />
-        <WhatIDo />
-        <TechStack />
+
+        <div className='tablet-portrait-services'>
+          <WhatIDo />
+          <TechStack />
+        </div>
+
         <FeaturedProjectsPinned />
-        <WorkWithMe />
-        <About />
-        <ContactForm />
+
+        <div className='tablet-portrait-about-group'>
+          <WorkWithMe />
+          <About />
+        </div>
+
+        <div className='homepage-contact tablet-portrait-contact'>
+          <ContactForm />
+        </div>
       </main>
     </>
   );

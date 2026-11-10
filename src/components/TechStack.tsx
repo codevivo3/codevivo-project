@@ -29,7 +29,7 @@ export default function TechStack() {
   return (
     <section id='tools' className='section-block'>
       <div
-        className='section-reveal mx-auto w-full max-w-3xl px-4 py-10 sm:px-6'
+        className='section-reveal mx-auto w-full max-w-3xl px-4 py-10 sm:px-6 md:portrait:py-4'
         style={{ ['--reveal-delay' as string]: '80ms' }}
       >
         <div className='mb-4 flex flex-col items-center'>
@@ -43,7 +43,7 @@ export default function TechStack() {
             </p>
           ) : null}
         </div>
-        <div className='mt-6 grid grid-cols-2 gap-16 sm:mt-8 sm:grid-cols-4 place-items-center p-8'>
+        <div className='mt-6 grid grid-cols-2 gap-16 place-items-center p-8 sm:mt-8 sm:grid-cols-4 md:portrait:mt-4 md:portrait:gap-x-8 md:portrait:gap-y-5 md:portrait:p-4'>
           {techStackEntries.map(([id, tech]) => (
             <div
               key={id}

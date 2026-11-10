@@ -28,7 +28,7 @@ export default function WhatIDo() {
   return (
     <section id='what-i-do' className='section-block'>
       <div
-        className='section-reveal mx-auto w-full max-w-5xl px-4 py-10 sm:px-6'
+        className='section-reveal mx-auto w-full max-w-5xl min-[768px]:max-[1100px]:portrait:max-w-3xl min-[768px]:max-[1100px]:portrait:px-0 px-4 py-10 sm:px-6 md:portrait:py-4'
         style={{ ['--reveal-delay' as string]: '60ms' }}
       >
         <div className='mb-4 flex flex-col items-center'>
@@ -42,11 +42,11 @@ export default function WhatIDo() {
             </p>
           ) : null}
         </div>
-        <div className='mt-8 grid gap-4 md:grid-cols-3'>
+        <div className='mt-8 grid gap-4 md:grid-cols-3 min-[768px]:max-[1100px]:portrait:grid-cols-1 min-[768px]:max-[1100px]:portrait:gap-y-6 md:portrait:mt-5'>
           {items.map((item) => (
             <div
               key={item}
-              className='glass-effect surface-card rounded-xl bg-[var(--panel-bg)] px-5 py-6 text-center'
+              className='glass-effect surface-card rounded-xl bg-[var(--panel-bg)] px-5 py-6 text-center md:portrait:py-4'
             >
               <p className='text-sm leading-relaxed text-fg/78 sm:text-base'>
                 {item}

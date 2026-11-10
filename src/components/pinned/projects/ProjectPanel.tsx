@@ -119,7 +119,7 @@ export default function ProjectPanel({
 
   return (
     <motion.div
-      className={`absolute inset-0 flex items-start justify-center overflow-hidden ${
+      className={`absolute inset-0 flex items-center justify-center overflow-hidden ${
         isLast ? 'pt-16 lg:pt-24 xl:pt-32 2xl:pt-48' : 'pt-10'
       }`}
       style={{

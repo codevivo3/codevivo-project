@@ -18,7 +18,7 @@
  * - Keep supported locale options aligned with `src/i18n/routing.ts`.
  */
 import { useLocale } from 'next-intl';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 
 export default function LanguageToggle() {
   const locale = useLocale();
@@ -27,15 +27,12 @@ export default function LanguageToggle() {
 
   const switchLocale = (nextLocale: 'en' | 'it') => {
     if (nextLocale === locale) return;
-    // Normalize nested locale prefixes before rebuilding the destination path.
-    const normalizedPath = pathname.replace(/^\/(en|it)\/(en|it)/, '/$1');
-    const pathWithoutLocale = normalizedPath.replace(/^\/(en|it)/, '');
-    const nextPath = `/${nextLocale}${pathWithoutLocale || ''}`;
-    router.replace(nextPath);
+
+    router.replace(pathname, { locale: nextLocale });
   };
 
   const baseButton =
-    'relative flex h-full flex-col items-center justify-center px-1.5 text-[11px] font-mono-var uppercase tracking-[0.2em] transition-colors duration-200 hover:text-fg/80';
+    'relative flex h-full cursor-pointer flex-col items-center justify-center px-1.5 text-[11px] font-mono-var uppercase tracking-[0.2em] transition-colors duration-200 hover:text-fg/80';
   return (
     <div className='surface-card inline-flex h-10 md:h-8 items-center gap-2 rounded-lg bg-surface/60 px-2 text-xs font-mono-var backdrop-blur-md'>
       <button

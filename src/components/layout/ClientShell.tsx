@@ -53,7 +53,7 @@ export default function ClientShell({ children }: { children: ReactNode }) {
 
   // Render
   return (
-    <div className='w-full max-w-full'>
+    <div className='client-shell w-full max-w-full'>
       <Header />
       {children}
       <Footer />
