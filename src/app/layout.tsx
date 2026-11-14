@@ -18,13 +18,11 @@
  */
 
 import type { Metadata } from 'next';
-import { GoogleAnalytics } from '@next/third-parties/google';
 import { Montserrat, Roboto_Mono } from 'next/font/google';
 import './globals.css';
-import { Analytics } from '@vercel/analytics/react';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { getLocale } from 'next-intl/server';
 import ScrollToTop from '@/components/ui/ScrollToTop';
+import AnalyticsGate from '@/components/analytics/AnalyticsGate';
 
 const montserrat = Montserrat({
   variable: '--font-sans',
@@ -95,9 +93,7 @@ export default async function RootLayout({
       >
         <ScrollToTop />
         {children}
-        <GoogleAnalytics gaId='G-9PQ705W0XS' />
-        <Analytics />
-        <SpeedInsights />
+        <AnalyticsGate />
       </body>
     </html>
   );

@@ -5,6 +5,17 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async headers() {
+    const noStore = [
+      { key: 'Cache-Control', value: 'no-store' },
+    ];
+
+    return [
+      { source: '/discovery', headers: noStore },
+      { source: '/en/discovery', headers: noStore },
+      { source: '/it/discovery', headers: noStore },
+    ];
+  },
   webpack: (config: Configuration) => {
     config.module?.rules?.push({
       test: /\.svg$/i,

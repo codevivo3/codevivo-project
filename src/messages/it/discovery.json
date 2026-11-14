@@ -1,0 +1,19 @@
+{
+  "overline": "Project Discovery",
+  "loading": {
+    "title": "Verifica dell’invito",
+    "description": "Attendi mentre stabiliamo una sessione sicura."
+  },
+  "unavailable": {
+    "title": "Invito non disponibile",
+    "description": "Questo invito non può essere utilizzato. Contatta CodeVivo per ricevere assistenza."
+  },
+  "expired": {
+    "title": "Invito scaduto",
+    "description": "Questo invito è scaduto. Contatta CodeVivo per ricevere un nuovo invito."
+  },
+  "established": {
+    "title": "La sessione è pronta",
+    "description": "L’accesso sicuro è stato stabilito. Il questionario guidato sarà aggiunto nella fase successiva."
+  }
+}

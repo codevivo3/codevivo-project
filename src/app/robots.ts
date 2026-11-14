@@ -5,6 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
+      disallow: ['/discovery', '/it/discovery'],
     },
     sitemap: 'https://codevivo.dev/sitemap.xml',
     host: 'https://codevivo.dev',

@@ -17,10 +17,31 @@
  */
 
 import createMiddleware from 'next-intl/middleware';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { routing } from '@/i18n/routing';
+import { isDiscoveryPath } from '@/lib/discovery/paths';
+import { applyDiscoverySecurityHeaders } from '@/lib/discovery/security-headers';
 
-export default createMiddleware(routing);
+const intlMiddleware = createMiddleware(routing);
+
+export default function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith('/api/discovery/')) {
+    const response = NextResponse.next();
+    applyDiscoverySecurityHeaders(response.headers);
+    return response;
+  }
+
+  const response = intlMiddleware(request);
+  if (isDiscoveryPath(request.nextUrl.pathname)) {
+    applyDiscoverySecurityHeaders(response.headers);
+  }
+  return response;
+}
 
 export const config = {
-  matcher: '/((?!api|trpc|_next|_vercel|.*\\..*).*)',
+  matcher: [
+    '/api/discovery/:path*',
+    '/((?!api|trpc|_next|_vercel|.*\\..*).*)',
+  ],
 };

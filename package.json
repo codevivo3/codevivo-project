@@ -6,10 +6,18 @@
     "dev": "cross-env NEXT_DISABLE_TURBOPACK=1 next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "discovery:admin": "node --import tsx scripts/discovery-admin.ts",
+    "test:db": "node --test tests/database/*.test.mjs",
+    "test:m2a": "node --import tsx --test tests/discovery/credentials.test.ts tests/discovery/isolation-headers.test.ts tests/discovery/session-security.test.ts",
+    "test:m2b:database": "node --import tsx --test tests/discovery/invitation-live.test.ts",
+    "test:m2b:upstash": "node --env-file=.env.local --import tsx --test tests/discovery/upstash-live.test.ts"
   },
   "dependencies": {
-    "@next/third-parties": "^16.2.0",
+    "@neondatabase/serverless": "^1.2.0",
+    "@next/third-parties": "^16.4.1",
     "@phosphor-icons/react": "^2.1.10",
     "@react-email/components": "^1.0.9",
     "@react-email/render": "^2.0.4",
@@ -22,7 +30,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.577.0",
-    "next": "^16.2.1",
+    "next": "^16.4.1",
     "next-intl": "^4.14.9",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -38,8 +46,9 @@
     "babel-plugin-react-compiler": "1.0.0",
     "cross-env": "^10.1.0",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "^16.4.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

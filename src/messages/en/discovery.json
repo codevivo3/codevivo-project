@@ -1,0 +1,19 @@
+{
+  "overline": "Project Discovery",
+  "loading": {
+    "title": "Checking your invitation",
+    "description": "Please wait while we securely establish your session."
+  },
+  "unavailable": {
+    "title": "Invitation unavailable",
+    "description": "This invitation cannot be used. Please contact CodeVivo for assistance."
+  },
+  "expired": {
+    "title": "Invitation expired",
+    "description": "This invitation has expired. Please contact CodeVivo for a new invitation."
+  },
+  "established": {
+    "title": "Your session is ready",
+    "description": "Secure access has been established. The guided questionnaire will be added in the next stage."
+  }
+}
