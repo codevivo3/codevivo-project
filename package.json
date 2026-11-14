@@ -10,8 +10,9 @@
     "typecheck": "tsc --noEmit",
     "db:migrate": "node scripts/db-migrate.mjs",
     "discovery:admin": "node --import tsx scripts/discovery-admin.ts",
+    "discovery:verify-pepper": "node --import tsx scripts/discovery-verify-pepper.ts",
     "test:db": "node --test tests/database/*.test.mjs",
-    "test:m2a": "node --import tsx --test tests/discovery/credentials.test.ts tests/discovery/isolation-headers.test.ts tests/discovery/session-security.test.ts",
+    "test:m2a": "node --import tsx --test tests/discovery/admin-cli-validation.test.ts tests/discovery/credentials.test.ts tests/discovery/isolation-headers.test.ts tests/discovery/session-security.test.ts",
     "test:m2b:database": "node --import tsx --test tests/discovery/invitation-live.test.ts",
     "test:m2b:upstash": "node --env-file=.env.local --import tsx --test tests/discovery/upstash-live.test.ts"
   },

@@ -99,10 +99,14 @@ Never enable the guard against the production branch.
 
 The local TypeScript CLI reads the direct administration URL and token pepper
 from the Keychain items above. It never accepts credentials or invitation
-tokens as arguments and never prints invitation tokens.
+tokens as arguments and never prints invitation tokens. The current entry point
+is intentionally restricted to the approved `discovery-validation` Neon
+compute and Preview origin. A future production workflow must use a separate,
+reviewed target configuration rather than weakening these validation checks.
 
 ```bash
-npm run discovery:admin -- create
+DISCOVERY_BASE_URL='https://codevivo-project-git-discovery-validation-codevivo-team.vercel.app' \
+  npm run discovery:admin -- create
 npm run discovery:admin -- inspect
 npm run discovery:admin -- revoke
 ```
@@ -112,6 +116,18 @@ and copies the locale-aware link to the macOS clipboard. Inspect prompts for a
 stable invitation ID. Revoke requires an explicit confirmation, is irreversible,
 and atomically invalidates the invitation's active sessions. Invitation
 replacement and email delivery are not implemented.
+
+Before creating a validation invitation, compare the local Keychain pepper with
+the branch-scoped deployed secret through an authenticated, linked Vercel CLI:
+
+```bash
+vercel env run -e preview --git-branch discovery-validation -- \
+  npm run discovery:verify-pepper
+```
+
+The comparator prints only `MATCH` or exits with a generic failure. It never
+prints either pepper or a reusable hash. Do not replace this check with shell
+commands that echo, hash, or otherwise expose either secret.
 
 ## M2B Validation Gates
 

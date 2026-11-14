@@ -13,6 +13,10 @@ import {
   DISCOVERY_PEPPER_SERVICE,
   readKeychainSecret,
 } from './discovery-keychain';
+import {
+  connectDiscoveryValidationDatabase,
+  prepareDiscoveryValidationInvitation,
+} from './discovery-admin-validation';
 
 const DEFAULT_VALIDITY_DAYS = 14;
 const command = process.argv[2];
@@ -20,21 +24,9 @@ const prompt = createInterface({ input: stdin, output: stdout });
 
 function getAdministrationDatabase() {
   const connectionString = readKeychainSecret(DISCOVERY_ADMIN_URL_SERVICE);
-  const url = new URL(connectionString);
-  const role = decodeURIComponent(url.username);
-
-  if (
-    !url.protocol.startsWith('postgres') ||
-    role !== 'codevivo_discovery_admin' ||
-    url.pathname !== '/neondb' ||
-    url.hostname.includes('-pooler')
-  ) {
-    throw new Error(
-      'The administration Keychain item must use the direct neondb URL and administration role',
-    );
-  }
-
-  return neon(connectionString);
+  return connectDiscoveryValidationDatabase(connectionString, (validated) =>
+    neon(validated),
+  );
 }
 
 function getInvitationPepper(): string {
@@ -59,6 +51,11 @@ async function copyInvitationLink(link: string): Promise<void> {
 }
 
 async function createInvitation() {
+  const { baseUrl, database: sql } = prepareDiscoveryValidationInvitation({
+    baseUrl: process.env.DISCOVERY_BASE_URL,
+    connectionString: readKeychainSecret(DISCOVERY_ADMIN_URL_SERVICE),
+    connect: (validated) => neon(validated),
+  });
   const clientName = await askRequired('Client or company name: ');
   const clientEmail = await askRequired('Client email: ');
   const localeInput = (await prompt.question('Locale [en/it] (en): '))
@@ -69,7 +66,6 @@ async function createInvitation() {
     throw new Error('Locale must be en or it');
   }
 
-  const sql = getAdministrationDatabase();
   const invitationId = randomUUID();
   const token = generateDiscoveryCredential();
   const tokenHash = hashDiscoveryCredential(
@@ -99,9 +95,6 @@ async function createInvitation() {
     )
   `;
 
-  const baseUrl = new URL(
-    process.env.DISCOVERY_BASE_URL || 'https://codevivo.dev',
-  );
   baseUrl.pathname = locale === 'it' ? '/it/discovery' : '/discovery';
   baseUrl.search = '';
   baseUrl.hash = `token=${token}`;
