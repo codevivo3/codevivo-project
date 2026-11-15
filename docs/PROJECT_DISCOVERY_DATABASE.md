@@ -269,6 +269,15 @@ its decrypted catalog into `pg_restore --list`, then receives a mode-`0600`
 SHA-256 record and manifest. Restore uses only `--exit-on-error`,
 `--single-transaction`, and `--no-owner`; `--clean` and `--create` are rejected.
 
+Pipeline diagnostics retain only a bounded amount of child-process error output
+in memory and classify failures by process and safe category. Raw GnuPG and
+PostgreSQL output is never logged or included in thrown errors. Restore failures
+reinspect the destination and report whether it remained empty. ACL restoration
+is intentionally still enabled: `--no-owner` does not suppress ACL/default-ACL
+entries, and adding `--no-acl` would prevent the recovery exercise from proving
+the approved runtime and administration grants. A `permission-or-acl` result
+must be reviewed before changing restore policy or role membership.
+
 Validation checks the migration checksum, schema objects, ownership, ACLs,
 approved roles, exact synthetic fixtures, and the original source fingerprint,
 then invokes the existing guarded database integration-test launcher. A failed

@@ -12,6 +12,7 @@ import {
 } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
 import { isAbsolute, join, relative, resolve } from 'node:path';
+import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 import {
   fetchRecoveryMetadata,
@@ -101,6 +102,85 @@ interface RecoveryManifest {
   createdAt: string;
   fingerprint?: Record<string, string | number>;
   fixtures?: typeof RECOVERY_FIXTURES;
+}
+
+type RecoveryProcessName = 'gpg' | 'pg_dump' | 'pg_restore';
+type RecoveryProcessFailureCategory =
+  | 'archive-format'
+  | 'constraint'
+  | 'decryption'
+  | 'destination-not-empty'
+  | 'missing-role'
+  | 'permission-or-acl'
+  | 'process-failed'
+  | 'start-failed'
+  | 'stream-failed';
+
+interface RecoveryPipelineProcess {
+  name: RecoveryProcessName;
+  command: string;
+  args: string[];
+  env: NodeJS.ProcessEnv;
+}
+
+export class RecoveryPipelineError extends Error {
+  constructor(
+    readonly processName: RecoveryProcessName,
+    readonly category: RecoveryProcessFailureCategory,
+    readonly exitCode: number | null,
+  ) {
+    const exit = exitCode === null ? '' : `; exit ${exitCode}`;
+    super(`Recovery executor: ${processName} failed (${category}${exit})`);
+    this.name = 'RecoveryPipelineError';
+  }
+}
+
+function classifyRecoveryProcessFailure(
+  processName: RecoveryProcessName,
+  stderr: string,
+): RecoveryProcessFailureCategory {
+  if (
+    processName === 'gpg' &&
+    /bad passphrase|bad session key|cancel(?:led|ed)|decrypt(?:ion|_message) failed|no secret key/iu.test(
+      stderr,
+    )
+  ) {
+    return 'decryption';
+  }
+  if (processName === 'pg_restore') {
+    if (
+      /\bacl\b|default privileges|insufficient privilege|must be (?:a )?(?:member|owner)|not permitted|permission denied/iu.test(
+        stderr,
+      )
+    ) {
+      return 'permission-or-acl';
+    }
+    if (/role .* does not exist/iu.test(stderr)) return 'missing-role';
+    if (/already exists|duplicate/iu.test(stderr)) {
+      return 'destination-not-empty';
+    }
+    if (/constraint|violates/iu.test(stderr)) return 'constraint';
+    if (
+      /could not read from input|input file appears|unexpected end|unsupported version/iu.test(
+        stderr,
+      )
+    ) {
+      return 'archive-format';
+    }
+  }
+  return 'process-failed';
+}
+
+export function recoveryProcessFailure(
+  processName: RecoveryProcessName,
+  exitCode: number | null,
+  stderr: string,
+): RecoveryPipelineError {
+  return new RecoveryPipelineError(
+    processName,
+    classifyRecoveryProcessFailure(processName, stderr),
+    exitCode,
+  );
 }
 
 export interface RecoveryExecutorDependencies {
@@ -320,33 +400,81 @@ COMMIT;`,
 }
 
 async function processPipeline(
-  left: { command: string; args: string[]; env: NodeJS.ProcessEnv },
-  right: { command: string; args: string[]; env: NodeJS.ProcessEnv },
+  left: RecoveryPipelineProcess,
+  right: RecoveryPipelineProcess,
 ): Promise<void> {
   assertSafeToolArguments(left.command, left.args);
   assertSafeToolArguments(right.command, right.args);
 
   const producer = spawn(left.command, left.args, {
     env: left.env,
-    stdio: ['ignore', 'pipe', 'ignore'],
+    stdio: ['ignore', 'pipe', 'pipe'],
   });
   const consumer = spawn(right.command, right.args, {
     env: right.env,
-    stdio: ['pipe', 'ignore', 'ignore'],
+    stdio: ['pipe', 'ignore', 'pipe'],
   });
-  producer.stdout.pipe(consumer.stdin);
 
-  const wait = (child: ReturnType<typeof spawn>) =>
+  const stderr = new Map<RecoveryProcessName, string>();
+  const captureStderr = (
+    name: RecoveryProcessName,
+    stream: NodeJS.ReadableStream,
+  ) => {
+    let captured = '';
+    stream.setEncoding('utf8');
+    stream.on('data', (chunk: string) => {
+      if (captured.length < 65_536) {
+        captured += chunk.slice(0, 65_536 - captured.length);
+      }
+    });
+    stream.once('end', () => stderr.set(name, captured));
+  };
+  captureStderr(left.name, producer.stderr);
+  captureStderr(right.name, consumer.stderr);
+
+  const transfer = pipeline(producer.stdout, consumer.stdin).then(
+    () => false,
+    () => true,
+  );
+
+  const wait = (
+    child: ReturnType<typeof spawn>,
+    processName: RecoveryProcessName,
+  ) =>
     new Promise<number | null>((resolvePromise, rejectPromise) => {
-      child.once('error', rejectPromise);
+      child.once('error', () =>
+        rejectPromise(
+          new RecoveryPipelineError(processName, 'start-failed', null),
+        ),
+      );
       child.once('close', resolvePromise);
     });
-  const [producerStatus, consumerStatus] = await Promise.all([
-    wait(producer),
-    wait(consumer),
+  const [producerStatus, consumerStatus, streamFailed] = await Promise.all([
+    wait(producer, left.name),
+    wait(consumer, right.name),
+    transfer,
   ]);
-  if (producerStatus !== 0 || consumerStatus !== 0) {
-    throw new Error('Recovery executor: encrypted pipeline failed');
+
+  const producerFailure = recoveryProcessFailure(
+    left.name,
+    producerStatus,
+    stderr.get(left.name) ?? '',
+  );
+  const consumerFailure = recoveryProcessFailure(
+    right.name,
+    consumerStatus,
+    stderr.get(right.name) ?? '',
+  );
+  if (producerStatus !== 0 && producerFailure.category !== 'process-failed') {
+    throw producerFailure;
+  }
+  if (consumerStatus !== 0 && consumerFailure.category !== 'process-failed') {
+    throw consumerFailure;
+  }
+  if (producerStatus !== 0) throw producerFailure;
+  if (consumerStatus !== 0) throw consumerFailure;
+  if (streamFailed) {
+    throw new RecoveryPipelineError(right.name, 'stream-failed', null);
   }
 }
 
@@ -363,6 +491,7 @@ async function createEncryptedBackup(
   try {
     await processPipeline(
       {
+        name: 'pg_dump',
         command: PG_DUMP,
         args: [
           '--format=custom',
@@ -373,6 +502,7 @@ async function createEncryptedBackup(
         env: connectionEnvironment(url, readOnly),
       },
       {
+        name: 'gpg',
         command: GPG,
         args: [
           '--symmetric',
@@ -425,11 +555,13 @@ async function verifyArchive(archivePath: string): Promise<string> {
   assertPrivateFile(archivePath);
   await processPipeline(
     {
+      name: 'gpg',
       command: GPG,
       args: ['--quiet', '--decrypt', '--output', '-', archivePath],
       env: safeBaseEnvironment(),
     },
     {
+      name: 'pg_restore',
       command: PG_RESTORE,
       args: ['--list'],
       env: safeBaseEnvironment(),
@@ -532,11 +664,13 @@ async function restoreArchive(connection: string, archivePath: string): Promise<
   const url = new URL(connection);
   await processPipeline(
     {
+      name: 'gpg',
       command: GPG,
       args: ['--quiet', '--decrypt', '--output', '-', archivePath],
       env: safeBaseEnvironment(),
     },
     {
+      name: 'pg_restore',
       command: PG_RESTORE,
       args: [
         '--exit-on-error',
@@ -859,10 +993,18 @@ export async function runRecoveryExecutor(
     }
     try {
       await restore(context.connections.migration, exerciseArchive);
-    } catch {
+    } catch (error) {
       const state = inspect(context.connections.migration);
       if (Number(state.userTables) !== 0 || Number(state.discoverySchemas) !== 0) {
         throw new Error('Recovery executor: partial restore detected');
+      }
+      if (error instanceof RecoveryPipelineError) {
+        const containment =
+          error.processName === 'pg_restore' &&
+          !['start-failed', 'stream-failed'].includes(error.category)
+            ? 'restore transaction rolled back; destination remained empty'
+            : 'destination remained empty; no partial restore detected';
+        throw new Error(`${error.message}; ${containment}`);
       }
       throw new Error('Recovery executor: restore failed and rolled back');
     }

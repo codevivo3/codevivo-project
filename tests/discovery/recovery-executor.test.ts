@@ -3,6 +3,8 @@ import test from 'node:test';
 import {
   assertSafeToolArguments,
   RECOVERY_FIXTURES,
+  RecoveryPipelineError,
+  recoveryProcessFailure,
   runRecoveryExecutor,
   type RecoveryExecutorDependencies,
 } from '../../scripts/discovery-recovery-executor';
@@ -361,6 +363,84 @@ test('backup stops on encryption and archive verification failures', async () =>
       }),
     ),
     /archive verification failed/u,
+  );
+});
+
+test('pipeline failures are attributed without exposing captured diagnostics', () => {
+  const gpgFailure = recoveryProcessFailure(
+    'gpg',
+    2,
+    'gpg: decryption failed: Bad session key secret-marker',
+  );
+  assert.match(gpgFailure.message, /gpg failed \(decryption; exit 2\)/u);
+  assert.doesNotMatch(gpgFailure.message, /secret-marker/u);
+
+  const restoreFailure = recoveryProcessFailure(
+    'pg_restore',
+    1,
+    'ERROR: must be member of role cloud_admin\nCommand was: ALTER DEFAULT PRIVILEGES; client@example.test',
+  );
+  assert.match(
+    restoreFailure.message,
+    /pg_restore failed \(permission-or-acl; exit 1\)/u,
+  );
+  assert.doesNotMatch(
+    restoreFailure.message,
+    /cloud_admin|ALTER DEFAULT|client@example/u,
+  );
+
+  assert.equal(
+    new RecoveryPipelineError('pg_restore', 'stream-failed', null).message,
+    'Recovery executor: pg_restore failed (stream-failed)',
+  );
+});
+
+test('restore preserves safe process attribution after an empty rollback', async () => {
+  await assert.rejects(
+    runRecoveryExecutor(
+      'restore',
+      environment('restore'),
+      dependencies({
+        verifyArchive: async () => 'checksum',
+        readManifest: () => ({
+          archive: 'codevivo-exercise.pg18.dump.gpg',
+          archiveSha256: 'checksum',
+          createdAt: NOW.toISOString(),
+          fixtures: RECOVERY_FIXTURES,
+        }),
+        restoreArchive: async () => {
+          throw new RecoveryPipelineError('pg_restore', 'permission-or-acl', 1);
+        },
+      }),
+    ),
+    /pg_restore failed \(permission-or-acl; exit 1\); restore transaction rolled back; destination remained empty/u,
+  );
+});
+
+test('restore redacts unknown failure details after an empty rollback', async () => {
+  await assert.rejects(
+    runRecoveryExecutor(
+      'restore',
+      environment('restore'),
+      dependencies({
+        verifyArchive: async () => 'checksum',
+        readManifest: () => ({
+          archive: 'codevivo-exercise.pg18.dump.gpg',
+          archiveSha256: 'checksum',
+          createdAt: NOW.toISOString(),
+          fixtures: RECOVERY_FIXTURES,
+        }),
+        restoreArchive: async () => {
+          throw new Error('sensitive-marker client-data');
+        },
+      }),
+    ),
+    (error: unknown) => {
+      assert.ok(error instanceof Error);
+      assert.match(error.message, /restore failed and rolled back/u);
+      assert.doesNotMatch(error.message, /sensitive-marker|client-data/u);
+      return true;
+    },
   );
 });
 
