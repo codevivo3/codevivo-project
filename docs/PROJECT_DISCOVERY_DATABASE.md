@@ -170,3 +170,112 @@ Recommended procedure:
 Never test restoration by overwriting production. The database is not
 production-ready until an actual backup and disposable restore have succeeded
 and the result has been recorded.
+
+### Recovery integration-test guard
+
+Recovery database tests must use the dedicated `npm run test:db:recovery`
+launcher. It verifies the fixed project and recovery branch through Neon's
+read-only API, requires the exact read-write endpoint returned for that branch,
+and validates direct role-specific connection URLs before starting the existing
+database tests. Ordinary `npm run test:db` behavior is unchanged.
+
+After creating `recovery-gate-20261114`, record its branch and read-write
+endpoint IDs. Store a Neon API credential with access to read this project's
+metadata, plus the three direct recovery database URLs, in macOS Keychain under
+account `codevivo-project`. The launcher uses the credential only for two GET
+requests:
+
+- `codevivo.discovery.recovery.neon-api-key`
+- `codevivo.discovery.recovery.runtime.database-url`
+- `codevivo.discovery.recovery.admin.database-url`
+- `codevivo.discovery.recovery.migration.database-url`
+
+Then run:
+
+```bash
+DISCOVERY_RECOVERY_TEST_ALLOW='recovery-gate-20261114' \
+DISCOVERY_RECOVERY_BRANCH_ID='br-…' \
+DISCOVERY_RECOVERY_ENDPOINT_ID='ep-…' \
+npm run test:db:recovery
+```
+
+The launcher rejects the validation source, pooled URLs, every other database
+or role, and any branch or endpoint identity not confirmed by the Neon API.
+
+### Guarded recovery executor
+
+The recovery exercise must use `npm run discovery:recovery -- <stage>`. The
+executor is pinned to project `round-tree-42808727`, recovery branch
+`br-sparkling-lab-baigfr0y`, parent `br-winter-block-bagymuuk`, and endpoint
+`ep-steep-cake-ba0bo6a8`. It requires at least three hours of branch lifetime
+at the start of every stage. An expired branch or a future replacement requires
+a reviewed code change; environment variables cannot redirect the executor.
+
+Set only non-secret execution metadata in the shell:
+
+```bash
+export DISCOVERY_RECOVERY_BRANCH_ID='br-sparkling-lab-baigfr0y'
+export DISCOVERY_RECOVERY_ENDPOINT_ID='ep-steep-cake-ba0bo6a8'
+export DISCOVERY_RECOVERY_ARCHIVE_DIR='/absolute/outside-repository/path'
+```
+
+The archive directory must already exist, be owned by the current user, have
+mode `0700`, not be a symbolic link, and resolve outside the repository. The
+executor refuses to overwrite archives, manifests, or checksum records.
+
+Run the stages in this order:
+
+```bash
+npm run discovery:recovery -- preflight
+
+DISCOVERY_RECOVERY_STAGE_ALLOW='backup-source:recovery-gate-20261114' \
+  npm run discovery:recovery -- backup-source
+
+DISCOVERY_RECOVERY_STAGE_ALLOW='prepare-fixtures:recovery-gate-20261114' \
+  npm run discovery:recovery -- prepare-fixtures
+
+DISCOVERY_RECOVERY_STAGE_ALLOW='backup-exercise:recovery-gate-20261114' \
+  npm run discovery:recovery -- backup-exercise
+
+DISCOVERY_RECOVERY_STAGE_ALLOW='restore:recovery-gate-20261114' \
+  npm run discovery:recovery -- restore
+
+DISCOVERY_RECOVERY_STAGE_ALLOW='validate:recovery-gate-20261114' \
+  npm run discovery:recovery -- validate
+```
+
+Each non-preflight stage requires its exact, non-reusable authorization value.
+Every stage repeats Keychain, Neon metadata, branch-expiration, endpoint, role,
+database, direct-connection, and archive-directory checks before continuing.
+The executor reads these Keychain services under account `codevivo-project`:
+
+- `codevivo.discovery.recovery.neon-api-key`
+- `codevivo.discovery.recovery.runtime.database-url`
+- `codevivo.discovery.recovery.admin.database-url`
+- `codevivo.discovery.recovery.migration.database-url`
+- `codevivo.discovery.migration.database-url` (read-only source backup)
+
+The original validation source is opened with PostgreSQL's
+`default_transaction_read_only` setting. Synthetic fixtures are written only
+to the disposable branch's cloned `neondb`. The restore destination is always
+the empty `codevivo_recovery_gate` database. Connection URLs and passwords are
+passed to PostgreSQL tools only through a reduced child-process environment;
+they are never arguments or log output.
+
+Backups stream directly from PostgreSQL 18 `pg_dump -Fc` to GnuPG AES-256
+symmetric encryption. GnuPG obtains the passphrase through pinentry. No
+plaintext archive is created. Each encrypted archive is validated by streaming
+its decrypted catalog into `pg_restore --list`, then receives a mode-`0600`
+SHA-256 record and manifest. Restore uses only `--exit-on-error`,
+`--single-transaction`, and `--no-owner`; `--clean` and `--create` are rejected.
+
+Validation checks the migration checksum, schema objects, ownership, ACLs,
+approved roles, exact synthetic fixtures, and the original source fingerprint,
+then invokes the existing guarded database integration-test launcher. A failed
+restore is inspected for partial state and stops. The executor never repairs,
+cleans, retries, deletes, or revokes resources automatically.
+
+After a successful report, separately authorize removal of the disposable
+fixtures/branch, local encrypted archives according to the chosen retention
+period, recovery Keychain entries, the dedicated Viewer API key, and its
+project grant. Never delete evidence or credentials as part of a failed run.
