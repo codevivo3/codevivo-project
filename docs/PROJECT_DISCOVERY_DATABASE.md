@@ -179,7 +179,7 @@ read-only API, requires the exact read-write endpoint returned for that branch,
 and validates direct role-specific connection URLs before starting the existing
 database tests. Ordinary `npm run test:db` behavior is unchanged.
 
-After creating `recovery-gate-20261114`, record its branch and read-write
+After creating `recovery-gate-20261115`, record its branch and read-write
 endpoint IDs. Store a Neon API credential with access to read this project's
 metadata, plus the three direct recovery database URLs, in macOS Keychain under
 account `codevivo-project`. The launcher uses the credential only for two GET
@@ -193,7 +193,7 @@ requests:
 Then run:
 
 ```bash
-DISCOVERY_RECOVERY_TEST_ALLOW='recovery-gate-20261114' \
+DISCOVERY_RECOVERY_TEST_ALLOW='recovery-gate-20261115' \
 DISCOVERY_RECOVERY_BRANCH_ID='br-…' \
 DISCOVERY_RECOVERY_ENDPOINT_ID='ep-…' \
 npm run test:db:recovery
@@ -206,16 +206,16 @@ or role, and any branch or endpoint identity not confirmed by the Neon API.
 
 The recovery exercise must use `npm run discovery:recovery -- <stage>`. The
 executor is pinned to project `round-tree-42808727`, recovery branch
-`br-sparkling-lab-baigfr0y`, parent `br-winter-block-bagymuuk`, and endpoint
-`ep-steep-cake-ba0bo6a8`. It requires at least three hours of branch lifetime
+`br-icy-night-bayxgd2t`, parent `br-winter-block-bagymuuk`, and endpoint
+`ep-floral-hill-ba9ljztf`. It requires at least three hours of branch lifetime
 at the start of every stage. An expired branch or a future replacement requires
 a reviewed code change; environment variables cannot redirect the executor.
 
 Set only non-secret execution metadata in the shell:
 
 ```bash
-export DISCOVERY_RECOVERY_BRANCH_ID='br-sparkling-lab-baigfr0y'
-export DISCOVERY_RECOVERY_ENDPOINT_ID='ep-steep-cake-ba0bo6a8'
+export DISCOVERY_RECOVERY_BRANCH_ID='br-icy-night-bayxgd2t'
+export DISCOVERY_RECOVERY_ENDPOINT_ID='ep-floral-hill-ba9ljztf'
 export DISCOVERY_RECOVERY_ARCHIVE_DIR='/absolute/outside-repository/path'
 ```
 
@@ -228,19 +228,19 @@ Run the stages in this order:
 ```bash
 npm run discovery:recovery -- preflight
 
-DISCOVERY_RECOVERY_STAGE_ALLOW='backup-source:recovery-gate-20261114' \
+DISCOVERY_RECOVERY_STAGE_ALLOW='backup-source:recovery-gate-20261115' \
   npm run discovery:recovery -- backup-source
 
-DISCOVERY_RECOVERY_STAGE_ALLOW='prepare-fixtures:recovery-gate-20261114' \
+DISCOVERY_RECOVERY_STAGE_ALLOW='prepare-fixtures:recovery-gate-20261115' \
   npm run discovery:recovery -- prepare-fixtures
 
-DISCOVERY_RECOVERY_STAGE_ALLOW='backup-exercise:recovery-gate-20261114' \
+DISCOVERY_RECOVERY_STAGE_ALLOW='backup-exercise:recovery-gate-20261115' \
   npm run discovery:recovery -- backup-exercise
 
-DISCOVERY_RECOVERY_STAGE_ALLOW='restore:recovery-gate-20261114' \
+DISCOVERY_RECOVERY_STAGE_ALLOW='restore:recovery-gate-20261115' \
   npm run discovery:recovery -- restore
 
-DISCOVERY_RECOVERY_STAGE_ALLOW='validate:recovery-gate-20261114' \
+DISCOVERY_RECOVERY_STAGE_ALLOW='validate:recovery-gate-20261115' \
   npm run discovery:recovery -- validate
 ```
 

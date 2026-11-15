@@ -17,7 +17,7 @@ const branchId = RECOVERY_BRANCH_ID;
 const endpointId = RECOVERY_ENDPOINT_ID;
 const hostname = RECOVERY_ENDPOINT_HOST;
 const NOW = new Date('2026-11-15T10:00:00.000Z');
-const EXPIRES_AT = '2026-11-15T17:01:33.000Z';
+const EXPIRES_AT = '2026-11-16T10:29:36Z';
 
 const connection = (role: string, overrides: Partial<URL> = {}) => {
   const url = new URL(

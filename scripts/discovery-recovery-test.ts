@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import {
   fetchRecoveryMetadata,
+  RECOVERY_AUTHORIZATION,
   RECOVERY_KEYCHAIN_SERVICES,
   verifyRecoveryTestConfiguration,
 } from './discovery-recovery-guard';
@@ -32,7 +33,7 @@ export async function runRecoveryTestLauncher(
   dependencies: LauncherDependencies = {},
 ): Promise<number> {
   if (
-    environment.DISCOVERY_RECOVERY_TEST_ALLOW !== 'recovery-gate-20261114'
+    environment.DISCOVERY_RECOVERY_TEST_ALLOW !== RECOVERY_AUTHORIZATION
   ) {
     throw new Error('Recovery test guard: explicit authorization is required');
   }

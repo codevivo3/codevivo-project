@@ -60,7 +60,7 @@ const secrets = new Map([
   ],
 ]);
 
-const metadataResponse = (expiresAt = '2026-11-15T17:01:33.000Z') =>
+const metadataResponse = (expiresAt = '2026-11-16T10:29:36Z') =>
   async (url: URL | RequestInfo) =>
     new Response(
       JSON.stringify(
