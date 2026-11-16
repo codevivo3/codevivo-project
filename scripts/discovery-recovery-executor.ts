@@ -151,6 +151,15 @@ type RecoveryStreamState =
   | 'failed'
   | 'not-applicable';
 
+export type RecoveryGpgFailureDetail =
+  | 'agent-or-pinentry'
+  | 'bad-session-key'
+  | 'broken-pipe'
+  | 'cancelled'
+  | 'credential-unavailable'
+  | 'generic-decryption'
+  | 'integrity-failure';
+
 interface RecoveryPipelineProcess {
   name: RecoveryProcessName;
   command: string;
@@ -205,6 +214,7 @@ export class RecoveryPipelineError extends Error {
     readonly exitCode: number | null,
     readonly signal: NodeJS.Signals | null = null,
     readonly streamState: RecoveryStreamState = 'not-applicable',
+    readonly detailCode?: RecoveryGpgFailureDetail,
   ) {
     const exit = exitCode === null ? '' : `; exit ${exitCode}`;
     super(`Recovery executor: ${processName} failed (${category}${exit})`);
@@ -222,7 +232,10 @@ export class RecoveryDiagnosticError extends Error {
       ? ` process=${pipelineFailure.processName} category=${pipelineFailure.category}` +
         ` exit=${pipelineFailure.exitCode ?? 'none'}` +
         ` signal=${pipelineFailure.signal ?? 'none'}` +
-        ` stream=${pipelineFailure.streamState}`
+        ` stream=${pipelineFailure.streamState}` +
+        (pipelineFailure.detailCode
+          ? ` detail=${pipelineFailure.detailCode}`
+          : '')
       : '';
     super(`Recovery executor: stage=${stage} cause=${causeCode}${pipeline}`);
     this.name = 'RecoveryDiagnosticError';
@@ -301,6 +314,33 @@ function classifyRecoveryProcessFailure(
   return 'process-failed';
 }
 
+function classifyGpgFailureDetail(
+  stderr: string,
+  streamState: RecoveryStreamState,
+): RecoveryGpgFailureDetail | undefined {
+  if (
+    streamState === 'broken-pipe' &&
+    /broken pipe|error writing to ['"]?-['"]?|handle plaintext failed/iu.test(stderr)
+  ) {
+    return 'broken-pipe';
+  }
+  if (/bad mdc|manipulated|integrity|invalid packet|crc error/iu.test(stderr)) {
+    return 'integrity-failure';
+  }
+  if (/pinentry|problem with the agent|inappropriate ioctl|cannot open .*tty/iu.test(stderr)) {
+    return 'agent-or-pinentry';
+  }
+  if (/bad passphrase|bad session key/iu.test(stderr)) {
+    return 'bad-session-key';
+  }
+  if (/cancel(?:led|ed)/iu.test(stderr)) return 'cancelled';
+  if (/no secret key/iu.test(stderr)) return 'credential-unavailable';
+  if (/decrypt(?:ion|_message) failed/iu.test(stderr)) {
+    return 'generic-decryption';
+  }
+  return undefined;
+}
+
 export function recoveryProcessFailure(
   processName: RecoveryProcessName,
   exitCode: number | null,
@@ -314,6 +354,9 @@ export function recoveryProcessFailure(
     exitCode,
     signal,
     streamState,
+    processName === 'gpg'
+      ? classifyGpgFailureDetail(stderr, streamState)
+      : undefined,
   );
 }
 

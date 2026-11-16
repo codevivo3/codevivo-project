@@ -778,6 +778,7 @@ test('pipeline failures are attributed without exposing captured diagnostics', (
     'gpg: decryption failed: Bad session key secret-marker',
   );
   assert.match(gpgFailure.message, /gpg failed \(decryption; exit 2\)/u);
+  assert.equal(gpgFailure.detailCode, 'bad-session-key');
   assert.doesNotMatch(gpgFailure.message, /secret-marker/u);
 
   const restoreFailure = recoveryProcessFailure(
@@ -805,6 +806,7 @@ test('pipeline failures are attributed without exposing captured diagnostics', (
     null,
     'SIGTERM',
     'failed',
+    'agent-or-pinentry',
   );
   const diagnostic = new RecoveryDiagnosticError(
     'archive-full-stream-verification',
@@ -813,9 +815,49 @@ test('pipeline failures are attributed without exposing captured diagnostics', (
   );
   assert.equal(
     diagnostic.message,
-    'Recovery executor: stage=archive-full-stream-verification cause=pipeline-failure process=gpg category=decryption exit=none signal=SIGTERM stream=failed',
+    'Recovery executor: stage=archive-full-stream-verification cause=pipeline-failure process=gpg category=decryption exit=none signal=SIGTERM stream=failed detail=agent-or-pinentry',
   );
   assert.doesNotMatch(diagnostic.message, /stderr|passphrase|credential/iu);
+});
+
+test('GPG diagnostics distinguish sanitized credential and integrity causes', () => {
+  const cases = [
+    {
+      detail: 'agent-or-pinentry',
+      stderr:
+        'gpg: problem with the agent: Inappropriate ioctl for device\ngpg: decryption failed: No secret key',
+    },
+    {
+      detail: 'credential-unavailable',
+      stderr: 'gpg: decryption failed: No secret key',
+    },
+    {
+      detail: 'integrity-failure',
+      stderr: 'gpg: WARNING: encrypted message has been manipulated!',
+    },
+    {
+      detail: 'broken-pipe',
+      stderr: "gpg: error writing to '-': Broken pipe",
+    },
+  ] as const;
+
+  for (const fixture of cases) {
+    const failure = recoveryProcessFailure(
+      'gpg',
+      2,
+      fixture.stderr,
+      null,
+      fixture.detail === 'broken-pipe' ? 'broken-pipe' : 'complete',
+    );
+    assert.equal(failure.detailCode, fixture.detail);
+    const diagnostic = new RecoveryDiagnosticError(
+      'archive-full-stream-verification',
+      'pipeline-failure',
+      failure,
+    );
+    assert.match(diagnostic.message, new RegExp(`detail=${fixture.detail}`, 'u'));
+    assert.doesNotMatch(diagnostic.message, /ioctl|secret key|manipulated/iu);
+  }
 });
 
 test('archive verification reports the exact sanitized failing stage', async () => {
@@ -989,6 +1031,42 @@ test(
       );
       assert.equal(encryption.status, 0, 'synthetic archive creation failed');
 
+      await context.test(
+        'reproduces credential acquisition failure with the production pipe',
+        async () => {
+          for (const argumentsValue of [
+            ['--quiet', '--decrypt', '--output', '-', archive],
+            [
+              '--batch',
+              '--no-tty',
+              '--quiet',
+              '--decrypt',
+              '--output',
+              '-',
+              archive,
+            ],
+          ]) {
+            await assert.rejects(
+              verifyEncryptedArchiveStream(archive, {
+                arguments: argumentsValue,
+                command: gpg,
+                environment: subprocessEnvironment,
+              }),
+              (error: unknown) => {
+                assert.ok(error instanceof RecoveryPipelineError);
+                assert.equal(error.processName, 'gpg');
+                assert.equal(error.category, 'decryption');
+                assert.equal(error.exitCode, 2);
+                assert.equal(error.signal, null);
+                assert.equal(error.streamState, 'complete');
+                assert.equal(error.detailCode, 'agent-or-pinentry');
+                return true;
+              },
+            );
+          }
+        },
+      );
+
       await context.test('drains and verifies the complete plaintext stream', async () => {
         await assert.doesNotReject(
           verifyEncryptedArchiveStream(archive, {
@@ -1090,6 +1168,7 @@ test(
           (error: unknown) => {
             assert.ok(error instanceof RecoveryPipelineError);
             assert.equal(error.processName, 'gpg');
+            assert.equal(error.detailCode, 'bad-session-key');
             return true;
           },
         );
@@ -1110,6 +1189,8 @@ test(
           (error: unknown) => {
             assert.ok(error instanceof RecoveryPipelineError);
             assert.equal(error.processName, 'gpg');
+            assert.ok(error.detailCode);
+            assert.notEqual(error.detailCode, 'broken-pipe');
             return true;
           },
         );

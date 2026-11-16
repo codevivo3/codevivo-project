@@ -294,8 +294,10 @@ Sanitized diagnostic errors identify the precise recovery stage:
 `toc-filtering`, `database-restore-streaming`, `temporary-toc-preparation`,
 `temporary-toc-cleanup`, or `rollback-inspection`. Pipeline failures also report
 only the process name, classified cause, exit code, termination signal, and
-stream state. They never include captured standard error, archive contents,
-credentials, or passphrases.
+stream state. GnuPG failures additionally use a sanitized detail code to
+distinguish agent or pinentry access, unavailable credentials, bad session
+keys, integrity failures, cancellation, and broken pipes. They never include
+captured standard error, archive contents, credentials, or passphrases.
 ACL restoration remains enabled: `--no-owner` does not suppress ACL/default-ACL
 entries, and `--no-acl` would prevent the recovery exercise from proving the
 approved runtime and administration grants. Before restore, the executor
