@@ -1,11 +1,11 @@
 export const RECOVERY_PROJECT_ID = 'round-tree-42808727';
-export const RECOVERY_BRANCH_NAME = 'recovery-gate-20261115';
-export const RECOVERY_BRANCH_ID = 'br-icy-night-bayxgd2t';
-export const RECOVERY_ENDPOINT_ID = 'ep-floral-hill-ba9ljztf';
+export const RECOVERY_BRANCH_NAME = 'recovery-gate-20261116';
+export const RECOVERY_BRANCH_ID = 'br-cold-base-babuwept';
+export const RECOVERY_ENDPOINT_ID = 'ep-wild-silence-baxdsq4w';
 export const RECOVERY_ENDPOINT_HOST =
-  'ep-floral-hill-ba9ljztf.c-8.eu-central-1.aws.neon.tech';
+  'ep-wild-silence-baxdsq4w.c-8.eu-central-1.aws.neon.tech';
 export const RECOVERY_DATABASE_NAME = 'codevivo_recovery_gate';
-export const RECOVERY_AUTHORIZATION = 'recovery-gate-20261115';
+export const RECOVERY_AUTHORIZATION = 'recovery-gate-20261116';
 export const SOURCE_BRANCH_ID = 'br-winter-block-bagymuuk';
 export const SOURCE_ENDPOINT_ID = 'ep-late-sea-bas88ozp';
 export const SOURCE_ENDPOINT_HOST =

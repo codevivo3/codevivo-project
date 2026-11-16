@@ -7,6 +7,7 @@ import {
   RECOVERY_DATABASE_NAME,
   RECOVERY_ENDPOINT_HOST,
   RECOVERY_ENDPOINT_ID,
+  RECOVERY_PROJECT_ID,
   SOURCE_BRANCH_ID,
   SOURCE_ENDPOINT_ID,
   verifyRecoveryTestConfiguration,
@@ -16,8 +17,8 @@ import { runRecoveryTestLauncher } from '../../scripts/discovery-recovery-test';
 const branchId = RECOVERY_BRANCH_ID;
 const endpointId = RECOVERY_ENDPOINT_ID;
 const hostname = RECOVERY_ENDPOINT_HOST;
-const NOW = new Date('2026-11-15T10:00:00.000Z');
-const EXPIRES_AT = '2026-11-16T10:29:36Z';
+const NOW = new Date('2026-11-16T10:00:00.000Z');
+const EXPIRES_AT = '2026-11-17T10:29:36Z';
 
 const connection = (role: string, overrides: Partial<URL> = {}) => {
   const url = new URL(
@@ -55,6 +56,32 @@ const validInput = () => ({
     migration: connection('codevivo_discovery_migration'),
   },
   now: NOW,
+});
+
+test('pins the approved rotated recovery identity', () => {
+  assert.deepEqual(
+    {
+      authorization: RECOVERY_AUTHORIZATION,
+      branchId: RECOVERY_BRANCH_ID,
+      branchName: RECOVERY_BRANCH_NAME,
+      database: RECOVERY_DATABASE_NAME,
+      endpointHost: RECOVERY_ENDPOINT_HOST,
+      endpointId: RECOVERY_ENDPOINT_ID,
+      parentBranchId: SOURCE_BRANCH_ID,
+      projectId: RECOVERY_PROJECT_ID,
+    },
+    {
+      authorization: 'recovery-gate-20261116',
+      branchId: 'br-cold-base-babuwept',
+      branchName: 'recovery-gate-20261116',
+      database: 'codevivo_recovery_gate',
+      endpointHost:
+        'ep-wild-silence-baxdsq4w.c-8.eu-central-1.aws.neon.tech',
+      endpointId: 'ep-wild-silence-baxdsq4w',
+      parentBranchId: 'br-winter-block-bagymuuk',
+      projectId: 'round-tree-42808727',
+    },
+  );
 });
 
 test('accepts an exact mocked recovery target', () => {

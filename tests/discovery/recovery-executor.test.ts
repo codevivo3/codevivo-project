@@ -43,7 +43,7 @@ import {
   SOURCE_ENDPOINT_HOST,
 } from '../../scripts/discovery-recovery-guard';
 
-const NOW = new Date('2026-11-15T10:00:00.000Z');
+const NOW = new Date('2026-11-16T10:00:00.000Z');
 const ARCHIVE_DIRECTORY = '/secure/recovery-archives';
 
 const connection = (hostname: string, database: string, role: string) =>
@@ -85,7 +85,7 @@ const secrets = new Map([
   ],
 ]);
 
-const metadataResponse = (expiresAt = '2026-11-16T10:29:36Z') =>
+const metadataResponse = (expiresAt = '2026-11-17T10:29:36Z') =>
   async (url: URL | RequestInfo) =>
     new Response(
       JSON.stringify(
@@ -273,7 +273,7 @@ test('rejects expired and short-lived recovery branches', async () => {
       'preflight',
       environment(),
       dependencies({
-        fetchImplementation: metadataResponse('2026-11-15T09:59:59.000Z'),
+        fetchImplementation: metadataResponse('2026-11-16T09:59:59.000Z'),
       }),
     ),
     /expired/u,
@@ -283,7 +283,7 @@ test('rejects expired and short-lived recovery branches', async () => {
       'preflight',
       environment(),
       dependencies({
-        fetchImplementation: metadataResponse('2026-11-15T12:59:59.000Z'),
+        fetchImplementation: metadataResponse('2026-11-16T12:59:59.000Z'),
       }),
     ),
     /insufficient/u,
@@ -337,6 +337,49 @@ test('restore rejects an archive that does not match its recorded manifest', asy
     /manifest mismatch/u,
   );
   assert.equal(restoreRuns, 0);
+});
+
+test('rotated target can restore an existing compatible archive and manifest', async () => {
+  let backupRuns = 0;
+  let fixtureRuns = 0;
+  let inspections = 0;
+  let restoreRuns = 0;
+  await runRecoveryExecutor(
+    'restore',
+    environment('restore'),
+    dependencies({
+      createEncryptedBackup: async () => {
+        backupRuns += 1;
+      },
+      inspectTarget: () => {
+        inspections += 1;
+        return inspections === 1
+          ? emptyTarget
+          : { ...emptyTarget, userTables: 4, discoverySchemas: 1 };
+      },
+      prepareFixtures: () => {
+        fixtureRuns += 1;
+      },
+      readManifest: () => ({
+        archive: 'codevivo-exercise.pg18.dump.gpg',
+        archiveSha256: 'existing-checksum',
+        createdAt: '2026-11-15T10:00:00.000Z',
+        fixtures: RECOVERY_FIXTURES,
+      }),
+      restoreArchive: async (_connection, archivePath, tableOfContents) => {
+        restoreRuns += 1;
+        assert.match(archivePath, /codevivo-exercise\.pg18\.dump\.gpg$/u);
+        assert.equal(tableOfContents, validTableOfContents);
+      },
+      verifyArchive: async () => ({
+        archiveSha256: 'existing-checksum',
+        tableOfContents: validTableOfContents,
+      }),
+    }),
+  );
+  assert.equal(backupRuns, 0);
+  assert.equal(fixtureRuns, 0);
+  assert.equal(restoreRuns, 1);
 });
 
 test('unsafe backup and restore arguments are rejected', () => {
