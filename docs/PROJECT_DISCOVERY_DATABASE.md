@@ -267,19 +267,27 @@ symmetric encryption. GnuPG obtains the passphrase through pinentry. No
 plaintext archive is created. Each encrypted archive is validated by streaming
 its decrypted catalog into `pg_restore --list`, then receives a mode-`0600`
 SHA-256 record and manifest. Restore uses `--exit-on-error`,
-`--single-transaction`, `--no-owner`, and a validated in-memory `--use-list`;
-`--clean`, `--create`, and blanket ACL suppression are rejected.
+`--single-transaction`, `--no-owner`, and a validated `--use-list`; `--clean`,
+`--create`, and blanket ACL suppression are rejected. The filtered TOC metadata
+is written exclusively to a randomly named mode-`0600` file in the validated
+private archive directory. The decrypted archive payload remains streamed from
+GnuPG to `pg_restore` and is never written to disk. The temporary TOC file is
+removed after success or failure; a cleanup failure is a blocking security
+error.
 
 Pipeline diagnostics retain only a bounded amount of child-process error output
 in memory and classify failures by process and safe category. Raw GnuPG and
 PostgreSQL output is never logged or included in thrown errors. Restore failures
-reinspect the destination and report whether it remained empty. ACL restoration
-remains enabled: `--no-owner` does not suppress ACL/default-ACL entries, and
-`--no-acl` would prevent the recovery exercise from proving the approved runtime
-and administration grants. Before restore, the executor requires exactly one
+reinspect the destination and report whether it remained empty. When
+`pg_restore` terminates early and GnuPG receives a corroborated broken pipe, the
+consumer failure is reported; genuine decryption failures retain precedence.
+ACL restoration remains enabled: `--no-owner` does not suppress ACL/default-ACL
+entries, and `--no-acl` would prevent the recovery exercise from proving the
+approved runtime and administration grants. Before restore, the executor
+requires exactly one
 `public` tables default-ACL entry and one `public` sequences default-ACL entry
 owned by Neon's provider role `cloud_admin`. It comments only those two entries
-in the in-memory `pg_restore --use-list` catalog because the migration role
+in the validated `pg_restore --use-list` catalog because the migration role
 cannot assume `cloud_admin`; all application ACL entries remain selected. The
 restore fails closed if either provider entry is missing, duplicated, malformed,
 or has different metadata. This exception is intentionally specific to the

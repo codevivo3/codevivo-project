@@ -1,4 +1,16 @@
 import assert from 'node:assert/strict';
+import {
+  existsSync,
+  lstatSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 import {
   assertSafeToolArguments,
@@ -8,6 +20,8 @@ import {
   recoveryRestoreArguments,
   recoveryProcessFailure,
   runRecoveryExecutor,
+  selectRecoveryPipelineFailure,
+  withRecoveryUseListFile,
   type RecoveryExecutorDependencies,
 } from '../../scripts/discovery-recovery-executor';
 import {
@@ -376,17 +390,215 @@ test('selectively excludes the exact provider default ACL entries', () => {
 });
 
 test('restore uses the filtered list without weakening transaction safeguards', () => {
-  const args = recoveryRestoreArguments();
+  const useListPath =
+    `/secure/recovery-archives/.codevivo-restore-${'a'.repeat(32)}.toc`;
+  const args = recoveryRestoreArguments(useListPath);
   assert.deepEqual(args, [
     '--exit-on-error',
     '--single-transaction',
     '--no-owner',
-    '--use-list=/dev/fd/3',
+    `--use-list=${useListPath}`,
     `--dbname=${RECOVERY_DATABASE_NAME}`,
   ]);
   assert.doesNotThrow(() =>
     assertSafeToolArguments('/opt/homebrew/opt/libpq/bin/pg_restore', args),
   );
+  assert.doesNotMatch(args.join(' '), /\/dev\/fd|--no-acl|--clean|--create/u);
+  assert.throws(
+    () => recoveryRestoreArguments('/secure/recovery-archives/unsafe.toc'),
+    /unsafe temporary use-list path/u,
+  );
+});
+
+test('temporary use-list is private, contains only supplied metadata, and is removed', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'codevivo-use-list-'));
+  let observedPath = '';
+  try {
+    const result = await withRecoveryUseListFile(
+      directory,
+      validTableOfContents,
+      async (path) => {
+        observedPath = path;
+        assert.equal(statSync(path).mode & 0o777, 0o600);
+        assert.equal(readFileSync(path, 'utf8'), validTableOfContents);
+        return 'restored';
+      },
+    );
+    assert.equal(result, 'restored');
+    assert.equal(existsSync(observedPath), false);
+  } finally {
+    rmSync(directory, { force: true, recursive: true });
+  }
+});
+
+test('temporary use-list is removed when the restore action fails', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'codevivo-use-list-failure-'));
+  let observedPath = '';
+  try {
+    await assert.rejects(
+      withRecoveryUseListFile(
+        directory,
+        validTableOfContents,
+        async (path) => {
+          observedPath = path;
+          throw new RecoveryPipelineError('pg_restore', 'process-failed', 1);
+        },
+      ),
+      /pg_restore failed \(process-failed; exit 1\)/u,
+    );
+    assert.equal(existsSync(observedPath), false);
+  } finally {
+    rmSync(directory, { force: true, recursive: true });
+  }
+});
+
+test('temporary use-list creation and write failures fail closed', async () => {
+  let actionRuns = 0;
+  let removals = 0;
+  await assert.rejects(
+    withRecoveryUseListFile(
+      ARCHIVE_DIRECTORY,
+      validTableOfContents,
+      async () => {
+        actionRuns += 1;
+      },
+      {
+        createName: () => `.codevivo-restore-${'b'.repeat(32)}.toc`,
+        openFile: () => {
+          throw new Error('path already exists');
+        },
+        removeFile: () => {
+          removals += 1;
+        },
+      },
+    ),
+    /temporary use-list preparation failed/u,
+  );
+  assert.equal(actionRuns, 0);
+  assert.equal(removals, 0);
+
+  let closes = 0;
+  await assert.rejects(
+    withRecoveryUseListFile(
+      ARCHIVE_DIRECTORY,
+      validTableOfContents,
+      async () => {
+        actionRuns += 1;
+      },
+      {
+        closeFile: () => {
+          closes += 1;
+        },
+        createName: () => `.codevivo-restore-${'c'.repeat(32)}.toc`,
+        inspectFile: () => ({
+          currentUser: 501,
+          file: true,
+          mode: 0o600,
+          owner: 501,
+        }),
+        openFile: () => 9,
+        removeFile: () => {
+          removals += 1;
+        },
+        syncFile: () => undefined,
+        verifyPath: () => undefined,
+        writeFile: () => {
+          throw new Error('write failed');
+        },
+      },
+    ),
+    /temporary use-list preparation failed/u,
+  );
+  assert.equal(actionRuns, 0);
+  assert.equal(closes, 1);
+  assert.equal(removals, 1);
+});
+
+test('temporary use-list rejects pre-existing files and symlinks without removing them', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'codevivo-use-list-existing-'));
+  const regularName = `.codevivo-restore-${'f'.repeat(32)}.toc`;
+  const symlinkName = `.codevivo-restore-${'1'.repeat(32)}.toc`;
+  const regularPath = join(directory, regularName);
+  const symlinkPath = join(directory, symlinkName);
+  writeFileSync(regularPath, 'existing', { mode: 0o600 });
+  symlinkSync('/dev/null', symlinkPath);
+  try {
+    for (const name of [regularName, symlinkName]) {
+      await assert.rejects(
+        withRecoveryUseListFile(
+          directory,
+          validTableOfContents,
+          async () => undefined,
+          { createName: () => name },
+        ),
+        /temporary use-list preparation failed/u,
+      );
+    }
+    assert.equal(readFileSync(regularPath, 'utf8'), 'existing');
+    assert.equal(lstatSync(symlinkPath).isSymbolicLink(), true);
+  } finally {
+    rmSync(directory, { force: true, recursive: true });
+  }
+});
+
+test('temporary use-list rejects unsafe files and reports cleanup failures', async () => {
+  let actionRuns = 0;
+  let removals = 0;
+  await assert.rejects(
+    withRecoveryUseListFile(
+      ARCHIVE_DIRECTORY,
+      validTableOfContents,
+      async () => {
+        actionRuns += 1;
+      },
+      {
+        closeFile: () => undefined,
+        createName: () => `.codevivo-restore-${'d'.repeat(32)}.toc`,
+        inspectFile: () => ({
+          currentUser: 501,
+          file: true,
+          mode: 0o644,
+          owner: 501,
+        }),
+        openFile: () => 10,
+        removeFile: () => {
+          removals += 1;
+        },
+      },
+    ),
+    /temporary use-list preparation failed/u,
+  );
+  assert.equal(actionRuns, 0);
+  assert.equal(removals, 1);
+
+  await assert.rejects(
+    withRecoveryUseListFile(
+      ARCHIVE_DIRECTORY,
+      validTableOfContents,
+      async () => {
+        actionRuns += 1;
+      },
+      {
+        closeFile: () => undefined,
+        createName: () => `.codevivo-restore-${'e'.repeat(32)}.toc`,
+        inspectFile: () => ({
+          currentUser: 501,
+          file: true,
+          mode: 0o600,
+          owner: 501,
+        }),
+        openFile: () => 11,
+        removeFile: () => {
+          throw new Error('cleanup failed');
+        },
+        syncFile: () => undefined,
+        verifyPath: () => undefined,
+        writeFile: () => undefined,
+      },
+    ),
+    /temporary use-list cleanup failed/u,
+  );
+  assert.equal(actionRuns, 1);
 });
 
 test('provider default ACL filtering fails closed for missing or duplicate entries', () => {
@@ -527,6 +739,51 @@ test('pipeline failures are attributed without exposing captured diagnostics', (
     new RecoveryPipelineError('pg_restore', 'stream-failed', null).message,
     'Recovery executor: pg_restore failed (stream-failed)',
   );
+});
+
+test('consumer failure wins only when GPG has corroborated broken-pipe evidence', () => {
+  const failure = selectRecoveryPipelineFailure({
+    consumerName: 'pg_restore',
+    consumerStatus: 1,
+    consumerStderr: 'permission denied while restoring sensitive-object',
+    producerName: 'gpg',
+    producerStatus: 2,
+    producerStderr:
+      "gpg: error writing to '-': Broken pipe\ngpg: decryption failed: Broken pipe",
+    stream: { brokenPipe: true, failed: true },
+  });
+  assert.ok(failure);
+  assert.equal(failure.processName, 'pg_restore');
+  assert.equal(failure.category, 'permission-or-acl');
+  assert.doesNotMatch(failure.message, /sensitive-object|broken pipe/iu);
+
+  const insufficientEvidence = selectRecoveryPipelineFailure({
+    consumerName: 'pg_restore',
+    consumerStatus: 1,
+    consumerStderr: 'permission denied',
+    producerName: 'gpg',
+    producerStatus: 2,
+    producerStderr: 'gpg: decryption failed: Broken pipe',
+    stream: { brokenPipe: false, failed: false },
+  });
+  assert.equal(insufficientEvidence?.processName, 'gpg');
+  assert.equal(insufficientEvidence?.category, 'decryption');
+});
+
+test('genuine GPG decryption failure wins over truncated consumer input', () => {
+  const failure = selectRecoveryPipelineFailure({
+    consumerName: 'pg_restore',
+    consumerStatus: 1,
+    consumerStderr: 'input file appears to be truncated',
+    producerName: 'gpg',
+    producerStatus: 2,
+    producerStderr: 'gpg: decryption failed: Bad session key secret-marker',
+    stream: { brokenPipe: true, failed: true },
+  });
+  assert.ok(failure);
+  assert.equal(failure.processName, 'gpg');
+  assert.equal(failure.category, 'decryption');
+  assert.doesNotMatch(failure.message, /secret-marker/u);
 });
 
 test('restore preserves safe process attribution after an empty rollback', async () => {

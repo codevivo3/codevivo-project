@@ -1,17 +1,22 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import {
   accessSync,
+  closeSync,
   constants as fsConstants,
   createReadStream,
   existsSync,
+  fstatSync,
+  fsyncSync,
   lstatSync,
+  openSync,
   readFileSync,
   realpathSync,
   statSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
@@ -126,7 +131,29 @@ interface RecoveryPipelineProcess {
 
 interface RecoveryPipelineOptions {
   captureConsumerStdout?: boolean;
-  consumerFileDescriptorInput?: string;
+}
+
+export interface RecoveryStreamResult {
+  brokenPipe: boolean;
+  failed: boolean;
+}
+
+interface UseListFileStatus {
+  currentUser: number;
+  file: boolean;
+  mode: number;
+  owner: number;
+}
+
+export interface RecoveryUseListDependencies {
+  closeFile?: (descriptor: number) => void;
+  createName?: () => string;
+  inspectFile?: (descriptor: number) => UseListFileStatus;
+  openFile?: (path: string) => number;
+  removeFile?: (path: string) => void;
+  syncFile?: (descriptor: number) => void;
+  verifyPath?: (path: string) => void;
+  writeFile?: (descriptor: number, contents: string) => void;
 }
 
 export class RecoveryPipelineError extends Error {
@@ -187,6 +214,68 @@ export function recoveryProcessFailure(
     classifyRecoveryProcessFailure(processName, stderr),
     exitCode,
   );
+}
+
+export interface RecoveryPipelineFailureEvidence {
+  consumerName: RecoveryProcessName;
+  consumerStatus: number | null;
+  consumerStderr: string;
+  producerName: RecoveryProcessName;
+  producerStatus: number | null;
+  producerStderr: string;
+  stream: RecoveryStreamResult;
+}
+
+function hasBrokenPipeEvidence(stderr: string): boolean {
+  return /broken pipe|error writing to ['"]?-['"]?|handle plaintext failed/iu.test(
+    stderr,
+  );
+}
+
+export function selectRecoveryPipelineFailure(
+  evidence: RecoveryPipelineFailureEvidence,
+): RecoveryPipelineError | undefined {
+  const producerFailure = recoveryProcessFailure(
+    evidence.producerName,
+    evidence.producerStatus,
+    evidence.producerStderr,
+  );
+  const consumerFailure = recoveryProcessFailure(
+    evidence.consumerName,
+    evidence.consumerStatus,
+    evidence.consumerStderr,
+  );
+  const consumerCausedBrokenPipe =
+    evidence.producerName === 'gpg' &&
+    evidence.producerStatus !== 0 &&
+    evidence.consumerStatus !== 0 &&
+    evidence.stream.failed &&
+    evidence.stream.brokenPipe &&
+    hasBrokenPipeEvidence(evidence.producerStderr);
+
+  if (consumerCausedBrokenPipe) return consumerFailure;
+  if (
+    evidence.producerStatus !== 0 &&
+    producerFailure.category !== 'process-failed'
+  ) {
+    return producerFailure;
+  }
+  if (
+    evidence.consumerStatus !== 0 &&
+    consumerFailure.category !== 'process-failed'
+  ) {
+    return consumerFailure;
+  }
+  if (evidence.producerStatus !== 0) return producerFailure;
+  if (evidence.consumerStatus !== 0) return consumerFailure;
+  if (evidence.stream.failed) {
+    return new RecoveryPipelineError(
+      evidence.consumerName,
+      'stream-failed',
+      null,
+    );
+  }
+  return undefined;
 }
 
 export interface RecoveryExecutorDependencies {
@@ -431,23 +520,8 @@ async function processPipeline(
       'pipe',
       options.captureConsumerStdout ? 'pipe' : 'ignore',
       'pipe',
-      options.consumerFileDescriptorInput === undefined ? 'ignore' : 'pipe',
     ],
   });
-
-  let auxiliaryInput = Promise.resolve(false);
-  if (options.consumerFileDescriptorInput !== undefined) {
-    const input = consumer.stdio[3];
-    if (!(input instanceof Writable)) {
-      throw new RecoveryPipelineError(right.name, 'start-failed', null);
-    }
-    auxiliaryInput = new Promise<boolean>((resolvePromise) => {
-      input.once('error', () => resolvePromise(true));
-      input.end(options.consumerFileDescriptorInput, () =>
-        resolvePromise(false),
-      );
-    });
-  }
 
   let consumerStdout = '';
   let consumerStdoutExceeded = false;
@@ -488,8 +562,18 @@ async function processPipeline(
   captureStderr(right.name, consumer.stderr);
 
   const transfer = pipeline(producer.stdout, consumer.stdin).then(
-    () => false,
-    () => true,
+    (): RecoveryStreamResult => ({ brokenPipe: false, failed: false }),
+    (error: unknown): RecoveryStreamResult => {
+      const code =
+        typeof error === 'object' && error !== null && 'code' in error
+          ? String(error.code)
+          : '';
+      return {
+        brokenPipe:
+          code === 'EPIPE' || code === 'ERR_STREAM_PREMATURE_CLOSE',
+        failed: true,
+      };
+    },
   );
 
   const wait = (
@@ -504,35 +588,22 @@ async function processPipeline(
       );
       child.once('close', resolvePromise);
     });
-  const [producerStatus, consumerStatus, streamFailed, auxiliaryInputFailed] =
-    await Promise.all([
-      wait(producer, left.name),
-      wait(consumer, right.name),
-      transfer,
-      auxiliaryInput,
-    ]);
+  const [producerStatus, consumerStatus, stream] = await Promise.all([
+    wait(producer, left.name),
+    wait(consumer, right.name),
+    transfer,
+  ]);
 
-  const producerFailure = recoveryProcessFailure(
-    left.name,
-    producerStatus,
-    stderr.get(left.name) ?? '',
-  );
-  const consumerFailure = recoveryProcessFailure(
-    right.name,
+  const failure = selectRecoveryPipelineFailure({
+    consumerName: right.name,
     consumerStatus,
-    stderr.get(right.name) ?? '',
-  );
-  if (producerStatus !== 0 && producerFailure.category !== 'process-failed') {
-    throw producerFailure;
-  }
-  if (consumerStatus !== 0 && consumerFailure.category !== 'process-failed') {
-    throw consumerFailure;
-  }
-  if (producerStatus !== 0) throw producerFailure;
-  if (consumerStatus !== 0) throw consumerFailure;
-  if (streamFailed || auxiliaryInputFailed) {
-    throw new RecoveryPipelineError(right.name, 'stream-failed', null);
-  }
+    consumerStderr: stderr.get(right.name) ?? '',
+    producerName: left.name,
+    producerStatus,
+    producerStderr: stderr.get(left.name) ?? '',
+    stream,
+  });
+  if (failure) throw failure;
   if (consumerStdoutExceeded) {
     throw new RecoveryPipelineError(right.name, 'archive-format', null);
   }
@@ -694,12 +765,119 @@ export function filterProviderManagedDefaultAcls(
   return filtered.join('\n');
 }
 
-export function recoveryRestoreArguments(): string[] {
+const USE_LIST_NAME_PATTERN =
+  /^\.codevivo-restore-[a-f0-9]{32}\.toc$/u;
+
+function useListFileStatus(descriptor: number): UseListFileStatus {
+  const status = fstatSync(descriptor);
+  return {
+    currentUser: process.getuid?.() ?? status.uid,
+    file: status.isFile(),
+    mode: status.mode & 0o777,
+    owner: status.uid,
+  };
+}
+
+export async function withRecoveryUseListFile<T>(
+  archiveDirectory: string,
+  contents: string,
+  action: (path: string) => Promise<T>,
+  dependencies: RecoveryUseListDependencies = {},
+): Promise<T> {
+  const fileName =
+    dependencies.createName?.() ??
+    `.codevivo-restore-${randomBytes(16).toString('hex')}.toc`;
+  if (!USE_LIST_NAME_PATTERN.test(fileName)) {
+    throw new Error('Recovery executor: unsafe temporary use-list name');
+  }
+  const path = join(archiveDirectory, fileName);
+  const openFile =
+    dependencies.openFile ??
+    ((target: string) =>
+      openSync(
+        target,
+        fsConstants.O_CREAT |
+          fsConstants.O_EXCL |
+          fsConstants.O_WRONLY |
+          fsConstants.O_NOFOLLOW,
+        0o600,
+      ));
+  const inspectFile = dependencies.inspectFile ?? useListFileStatus;
+  const writeFile =
+    dependencies.writeFile ??
+    ((descriptor: number, value: string) =>
+      writeFileSync(descriptor, value, { encoding: 'utf8' }));
+  const syncFile = dependencies.syncFile ?? fsyncSync;
+  const closeFile = dependencies.closeFile ?? closeSync;
+  const verifyPath = dependencies.verifyPath ?? assertPrivateFile;
+  const removeFile = dependencies.removeFile ?? unlinkSync;
+
+  let created = false;
+  let descriptor: number | undefined;
+  let actionStarted = false;
+  let operationError: unknown;
+  let result: T | undefined;
+
+  try {
+    try {
+      descriptor = openFile(path);
+      created = true;
+      const status = inspectFile(descriptor);
+      if (
+        !status.file ||
+        status.mode !== 0o600 ||
+        status.owner !== status.currentUser
+      ) {
+        throw new Error('unsafe temporary use-list file');
+      }
+      writeFile(descriptor, contents);
+      syncFile(descriptor);
+      closeFile(descriptor);
+      descriptor = undefined;
+      verifyPath(path);
+      actionStarted = true;
+      result = await action(path);
+    } catch (error) {
+      operationError = actionStarted
+        ? error
+        : new Error('Recovery executor: temporary use-list preparation failed');
+    }
+  } finally {
+    let cleanupFailed = false;
+    if (descriptor !== undefined) {
+      try {
+        closeFile(descriptor);
+      } catch {
+        cleanupFailed = true;
+      }
+    }
+    if (created) {
+      try {
+        removeFile(path);
+      } catch {
+        cleanupFailed = true;
+      }
+    }
+    if (cleanupFailed) {
+      throw new Error('Recovery executor: temporary use-list cleanup failed');
+    }
+  }
+  if (operationError) throw operationError;
+  return result as T;
+}
+
+export function recoveryRestoreArguments(useListPath: string): string[] {
+  if (
+    !isAbsolute(useListPath) ||
+    !USE_LIST_NAME_PATTERN.test(basename(useListPath))
+  ) {
+    throw new Error('Recovery executor: unsafe temporary use-list path');
+  }
   return [
     '--exit-on-error',
     '--single-transaction',
     '--no-owner',
-    '--use-list=/dev/fd/3',
+    `--use-list=${useListPath}`,
     `--dbname=${RECOVERY_DATABASE_NAME}`,
   ];
 }
@@ -788,20 +966,24 @@ async function restoreArchive(connection: string, archivePath: string): Promise<
   const tableOfContents = await readArchiveTableOfContents(archivePath);
   const filteredTableOfContents =
     filterProviderManagedDefaultAcls(tableOfContents);
-  await processPipeline(
-    {
-      name: 'gpg',
-      command: GPG,
-      args: ['--quiet', '--decrypt', '--output', '-', archivePath],
-      env: safeBaseEnvironment(),
-    },
-    {
-      name: 'pg_restore',
-      command: PG_RESTORE,
-      args: recoveryRestoreArguments(),
-      env: connectionEnvironment(url, false),
-    },
-    { consumerFileDescriptorInput: filteredTableOfContents },
+  await withRecoveryUseListFile(
+    dirname(archivePath),
+    filteredTableOfContents,
+    async (useListPath) =>
+      processPipeline(
+        {
+          name: 'gpg',
+          command: GPG,
+          args: ['--quiet', '--decrypt', '--output', '-', archivePath],
+          env: safeBaseEnvironment(),
+        },
+        {
+          name: 'pg_restore',
+          command: PG_RESTORE,
+          args: recoveryRestoreArguments(useListPath),
+          env: connectionEnvironment(url, false),
+        },
+      ),
   );
 }
 
