@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   assertSafeToolArguments,
+  filterProviderManagedDefaultAcls,
   RECOVERY_FIXTURES,
   RecoveryPipelineError,
+  recoveryRestoreArguments,
   recoveryProcessFailure,
   runRecoveryExecutor,
   type RecoveryExecutorDependencies,
@@ -318,7 +320,15 @@ test('unsafe backup and restore arguments are rejected', () => {
       ]),
     /credential/u,
   );
-  for (const argument of ['--clean', '--create', '-c', '-C']) {
+  for (const argument of [
+    '--clean',
+    '--create',
+    '--no-acl',
+    '--no-privileges',
+    '-c',
+    '-C',
+    '-x',
+  ]) {
     assert.throws(
       () =>
         assertSafeToolArguments('/opt/homebrew/opt/libpq/bin/pg_restore', [
@@ -327,6 +337,130 @@ test('unsafe backup and restore arguments are rejected', () => {
       /unsafe pg_restore/u,
     );
   }
+});
+
+const tocEntry = (
+  id: number,
+  objectType: string,
+  owner: string,
+  schema = 'public',
+) =>
+  `${id}; 0 0 DEFAULT ACL ${schema} DEFAULT PRIVILEGES FOR ${objectType} ${owner}`;
+
+const validTableOfContents = [
+  '; Archive created by pg_dump',
+  '100; 1259 200 TABLE discovery invitations codevivo_discovery_migration',
+  tocEntry(2071, 'SEQUENCES', 'cloud_admin'),
+  tocEntry(2072, 'TABLES', 'cloud_admin'),
+  tocEntry(2073, 'TABLES', 'codevivo_discovery_migration', 'discovery'),
+  '2074; 0 0 ACL discovery TABLE invitations codevivo_discovery_migration',
+  '',
+].join('\n');
+
+test('selectively excludes the exact provider default ACL entries', () => {
+  const filtered = filterProviderManagedDefaultAcls(validTableOfContents);
+  assert.match(filtered, /^;2071;.*SEQUENCES cloud_admin$/mu);
+  assert.match(filtered, /^;2072;.*TABLES cloud_admin$/mu);
+  assert.match(filtered, /^2073;.*TABLES codevivo_discovery_migration$/mu);
+  assert.match(filtered, /^2074;.*ACL discovery TABLE invitations/mu);
+  assert.equal(
+    filtered.split('\n').length,
+    validTableOfContents.split('\n').length,
+  );
+
+  const renumbered = filterProviderManagedDefaultAcls(
+    validTableOfContents.replace('2071;', '9001;').replace('2072;', '9002;'),
+  );
+  assert.match(renumbered, /^;9001;.*SEQUENCES cloud_admin$/mu);
+  assert.match(renumbered, /^;9002;.*TABLES cloud_admin$/mu);
+});
+
+test('restore uses the filtered list without weakening transaction safeguards', () => {
+  const args = recoveryRestoreArguments();
+  assert.deepEqual(args, [
+    '--exit-on-error',
+    '--single-transaction',
+    '--no-owner',
+    '--use-list=/dev/fd/3',
+    `--dbname=${RECOVERY_DATABASE_NAME}`,
+  ]);
+  assert.doesNotThrow(() =>
+    assertSafeToolArguments('/opt/homebrew/opt/libpq/bin/pg_restore', args),
+  );
+});
+
+test('provider default ACL filtering fails closed for missing or duplicate entries', () => {
+  assert.throws(
+    () =>
+      filterProviderManagedDefaultAcls(
+        validTableOfContents.replace(
+          `${tocEntry(2071, 'SEQUENCES', 'cloud_admin')}\n`,
+          '',
+        ),
+      ),
+    /not unique/u,
+  );
+  assert.throws(
+    () =>
+      filterProviderManagedDefaultAcls(
+        `${validTableOfContents}${tocEntry(3072, 'TABLES', 'cloud_admin')}\n`,
+      ),
+    /not unique/u,
+  );
+});
+
+test('provider default ACL filtering rejects altered metadata', () => {
+  assert.throws(
+    () =>
+      filterProviderManagedDefaultAcls(
+        validTableOfContents.replace(
+          tocEntry(2072, 'TABLES', 'cloud_admin'),
+          tocEntry(2072, 'TABLES', 'unexpected_owner'),
+        ),
+      ),
+    /not unique/u,
+  );
+  assert.throws(
+    () =>
+      filterProviderManagedDefaultAcls(
+        validTableOfContents.replace(
+          tocEntry(2072, 'TABLES', 'cloud_admin'),
+          tocEntry(2072, 'FUNCTIONS', 'cloud_admin'),
+        ),
+      ),
+    /unexpected provider/u,
+  );
+  assert.throws(
+    () =>
+      filterProviderManagedDefaultAcls(
+        validTableOfContents.replace(
+          tocEntry(2071, 'SEQUENCES', 'cloud_admin'),
+          tocEntry(2071, 'SEQUENCES', 'cloud_admin', 'discovery'),
+        ),
+      ),
+    /unexpected provider/u,
+  );
+});
+
+test('provider default ACL filtering rejects malformed TOC data', () => {
+  assert.throws(
+    () => filterProviderManagedDefaultAcls(''),
+    /malformed archive/u,
+  );
+  assert.throws(
+    () =>
+      filterProviderManagedDefaultAcls(
+        validTableOfContents.replace(
+          tocEntry(2071, 'SEQUENCES', 'cloud_admin'),
+          '2071; malformed DEFAULT ACL cloud_admin',
+        ),
+      ),
+    /malformed DEFAULT ACL/u,
+  );
+  assert.throws(
+    () => filterProviderManagedDefaultAcls(`${validTableOfContents}\0`),
+    /malformed archive/u,
+  );
 });
 
 test('backup stops on encryption and archive verification failures', async () => {

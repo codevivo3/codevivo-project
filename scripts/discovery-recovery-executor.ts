@@ -12,6 +12,7 @@ import {
 } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
 import { isAbsolute, join, relative, resolve } from 'node:path';
+import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { fileURLToPath } from 'node:url';
 import {
@@ -121,6 +122,11 @@ interface RecoveryPipelineProcess {
   command: string;
   args: string[];
   env: NodeJS.ProcessEnv;
+}
+
+interface RecoveryPipelineOptions {
+  captureConsumerStdout?: boolean;
+  consumerFileDescriptorInput?: string;
 }
 
 export class RecoveryPipelineError extends Error {
@@ -296,7 +302,15 @@ export function assertSafeToolArguments(tool: string, args: string[]): void {
   if (
     tool === PG_RESTORE &&
     args.some((argument) =>
-      ['--clean', '--create', '-c', '-C'].includes(argument),
+      [
+        '--clean',
+        '--create',
+        '--no-acl',
+        '--no-privileges',
+        '-c',
+        '-C',
+        '-x',
+      ].includes(argument),
     )
   ) {
     throw new Error('Recovery executor: unsafe pg_restore argument');
@@ -402,7 +416,8 @@ COMMIT;`,
 async function processPipeline(
   left: RecoveryPipelineProcess,
   right: RecoveryPipelineProcess,
-): Promise<void> {
+  options: RecoveryPipelineOptions = {},
+): Promise<string> {
   assertSafeToolArguments(left.command, left.args);
   assertSafeToolArguments(right.command, right.args);
 
@@ -412,8 +427,40 @@ async function processPipeline(
   });
   const consumer = spawn(right.command, right.args, {
     env: right.env,
-    stdio: ['pipe', 'ignore', 'pipe'],
+    stdio: [
+      'pipe',
+      options.captureConsumerStdout ? 'pipe' : 'ignore',
+      'pipe',
+      options.consumerFileDescriptorInput === undefined ? 'ignore' : 'pipe',
+    ],
   });
+
+  let auxiliaryInput = Promise.resolve(false);
+  if (options.consumerFileDescriptorInput !== undefined) {
+    const input = consumer.stdio[3];
+    if (!(input instanceof Writable)) {
+      throw new RecoveryPipelineError(right.name, 'start-failed', null);
+    }
+    auxiliaryInput = new Promise<boolean>((resolvePromise) => {
+      input.once('error', () => resolvePromise(true));
+      input.end(options.consumerFileDescriptorInput, () =>
+        resolvePromise(false),
+      );
+    });
+  }
+
+  let consumerStdout = '';
+  let consumerStdoutExceeded = false;
+  if (options.captureConsumerStdout && consumer.stdout) {
+    consumer.stdout.setEncoding('utf8');
+    consumer.stdout.on('data', (chunk: string) => {
+      if (consumerStdout.length + chunk.length > 4 * 1024 * 1024) {
+        consumerStdoutExceeded = true;
+        return;
+      }
+      consumerStdout += chunk;
+    });
+  }
 
   const stderr = new Map<RecoveryProcessName, string>();
   const captureStderr = (
@@ -429,6 +476,14 @@ async function processPipeline(
     });
     stream.once('end', () => stderr.set(name, captured));
   };
+  if (
+    !(producer.stdout instanceof Readable) ||
+    !(producer.stderr instanceof Readable) ||
+    !(consumer.stdin instanceof Writable) ||
+    !(consumer.stderr instanceof Readable)
+  ) {
+    throw new RecoveryPipelineError(right.name, 'start-failed', null);
+  }
   captureStderr(left.name, producer.stderr);
   captureStderr(right.name, consumer.stderr);
 
@@ -449,11 +504,13 @@ async function processPipeline(
       );
       child.once('close', resolvePromise);
     });
-  const [producerStatus, consumerStatus, streamFailed] = await Promise.all([
-    wait(producer, left.name),
-    wait(consumer, right.name),
-    transfer,
-  ]);
+  const [producerStatus, consumerStatus, streamFailed, auxiliaryInputFailed] =
+    await Promise.all([
+      wait(producer, left.name),
+      wait(consumer, right.name),
+      transfer,
+      auxiliaryInput,
+    ]);
 
   const producerFailure = recoveryProcessFailure(
     left.name,
@@ -473,9 +530,13 @@ async function processPipeline(
   }
   if (producerStatus !== 0) throw producerFailure;
   if (consumerStatus !== 0) throw consumerFailure;
-  if (streamFailed) {
+  if (streamFailed || auxiliaryInputFailed) {
     throw new RecoveryPipelineError(right.name, 'stream-failed', null);
   }
+  if (consumerStdoutExceeded) {
+    throw new RecoveryPipelineError(right.name, 'archive-format', null);
+  }
+  return consumerStdout;
 }
 
 async function createEncryptedBackup(
@@ -548,12 +609,10 @@ function assertPrivateFile(path: string): void {
   }
 }
 
-async function verifyArchive(archivePath: string): Promise<string> {
-  if (!existsSync(archivePath)) {
-    throw new Error('Recovery executor: encrypted archive is missing');
-  }
-  assertPrivateFile(archivePath);
-  await processPipeline(
+async function readArchiveTableOfContents(
+  archivePath: string,
+): Promise<string> {
+  return processPipeline(
     {
       name: 'gpg',
       command: GPG,
@@ -566,7 +625,16 @@ async function verifyArchive(archivePath: string): Promise<string> {
       args: ['--list'],
       env: safeBaseEnvironment(),
     },
+    { captureConsumerStdout: true },
   );
+}
+
+async function verifyArchive(archivePath: string): Promise<string> {
+  if (!existsSync(archivePath)) {
+    throw new Error('Recovery executor: encrypted archive is missing');
+  }
+  assertPrivateFile(archivePath);
+  await readArchiveTableOfContents(archivePath);
   const checksum = await sha256File(archivePath);
   const checksumPath = `${archivePath}.sha256`;
   const checksumRecord = `${checksum}  ${archivePath.split('/').at(-1)}\n`;
@@ -579,6 +647,61 @@ async function verifyArchive(archivePath: string): Promise<string> {
     writeFileSync(checksumPath, checksumRecord, { flag: 'wx', mode: 0o600 });
   }
   return checksum;
+}
+
+const DEFAULT_ACL_TOC_PATTERN =
+  /^(\d+);\s+\d+\s+\d+\s+DEFAULT ACL\s+(\S+)\s+DEFAULT PRIVILEGES FOR\s+(\S+)\s+(\S+)\s*$/u;
+
+export function filterProviderManagedDefaultAcls(
+  tableOfContents: string,
+): string {
+  if (!tableOfContents || tableOfContents.includes('\0')) {
+    throw new Error('Recovery executor: malformed archive table of contents');
+  }
+
+  const matches = { sequences: 0, tables: 0 };
+  const filtered = tableOfContents.split('\n').map((line) => {
+    if (!line.includes('DEFAULT ACL') || line.trimStart().startsWith(';')) {
+      return line;
+    }
+
+    const parsed = DEFAULT_ACL_TOC_PATTERN.exec(line);
+    if (!parsed) {
+      throw new Error('Recovery executor: malformed DEFAULT ACL entry');
+    }
+
+    const [, , schema, objectType, owner] = parsed;
+    if (owner !== 'cloud_admin') return line;
+    if (
+      schema !== 'public' ||
+      (objectType !== 'TABLES' && objectType !== 'SEQUENCES')
+    ) {
+      throw new Error(
+        'Recovery executor: unexpected provider DEFAULT ACL entry',
+      );
+    }
+
+    const key = objectType === 'TABLES' ? 'tables' : 'sequences';
+    matches[key] += 1;
+    return `;${line}`;
+  });
+
+  if (matches.tables !== 1 || matches.sequences !== 1) {
+    throw new Error(
+      'Recovery executor: expected provider DEFAULT ACL entries were not unique',
+    );
+  }
+  return filtered.join('\n');
+}
+
+export function recoveryRestoreArguments(): string[] {
+  return [
+    '--exit-on-error',
+    '--single-transaction',
+    '--no-owner',
+    '--use-list=/dev/fd/3',
+    `--dbname=${RECOVERY_DATABASE_NAME}`,
+  ];
 }
 
 function prepareFixtures(connection: string): void {
@@ -662,6 +785,9 @@ COMMIT;`,
 
 async function restoreArchive(connection: string, archivePath: string): Promise<void> {
   const url = new URL(connection);
+  const tableOfContents = await readArchiveTableOfContents(archivePath);
+  const filteredTableOfContents =
+    filterProviderManagedDefaultAcls(tableOfContents);
   await processPipeline(
     {
       name: 'gpg',
@@ -672,14 +798,10 @@ async function restoreArchive(connection: string, archivePath: string): Promise<
     {
       name: 'pg_restore',
       command: PG_RESTORE,
-      args: [
-        '--exit-on-error',
-        '--single-transaction',
-        '--no-owner',
-        `--dbname=${RECOVERY_DATABASE_NAME}`,
-      ],
+      args: recoveryRestoreArguments(),
       env: connectionEnvironment(url, false),
     },
+    { consumerFileDescriptorInput: filteredTableOfContents },
   );
 }
 
