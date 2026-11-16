@@ -264,9 +264,15 @@ they are never arguments or log output.
 
 Backups stream directly from PostgreSQL 18 `pg_dump -Fc` to GnuPG AES-256
 symmetric encryption. GnuPG obtains the passphrase through pinentry. No
-plaintext archive is created. Each encrypted archive is validated by streaming
-its decrypted catalog into `pg_restore --list`, then receives a mode-`0600`
-SHA-256 record and manifest. Restore uses `--exit-on-error`,
+plaintext archive is created. Each encrypted archive is first cryptographically
+verified by draining the complete GnuPG plaintext stream to a non-persistent
+sink. Catalog extraction is a separate `pg_restore --list` pass. A successful
+catalog consumer may close early; only the exact GnuPG exit-`2` broken-pipe
+case, without a conflicting GnuPG diagnostic, is accepted after full-stream
+verification. Genuine decryption, integrity, passphrase, or catalog failures
+remain fatal. The archive then receives a mode-`0600` SHA-256 record and
+manifest. The extracted catalog is reused by restore, avoiding a redundant
+catalog pass. Restore uses `--exit-on-error`,
 `--single-transaction`, `--no-owner`, and a validated `--use-list`; `--clean`,
 `--create`, and blanket ACL suppression are rejected. The filtered TOC metadata
 is written exclusively to a randomly named mode-`0600` file in the validated

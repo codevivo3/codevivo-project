@@ -110,7 +110,12 @@ interface RecoveryManifest {
   fixtures?: typeof RECOVERY_FIXTURES;
 }
 
-type RecoveryProcessName = 'gpg' | 'pg_dump' | 'pg_restore';
+interface RecoveryArchiveVerification {
+  archiveSha256: string;
+  tableOfContents: string;
+}
+
+type RecoveryProcessName = 'gpg' | 'pg_dump' | 'pg_restore' | 'sink';
 type RecoveryProcessFailureCategory =
   | 'archive-format'
   | 'constraint'
@@ -130,6 +135,7 @@ interface RecoveryPipelineProcess {
 }
 
 interface RecoveryPipelineOptions {
+  acceptSuccessfulEarlyConsumer?: boolean;
   captureConsumerStdout?: boolean;
 }
 
@@ -154,6 +160,13 @@ export interface RecoveryUseListDependencies {
   syncFile?: (descriptor: number) => void;
   verifyPath?: (path: string) => void;
   writeFile?: (descriptor: number, contents: string) => void;
+}
+
+export interface ArchiveVerificationOptions {
+  arguments?: string[];
+  command?: string;
+  environment?: NodeJS.ProcessEnv;
+  sinkCommand?: string;
 }
 
 export class RecoveryPipelineError extends Error {
@@ -217,6 +230,7 @@ export function recoveryProcessFailure(
 }
 
 export interface RecoveryPipelineFailureEvidence {
+  acceptSuccessfulEarlyConsumer?: boolean;
   consumerName: RecoveryProcessName;
   consumerStatus: number | null;
   consumerStderr: string;
@@ -229,6 +243,24 @@ export interface RecoveryPipelineFailureEvidence {
 function hasBrokenPipeEvidence(stderr: string): boolean {
   return /broken pipe|error writing to ['"]?-['"]?|handle plaintext failed/iu.test(
     stderr,
+  );
+}
+
+function hasOnlyExpectedGpgBrokenPipeDiagnostics(stderr: string): boolean {
+  const lines = stderr
+    .split(/\r?\n/u)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return (
+    lines.length > 0 &&
+    lines.some((line) => hasBrokenPipeEvidence(line)) &&
+    lines.every(
+      (line) =>
+        hasBrokenPipeEvidence(line) ||
+        /^gpg:\s+(?:[A-Z0-9.]+ encrypted data|encrypted with \d+ passphrase)/iu.test(
+          line,
+        ),
+    )
   );
 }
 
@@ -253,6 +285,16 @@ export function selectRecoveryPipelineFailure(
     evidence.stream.brokenPipe &&
     hasBrokenPipeEvidence(evidence.producerStderr);
 
+  const successfulEarlyConsumer =
+    evidence.acceptSuccessfulEarlyConsumer === true &&
+    evidence.producerName === 'gpg' &&
+    evidence.producerStatus === 2 &&
+    evidence.consumerStatus === 0 &&
+    evidence.stream.failed &&
+    evidence.stream.brokenPipe &&
+    hasOnlyExpectedGpgBrokenPipeDiagnostics(evidence.producerStderr);
+
+  if (successfulEarlyConsumer) return undefined;
   if (consumerCausedBrokenPipe) return consumerFailure;
   if (
     evidence.producerStatus !== 0 &&
@@ -291,10 +333,16 @@ export interface RecoveryExecutorDependencies {
     archivePath: string,
     readOnly: boolean,
   ) => Promise<void>;
-  verifyArchive?: (archivePath: string) => Promise<string>;
+  verifyArchive?: (
+    archivePath: string,
+  ) => Promise<RecoveryArchiveVerification>;
   prepareFixtures?: (connection: string) => void;
   fixturesArePresent?: (connection: string) => boolean;
-  restoreArchive?: (connection: string, archivePath: string) => Promise<void>;
+  restoreArchive?: (
+    connection: string,
+    archivePath: string,
+    tableOfContents: string,
+  ) => Promise<void>;
   validateRecovery?: (connection: string) => boolean;
   readManifest?: (path: string) => RecoveryManifest;
   writeManifest?: (path: string, manifest: RecoveryManifest) => void;
@@ -595,6 +643,8 @@ async function processPipeline(
   ]);
 
   const failure = selectRecoveryPipelineFailure({
+    acceptSuccessfulEarlyConsumer:
+      options.acceptSuccessfulEarlyConsumer,
     consumerName: right.name,
     consumerStatus,
     consumerStderr: stderr.get(right.name) ?? '',
@@ -696,16 +746,44 @@ async function readArchiveTableOfContents(
       args: ['--list'],
       env: safeBaseEnvironment(),
     },
-    { captureConsumerStdout: true },
+    {
+      acceptSuccessfulEarlyConsumer: true,
+      captureConsumerStdout: true,
+    },
   );
 }
 
-async function verifyArchive(archivePath: string): Promise<string> {
+export async function verifyEncryptedArchiveStream(
+  archivePath: string,
+  options: ArchiveVerificationOptions = {},
+): Promise<void> {
+  await processPipeline(
+    {
+      name: 'gpg',
+      command: options.command ?? GPG,
+      args:
+        options.arguments ??
+        ['--quiet', '--decrypt', '--output', '-', archivePath],
+      env: options.environment ?? safeBaseEnvironment(),
+    },
+    {
+      name: 'sink',
+      command: options.sinkCommand ?? '/bin/cat',
+      args: [],
+      env: safeBaseEnvironment(),
+    },
+  );
+}
+
+async function verifyArchive(
+  archivePath: string,
+): Promise<RecoveryArchiveVerification> {
   if (!existsSync(archivePath)) {
     throw new Error('Recovery executor: encrypted archive is missing');
   }
   assertPrivateFile(archivePath);
-  await readArchiveTableOfContents(archivePath);
+  await verifyEncryptedArchiveStream(archivePath);
+  const tableOfContents = await readArchiveTableOfContents(archivePath);
   const checksum = await sha256File(archivePath);
   const checksumPath = `${archivePath}.sha256`;
   const checksumRecord = `${checksum}  ${archivePath.split('/').at(-1)}\n`;
@@ -717,7 +795,7 @@ async function verifyArchive(archivePath: string): Promise<string> {
   } else {
     writeFileSync(checksumPath, checksumRecord, { flag: 'wx', mode: 0o600 });
   }
-  return checksum;
+  return { archiveSha256: checksum, tableOfContents };
 }
 
 const DEFAULT_ACL_TOC_PATTERN =
@@ -961,9 +1039,12 @@ COMMIT;`,
   return output.split('\n').includes('t');
 }
 
-async function restoreArchive(connection: string, archivePath: string): Promise<void> {
+async function restoreArchive(
+  connection: string,
+  archivePath: string,
+  tableOfContents: string,
+): Promise<void> {
   const url = new URL(connection);
-  const tableOfContents = await readArchiveTableOfContents(archivePath);
   const filteredTableOfContents =
     filterProviderManagedDefaultAcls(tableOfContents);
   await withRecoveryUseListFile(
@@ -1244,7 +1325,7 @@ export async function runRecoveryExecutor(
   if (stage === 'backup-source') {
     const sourceState = fingerprint(context.sourceMigration);
     await backup(context.sourceMigration, sourceArchive, true);
-    const archiveSha256 = await verify(sourceArchive);
+    const verification = await verify(sourceArchive);
     if (
       JSON.stringify(sourceState) !==
       JSON.stringify(fingerprint(context.sourceMigration))
@@ -1253,7 +1334,7 @@ export async function runRecoveryExecutor(
     }
     saveManifest(sourceManifestPath, {
       archive: SOURCE_ARCHIVE,
-      archiveSha256,
+      archiveSha256: verification.archiveSha256,
       createdAt: (dependencies.now ?? (() => new Date()))().toISOString(),
       fingerprint: sourceState,
     });
@@ -1273,10 +1354,10 @@ export async function runRecoveryExecutor(
       throw new Error('Recovery executor: recovery fixtures are missing');
     }
     await backup(context.cloneMigration, exerciseArchive, true);
-    const archiveSha256 = await verify(exerciseArchive);
+    const verification = await verify(exerciseArchive);
     saveManifest(exerciseManifestPath, {
       archive: EXERCISE_ARCHIVE,
-      archiveSha256,
+      archiveSha256: verification.archiveSha256,
       createdAt: (dependencies.now ?? (() => new Date()))().toISOString(),
       fixtures: RECOVERY_FIXTURES,
     });
@@ -1286,17 +1367,21 @@ export async function runRecoveryExecutor(
   if (stage === 'restore') {
     assertEmptyTarget(inspect(context.connections.migration));
     const exerciseManifest = loadManifest(exerciseManifestPath);
-    const archiveSha256 = await verify(exerciseArchive);
+    const verification = await verify(exerciseArchive);
     if (
       exerciseManifest.archive !== EXERCISE_ARCHIVE ||
-      exerciseManifest.archiveSha256 !== archiveSha256 ||
+      exerciseManifest.archiveSha256 !== verification.archiveSha256 ||
       JSON.stringify(exerciseManifest.fixtures) !==
         JSON.stringify(RECOVERY_FIXTURES)
     ) {
       throw new Error('Recovery executor: exercise archive manifest mismatch');
     }
     try {
-      await restore(context.connections.migration, exerciseArchive);
+      await restore(
+        context.connections.migration,
+        exerciseArchive,
+        verification.tableOfContents,
+      );
     } catch (error) {
       const state = inspect(context.connections.migration);
       if (Number(state.userTables) !== 0 || Number(state.discoverySchemas) !== 0) {

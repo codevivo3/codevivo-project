@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import { spawn, spawnSync } from 'node:child_process';
 import {
+  copyFileSync,
   existsSync,
   lstatSync,
   mkdtempSync,
@@ -7,10 +9,12 @@ import {
   rmSync,
   statSync,
   symlinkSync,
+  truncateSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pipeline } from 'node:stream/promises';
 import test from 'node:test';
 import {
   assertSafeToolArguments,
@@ -21,6 +25,7 @@ import {
   recoveryProcessFailure,
   runRecoveryExecutor,
   selectRecoveryPipelineFailure,
+  verifyEncryptedArchiveStream,
   withRecoveryUseListFile,
   type RecoveryExecutorDependencies,
 } from '../../scripts/discovery-recovery-executor';
@@ -293,7 +298,10 @@ test('restore rejects a nonempty destination before archive access', async () =>
         inspectTarget: () => ({ ...emptyTarget, userTables: 1 }),
         verifyArchive: async () => {
           archiveChecks += 1;
-          return 'checksum';
+          return {
+            archiveSha256: 'checksum',
+            tableOfContents: validTableOfContents,
+          };
         },
       }),
     ),
@@ -315,7 +323,10 @@ test('restore rejects an archive that does not match its recorded manifest', asy
           createdAt: NOW.toISOString(),
           fixtures: RECOVERY_FIXTURES,
         }),
-        verifyArchive: async () => 'different-checksum',
+        verifyArchive: async () => ({
+          archiveSha256: 'different-checksum',
+          tableOfContents: validTableOfContents,
+        }),
         restoreArchive: async () => {
           restoreRuns += 1;
         },
@@ -688,7 +699,10 @@ test('backup stops on encryption and archive verification failures', async () =>
         },
         verifyArchive: async () => {
           verificationRuns += 1;
-          return 'checksum';
+          return {
+            archiveSha256: 'checksum',
+            tableOfContents: validTableOfContents,
+          };
         },
       }),
     ),
@@ -770,6 +784,43 @@ test('consumer failure wins only when GPG has corroborated broken-pipe evidence'
   assert.equal(insufficientEvidence?.category, 'decryption');
 });
 
+test('successful early catalog completion accepts only an expected GPG broken pipe', () => {
+  const evidence = {
+    acceptSuccessfulEarlyConsumer: true,
+    consumerName: 'pg_restore' as const,
+    consumerStatus: 0,
+    consumerStderr: '',
+    producerName: 'gpg' as const,
+    producerStatus: 2,
+    producerStderr:
+      "gpg: error writing to '-': Broken pipe\ngpg: decryption failed: Broken pipe",
+    stream: { brokenPipe: true, failed: true },
+  };
+  assert.equal(selectRecoveryPipelineFailure(evidence), undefined);
+
+  const withoutExplicitAllowance = selectRecoveryPipelineFailure({
+    ...evidence,
+    acceptSuccessfulEarlyConsumer: false,
+  });
+  assert.equal(withoutExplicitAllowance?.processName, 'gpg');
+
+  const mixedGpgFailure = selectRecoveryPipelineFailure({
+    ...evidence,
+    producerStderr:
+      "gpg: decryption failed: Bad session key\ngpg: error writing to '-': Broken pipe",
+  });
+  assert.equal(mixedGpgFailure?.processName, 'gpg');
+  assert.equal(mixedGpgFailure?.category, 'decryption');
+
+  const failedCatalog = selectRecoveryPipelineFailure({
+    ...evidence,
+    consumerStatus: 1,
+    consumerStderr: 'input file appears to be truncated',
+  });
+  assert.equal(failedCatalog?.processName, 'pg_restore');
+  assert.equal(failedCatalog?.category, 'archive-format');
+});
+
 test('genuine GPG decryption failure wins over truncated consumer input', () => {
   const failure = selectRecoveryPipelineFailure({
     consumerName: 'pg_restore',
@@ -786,13 +837,196 @@ test('genuine GPG decryption failure wins over truncated consumer input', () => 
   assert.doesNotMatch(failure.message, /secret-marker/u);
 });
 
+test(
+  'full-stream archive verification detects wrong passphrases and truncated ciphertext',
+  { timeout: 60_000 },
+  async (context) => {
+    const directory = mkdtempSync(join(tmpdir(), 'codevivo-gpg-verification-'));
+    const archive = join(directory, 'synthetic.gpg');
+    const truncatedArchive = join(directory, 'synthetic-truncated.gpg');
+    const gpg = '/opt/homebrew/bin/gpg';
+    const gpgconf = '/opt/homebrew/bin/gpgconf';
+    const passphrase = 'offline-synthetic-fixture';
+    const subprocessEnvironment: NodeJS.ProcessEnv = {
+      GNUPGHOME: directory,
+      HOME: process.env.HOME,
+      LANG: process.env.LANG ?? 'C',
+      NODE_ENV: 'test',
+      PATH: process.env.PATH,
+    };
+    const decryptionArguments = (candidate: string, path: string) => [
+      '--batch',
+      '--no-symkey-cache',
+      '--pinentry-mode',
+      'loopback',
+      '--passphrase',
+      candidate,
+      '--decrypt',
+      '--output',
+      '-',
+      path,
+    ];
+
+    try {
+      const encryption = spawnSync(
+        gpg,
+        [
+          '--batch',
+          '--yes',
+          '--no-symkey-cache',
+          '--pinentry-mode',
+          'loopback',
+          '--passphrase',
+          passphrase,
+          '--symmetric',
+          '--compress-algo',
+          'none',
+          '--output',
+          archive,
+        ],
+        {
+          env: subprocessEnvironment,
+          input: Buffer.alloc(1024 * 1024, 0x41),
+          stdio: ['pipe', 'ignore', 'pipe'],
+        },
+      );
+      assert.equal(encryption.status, 0, 'synthetic archive creation failed');
+
+      await context.test('drains and verifies the complete plaintext stream', async () => {
+        await assert.doesNotReject(
+          verifyEncryptedArchiveStream(archive, {
+            arguments: decryptionArguments(passphrase, archive),
+            command: gpg,
+            environment: subprocessEnvironment,
+          }),
+        );
+      });
+
+      await context.test(
+        'accepts the producer broken pipe from a successful prefix consumer',
+        async () => {
+          const producer = spawn(
+            gpg,
+            decryptionArguments(passphrase, archive),
+            {
+              env: subprocessEnvironment,
+              stdio: ['ignore', 'pipe', 'pipe'],
+            },
+          );
+          const consumer = spawn('/usr/bin/head', ['-c', '1'], {
+            env: subprocessEnvironment,
+            stdio: ['pipe', 'ignore', 'pipe'],
+          });
+          assert.ok(producer.stdout);
+          assert.ok(producer.stderr);
+          assert.ok(consumer.stdin);
+          assert.ok(consumer.stderr);
+          let producerStderr = '';
+          let consumerStderr = '';
+          producer.stderr.setEncoding('utf8');
+          consumer.stderr.setEncoding('utf8');
+          producer.stderr.on('data', (chunk: string) => {
+            producerStderr += chunk;
+          });
+          consumer.stderr.on('data', (chunk: string) => {
+            consumerStderr += chunk;
+          });
+          const transfer = pipeline(producer.stdout, consumer.stdin).then(
+            () => ({ brokenPipe: false, failed: false }),
+            (error: unknown) => ({
+              brokenPipe:
+                typeof error === 'object' &&
+                error !== null &&
+                'code' in error &&
+                ['EPIPE', 'ERR_STREAM_PREMATURE_CLOSE'].includes(
+                  String(error.code),
+                ),
+              failed: true,
+            }),
+          );
+          const wait = (child: ReturnType<typeof spawn>) =>
+            new Promise<number | null>((resolve, reject) => {
+              child.once('error', reject);
+              child.once('close', resolve);
+            });
+          const [producerStatus, consumerStatus, stream] = await Promise.all([
+            wait(producer),
+            wait(consumer),
+            transfer,
+          ]);
+          assert.equal(consumerStatus, 0);
+          assert.equal(producerStatus, 2);
+          assert.deepEqual(stream, { brokenPipe: true, failed: true });
+          assert.equal(
+            selectRecoveryPipelineFailure({
+              acceptSuccessfulEarlyConsumer: true,
+              consumerName: 'pg_restore',
+              consumerStatus,
+              consumerStderr,
+              producerName: 'gpg',
+              producerStatus,
+              producerStderr,
+              stream,
+            }),
+            undefined,
+          );
+        },
+      );
+
+      await context.test('rejects a genuine wrong-passphrase failure', async () => {
+        await assert.rejects(
+          verifyEncryptedArchiveStream(archive, {
+            arguments: decryptionArguments('incorrect-passphrase', archive),
+            command: gpg,
+            environment: subprocessEnvironment,
+          }),
+          (error: unknown) => {
+            assert.ok(error instanceof RecoveryPipelineError);
+            assert.equal(error.processName, 'gpg');
+            return true;
+          },
+        );
+      });
+
+      copyFileSync(archive, truncatedArchive);
+      truncateSync(
+        truncatedArchive,
+        Math.max(1, Math.floor(statSync(truncatedArchive).size / 2)),
+      );
+      await context.test('rejects truncated encrypted input', async () => {
+        await assert.rejects(
+          verifyEncryptedArchiveStream(truncatedArchive, {
+            arguments: decryptionArguments(passphrase, truncatedArchive),
+            command: gpg,
+            environment: subprocessEnvironment,
+          }),
+          (error: unknown) => {
+            assert.ok(error instanceof RecoveryPipelineError);
+            assert.equal(error.processName, 'gpg');
+            return true;
+          },
+        );
+      });
+    } finally {
+      spawnSync(gpgconf, ['--homedir', directory, '--kill', 'gpg-agent'], {
+        env: subprocessEnvironment,
+        stdio: 'ignore',
+      });
+      rmSync(directory, { force: true, recursive: true });
+    }
+  },
+);
+
 test('restore preserves safe process attribution after an empty rollback', async () => {
   await assert.rejects(
     runRecoveryExecutor(
       'restore',
       environment('restore'),
       dependencies({
-        verifyArchive: async () => 'checksum',
+        verifyArchive: async () => ({
+          archiveSha256: 'checksum',
+          tableOfContents: validTableOfContents,
+        }),
         readManifest: () => ({
           archive: 'codevivo-exercise.pg18.dump.gpg',
           archiveSha256: 'checksum',
@@ -814,7 +1048,10 @@ test('restore redacts unknown failure details after an empty rollback', async ()
       'restore',
       environment('restore'),
       dependencies({
-        verifyArchive: async () => 'checksum',
+        verifyArchive: async () => ({
+          archiveSha256: 'checksum',
+          tableOfContents: validTableOfContents,
+        }),
         readManifest: () => ({
           archive: 'codevivo-exercise.pg18.dump.gpg',
           archiveSha256: 'checksum',
@@ -848,7 +1085,10 @@ test('restore reports partial state after a failed transaction', async () => {
             ? emptyTarget
             : { ...emptyTarget, discoverySchemas: 1, userTables: 2 };
         },
-        verifyArchive: async () => 'checksum',
+        verifyArchive: async () => ({
+          archiveSha256: 'checksum',
+          tableOfContents: validTableOfContents,
+        }),
         readManifest: () => ({
           archive: 'codevivo-exercise.pg18.dump.gpg',
           archiveSha256: 'checksum',
