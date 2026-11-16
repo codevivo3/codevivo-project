@@ -316,6 +316,66 @@ then invokes the existing guarded database integration-test launcher. A failed
 restore is inspected for partial state and stops. The executor never repairs,
 cleans, retries, deletes, or revokes resources automatically.
 
+### B3C recovery completion record — 16 November 2026
+
+**Status: COMPLETE.** The encrypted logical-backup recovery gate was completed
+successfully against an isolated disposable Neon branch. This status applies to
+the B3C exercise only; it is not evidence of a production restore.
+
+Recovery target:
+
+- Neon project: `codevivo-discovery` (`round-tree-42808727`)
+- Source branch: `discovery-validation`
+- Disposable branch: `recovery-gate-20261116`
+- Branch ID: `br-cold-base-babuwept`
+- Endpoint ID: `ep-wild-silence-baxdsq4w`
+- Restore destination: `codevivo_recovery_gate`
+- PostgreSQL version: 18
+
+With the non-secret branch, endpoint, and archive-directory environment values
+documented above already exported, the successful guarded commands were:
+
+```bash
+npm run discovery:recovery -- preflight
+
+DISCOVERY_RECOVERY_STAGE_ALLOW='restore:recovery-gate-20261116' \
+  npm run discovery:recovery -- restore
+
+DISCOVERY_RECOVERY_STAGE_ALLOW='validate:recovery-gate-20261116' \
+  npm run discovery:recovery -- validate
+```
+
+Each command exited `0`. The encrypted exercise archive passed its SHA-256
+verification. An independent full-stream check using
+`gpg --batch --no-tty --quiet --decrypt` with output discarded to a
+non-persistent sink also exited `0`. The restore completed into
+`codevivo_recovery_gate`, and post-restore validation completed with all nine
+database behavior tests passing and no failures. Because the guarded validation
+stage exited successfully, its migration checksum, expected schema objects,
+ownership and ACL checks, exact fixture checks, restored-database checks, and
+original-source fingerprint checks also passed.
+
+Production and the original `discovery-validation` database were never restore
+destinations. The original validation source was used only through the
+executor's guarded read-only source operations and fingerprint verification.
+
+The earlier GnuPG exit-`2` signature was reproduced offline at the credential
+acquisition boundary. Agent or pinentry access remains the best-supported
+failure boundary, but the exact cause of the original live failure was not
+conclusively established. Node.js streaming and the `/bin/cat` sink were not
+independently responsible, and adding `--batch --no-tty` alone did not resolve
+the reproduction. Sanitized stage and GnuPG detail diagnostics were retained.
+The related offline recovery suite passed 52 of 52 tests; TypeScript passed and
+ESLint passed with six pre-existing warnings.
+
+No B3C logical backup, isolated restore, or post-restore validation acceptance
+criterion remains unverified. The unresolved historical GnuPG cause is recorded
+as a non-blocking limitation because the same encrypted archive subsequently
+passed independent decryption, guarded restore, and complete validation.
+Production restoration remains intentionally untested, and disposal of the
+temporary branch, archives, and recovery credentials remains a separately
+authorized cleanup activity rather than part of the B3C acceptance result.
+
 After a successful report, separately authorize removal of the disposable
 fixtures/branch, local encrypted archives according to the chosen retention
 period, recovery Keychain entries, the dedicated Viewer API key, and its
