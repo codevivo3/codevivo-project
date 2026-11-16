@@ -20,12 +20,14 @@ import {
   assertSafeToolArguments,
   filterProviderManagedDefaultAcls,
   RECOVERY_FIXTURES,
+  RecoveryDiagnosticError,
   RecoveryPipelineError,
   recoveryRestoreArguments,
   recoveryProcessFailure,
   runRecoveryExecutor,
   selectRecoveryPipelineFailure,
   verifyEncryptedArchiveStream,
+  verifyRecoveryArchiveStreams,
   withRecoveryUseListFile,
   type RecoveryExecutorDependencies,
 } from '../../scripts/discovery-recovery-executor';
@@ -483,7 +485,7 @@ test('temporary use-list creation and write failures fail closed', async () => {
         },
       },
     ),
-    /temporary use-list preparation failed/u,
+    /stage=temporary-toc-preparation cause=filesystem-preparation/u,
   );
   assert.equal(actionRuns, 0);
   assert.equal(removals, 0);
@@ -518,7 +520,7 @@ test('temporary use-list creation and write failures fail closed', async () => {
         },
       },
     ),
-    /temporary use-list preparation failed/u,
+    /stage=temporary-toc-preparation cause=filesystem-preparation/u,
   );
   assert.equal(actionRuns, 0);
   assert.equal(closes, 1);
@@ -542,7 +544,7 @@ test('temporary use-list rejects pre-existing files and symlinks without removin
           async () => undefined,
           { createName: () => name },
         ),
-        /temporary use-list preparation failed/u,
+        /stage=temporary-toc-preparation cause=filesystem-preparation/u,
       );
     }
     assert.equal(readFileSync(regularPath, 'utf8'), 'existing');
@@ -577,7 +579,7 @@ test('temporary use-list rejects unsafe files and reports cleanup failures', asy
         },
       },
     ),
-    /temporary use-list preparation failed/u,
+    /stage=temporary-toc-preparation cause=filesystem-preparation/u,
   );
   assert.equal(actionRuns, 0);
   assert.equal(removals, 1);
@@ -607,7 +609,7 @@ test('temporary use-list rejects unsafe files and reports cleanup failures', asy
         writeFile: () => undefined,
       },
     ),
-    /temporary use-list cleanup failed/u,
+    /stage=temporary-toc-cleanup cause=filesystem-cleanup/u,
   );
   assert.equal(actionRuns, 1);
 });
@@ -752,6 +754,58 @@ test('pipeline failures are attributed without exposing captured diagnostics', (
   assert.equal(
     new RecoveryPipelineError('pg_restore', 'stream-failed', null).message,
     'Recovery executor: pg_restore failed (stream-failed)',
+  );
+
+  const signalledPipeline = new RecoveryPipelineError(
+    'gpg',
+    'decryption',
+    null,
+    'SIGTERM',
+    'failed',
+  );
+  const diagnostic = new RecoveryDiagnosticError(
+    'archive-full-stream-verification',
+    'pipeline-failure',
+    signalledPipeline,
+  );
+  assert.equal(
+    diagnostic.message,
+    'Recovery executor: stage=archive-full-stream-verification cause=pipeline-failure process=gpg category=decryption exit=none signal=SIGTERM stream=failed',
+  );
+  assert.doesNotMatch(diagnostic.message, /stderr|passphrase|credential/iu);
+});
+
+test('archive verification reports the exact sanitized failing stage', async () => {
+  await assert.rejects(
+    verifyRecoveryArchiveStreams('/synthetic/archive.gpg', {
+      readCatalog: async () => 'unused',
+      verifyFullStream: async () => {
+        throw new RecoveryPipelineError(
+          'gpg',
+          'decryption',
+          2,
+          null,
+          'complete',
+        );
+      },
+    }),
+    /stage=archive-full-stream-verification cause=pipeline-failure process=gpg category=decryption exit=2 signal=none stream=complete/u,
+  );
+
+  await assert.rejects(
+    verifyRecoveryArchiveStreams('/synthetic/archive.gpg', {
+      readCatalog: async () => {
+        throw new RecoveryPipelineError(
+          'pg_restore',
+          'archive-format',
+          1,
+          null,
+          'complete',
+        );
+      },
+      verifyFullStream: async () => undefined,
+    }),
+    /stage=archive-catalog-extraction cause=pipeline-failure process=pg_restore category=archive-format exit=1 signal=none stream=complete/u,
   );
 });
 
@@ -902,6 +956,16 @@ test(
         );
       });
 
+      await context.test('supports sequential full-stream verification', async () => {
+        for (let run = 0; run < 2; run += 1) {
+          await verifyEncryptedArchiveStream(archive, {
+            arguments: decryptionArguments(passphrase, archive),
+            command: gpg,
+            environment: subprocessEnvironment,
+          });
+        }
+      });
+
       await context.test(
         'accepts the producer broken pipe from a successful prefix consumer',
         async () => {
@@ -1038,7 +1102,7 @@ test('restore preserves safe process attribution after an empty rollback', async
         },
       }),
     ),
-    /pg_restore failed \(permission-or-acl; exit 1\); restore transaction rolled back; destination remained empty/u,
+    /stage=database-restore-streaming cause=pipeline-failure process=pg_restore category=permission-or-acl exit=1 signal=none stream=not-applicable containment=transaction-rolled-back-empty/u,
   );
 });
 
@@ -1065,7 +1129,10 @@ test('restore redacts unknown failure details after an empty rollback', async ()
     ),
     (error: unknown) => {
       assert.ok(error instanceof Error);
-      assert.match(error.message, /restore failed and rolled back/u);
+      assert.match(
+        error.message,
+        /stage=database-restore-streaming cause=unexpected-failure containment=destination-empty-no-partial-restore/u,
+      );
       assert.doesNotMatch(error.message, /sensitive-marker|client-data/u);
       return true;
     },
@@ -1100,7 +1167,44 @@ test('restore reports partial state after a failed transaction', async () => {
         },
       }),
     ),
-    /partial restore/u,
+    /stage=rollback-inspection cause=partial-restore/u,
+  );
+});
+
+test('restore reports rollback inspection failure without masking the stage', async () => {
+  let inspections = 0;
+  await assert.rejects(
+    runRecoveryExecutor(
+      'restore',
+      environment('restore'),
+      dependencies({
+        inspectTarget: () => {
+          inspections += 1;
+          if (inspections > 1) throw new Error('sensitive inspection detail');
+          return emptyTarget;
+        },
+        readManifest: () => ({
+          archive: 'codevivo-exercise.pg18.dump.gpg',
+          archiveSha256: 'checksum',
+          createdAt: NOW.toISOString(),
+          fixtures: RECOVERY_FIXTURES,
+        }),
+        restoreArchive: async () => {
+          throw new Error('sensitive restore detail');
+        },
+        verifyArchive: async () => ({
+          archiveSha256: 'checksum',
+          tableOfContents: validTableOfContents,
+        }),
+      }),
+    ),
+    (error: unknown) => {
+      assert.ok(error instanceof RecoveryDiagnosticError);
+      assert.equal(error.stage, 'rollback-inspection');
+      assert.equal(error.causeCode, 'inspection-failed');
+      assert.doesNotMatch(error.message, /sensitive|detail/u);
+      return true;
+    },
   );
 });
 

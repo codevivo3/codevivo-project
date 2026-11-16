@@ -127,6 +127,30 @@ type RecoveryProcessFailureCategory =
   | 'start-failed'
   | 'stream-failed';
 
+export type RecoveryDiagnosticStage =
+  | 'archive-full-stream-verification'
+  | 'archive-catalog-extraction'
+  | 'toc-filtering'
+  | 'database-restore-streaming'
+  | 'temporary-toc-preparation'
+  | 'temporary-toc-cleanup'
+  | 'rollback-inspection';
+
+export type RecoveryDiagnosticCause =
+  | 'catalog-validation'
+  | 'filesystem-cleanup'
+  | 'filesystem-preparation'
+  | 'inspection-failed'
+  | 'partial-restore'
+  | 'pipeline-failure'
+  | 'unexpected-failure';
+
+type RecoveryStreamState =
+  | 'broken-pipe'
+  | 'complete'
+  | 'failed'
+  | 'not-applicable';
+
 interface RecoveryPipelineProcess {
   name: RecoveryProcessName;
   command: string;
@@ -169,15 +193,75 @@ export interface ArchiveVerificationOptions {
   sinkCommand?: string;
 }
 
+export interface RecoveryArchiveStreamDependencies {
+  readCatalog?: (archivePath: string) => Promise<string>;
+  verifyFullStream?: (archivePath: string) => Promise<void>;
+}
+
 export class RecoveryPipelineError extends Error {
   constructor(
     readonly processName: RecoveryProcessName,
     readonly category: RecoveryProcessFailureCategory,
     readonly exitCode: number | null,
+    readonly signal: NodeJS.Signals | null = null,
+    readonly streamState: RecoveryStreamState = 'not-applicable',
   ) {
     const exit = exitCode === null ? '' : `; exit ${exitCode}`;
     super(`Recovery executor: ${processName} failed (${category}${exit})`);
     this.name = 'RecoveryPipelineError';
+  }
+}
+
+export class RecoveryDiagnosticError extends Error {
+  constructor(
+    readonly stage: RecoveryDiagnosticStage,
+    readonly causeCode: RecoveryDiagnosticCause,
+    readonly pipelineFailure?: RecoveryPipelineError,
+  ) {
+    const pipeline = pipelineFailure
+      ? ` process=${pipelineFailure.processName} category=${pipelineFailure.category}` +
+        ` exit=${pipelineFailure.exitCode ?? 'none'}` +
+        ` signal=${pipelineFailure.signal ?? 'none'}` +
+        ` stream=${pipelineFailure.streamState}`
+      : '';
+    super(`Recovery executor: stage=${stage} cause=${causeCode}${pipeline}`);
+    this.name = 'RecoveryDiagnosticError';
+  }
+}
+
+function diagnosticFailure(
+  stage: RecoveryDiagnosticStage,
+  error: unknown,
+  causeCode: RecoveryDiagnosticCause = 'unexpected-failure',
+): RecoveryDiagnosticError {
+  if (error instanceof RecoveryDiagnosticError) return error;
+  if (error instanceof RecoveryPipelineError) {
+    return new RecoveryDiagnosticError(stage, 'pipeline-failure', error);
+  }
+  return new RecoveryDiagnosticError(stage, causeCode);
+}
+
+async function withinDiagnosticStage<T>(
+  stage: RecoveryDiagnosticStage,
+  operation: () => Promise<T>,
+  causeCode: RecoveryDiagnosticCause = 'unexpected-failure',
+): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    throw diagnosticFailure(stage, error, causeCode);
+  }
+}
+
+function withinDiagnosticStageSync<T>(
+  stage: RecoveryDiagnosticStage,
+  operation: () => T,
+  causeCode: RecoveryDiagnosticCause = 'unexpected-failure',
+): T {
+  try {
+    return operation();
+  } catch (error) {
+    throw diagnosticFailure(stage, error, causeCode);
   }
 }
 
@@ -221,20 +305,26 @@ export function recoveryProcessFailure(
   processName: RecoveryProcessName,
   exitCode: number | null,
   stderr: string,
+  signal: NodeJS.Signals | null = null,
+  streamState: RecoveryStreamState = 'not-applicable',
 ): RecoveryPipelineError {
   return new RecoveryPipelineError(
     processName,
     classifyRecoveryProcessFailure(processName, stderr),
     exitCode,
+    signal,
+    streamState,
   );
 }
 
 export interface RecoveryPipelineFailureEvidence {
   acceptSuccessfulEarlyConsumer?: boolean;
   consumerName: RecoveryProcessName;
+  consumerSignal?: NodeJS.Signals | null;
   consumerStatus: number | null;
   consumerStderr: string;
   producerName: RecoveryProcessName;
+  producerSignal?: NodeJS.Signals | null;
   producerStatus: number | null;
   producerStderr: string;
   stream: RecoveryStreamResult;
@@ -267,15 +357,24 @@ function hasOnlyExpectedGpgBrokenPipeDiagnostics(stderr: string): boolean {
 export function selectRecoveryPipelineFailure(
   evidence: RecoveryPipelineFailureEvidence,
 ): RecoveryPipelineError | undefined {
+  const streamState: RecoveryStreamState = evidence.stream.failed
+    ? evidence.stream.brokenPipe
+      ? 'broken-pipe'
+      : 'failed'
+    : 'complete';
   const producerFailure = recoveryProcessFailure(
     evidence.producerName,
     evidence.producerStatus,
     evidence.producerStderr,
+    evidence.producerSignal ?? null,
+    streamState,
   );
   const consumerFailure = recoveryProcessFailure(
     evidence.consumerName,
     evidence.consumerStatus,
     evidence.consumerStderr,
+    evidence.consumerSignal ?? null,
+    streamState,
   );
   const consumerCausedBrokenPipe =
     evidence.producerName === 'gpg' &&
@@ -315,6 +414,8 @@ export function selectRecoveryPipelineFailure(
       evidence.consumerName,
       'stream-failed',
       null,
+      evidence.consumerSignal ?? null,
+      streamState,
     );
   }
   return undefined;
@@ -628,15 +729,20 @@ async function processPipeline(
     child: ReturnType<typeof spawn>,
     processName: RecoveryProcessName,
   ) =>
-    new Promise<number | null>((resolvePromise, rejectPromise) => {
+    new Promise<{
+      signal: NodeJS.Signals | null;
+      status: number | null;
+    }>((resolvePromise, rejectPromise) => {
       child.once('error', () =>
         rejectPromise(
           new RecoveryPipelineError(processName, 'start-failed', null),
         ),
       );
-      child.once('close', resolvePromise);
+      child.once('close', (status, signal) =>
+        resolvePromise({ signal, status }),
+      );
     });
-  const [producerStatus, consumerStatus, stream] = await Promise.all([
+  const [producerExit, consumerExit, stream] = await Promise.all([
     wait(producer, left.name),
     wait(consumer, right.name),
     transfer,
@@ -646,10 +752,12 @@ async function processPipeline(
     acceptSuccessfulEarlyConsumer:
       options.acceptSuccessfulEarlyConsumer,
     consumerName: right.name,
-    consumerStatus,
+    consumerSignal: consumerExit.signal,
+    consumerStatus: consumerExit.status,
     consumerStderr: stderr.get(right.name) ?? '',
     producerName: left.name,
-    producerStatus,
+    producerSignal: producerExit.signal,
+    producerStatus: producerExit.status,
     producerStderr: stderr.get(left.name) ?? '',
     stream,
   });
@@ -775,6 +883,24 @@ export async function verifyEncryptedArchiveStream(
   );
 }
 
+export async function verifyRecoveryArchiveStreams(
+  archivePath: string,
+  dependencies: RecoveryArchiveStreamDependencies = {},
+): Promise<string> {
+  await withinDiagnosticStage(
+    'archive-full-stream-verification',
+    () =>
+      (dependencies.verifyFullStream ?? verifyEncryptedArchiveStream)(
+        archivePath,
+      ),
+  );
+  return withinDiagnosticStage(
+    'archive-catalog-extraction',
+    () =>
+      (dependencies.readCatalog ?? readArchiveTableOfContents)(archivePath),
+  );
+}
+
 async function verifyArchive(
   archivePath: string,
 ): Promise<RecoveryArchiveVerification> {
@@ -782,8 +908,7 @@ async function verifyArchive(
     throw new Error('Recovery executor: encrypted archive is missing');
   }
   assertPrivateFile(archivePath);
-  await verifyEncryptedArchiveStream(archivePath);
-  const tableOfContents = await readArchiveTableOfContents(archivePath);
+  const tableOfContents = await verifyRecoveryArchiveStreams(archivePath);
   const checksum = await sha256File(archivePath);
   const checksumPath = `${archivePath}.sha256`;
   const checksumRecord = `${checksum}  ${archivePath.split('/').at(-1)}\n`;
@@ -918,7 +1043,10 @@ export async function withRecoveryUseListFile<T>(
     } catch (error) {
       operationError = actionStarted
         ? error
-        : new Error('Recovery executor: temporary use-list preparation failed');
+        : new RecoveryDiagnosticError(
+            'temporary-toc-preparation',
+            'filesystem-preparation',
+          );
     }
   } finally {
     let cleanupFailed = false;
@@ -937,7 +1065,10 @@ export async function withRecoveryUseListFile<T>(
       }
     }
     if (cleanupFailed) {
-      throw new Error('Recovery executor: temporary use-list cleanup failed');
+      throw new RecoveryDiagnosticError(
+        'temporary-toc-cleanup',
+        'filesystem-cleanup',
+      );
     }
   }
   if (operationError) throw operationError;
@@ -1045,25 +1176,30 @@ async function restoreArchive(
   tableOfContents: string,
 ): Promise<void> {
   const url = new URL(connection);
-  const filteredTableOfContents =
-    filterProviderManagedDefaultAcls(tableOfContents);
+  const filteredTableOfContents = withinDiagnosticStageSync(
+    'toc-filtering',
+    () => filterProviderManagedDefaultAcls(tableOfContents),
+    'catalog-validation',
+  );
   await withRecoveryUseListFile(
     dirname(archivePath),
     filteredTableOfContents,
     async (useListPath) =>
-      processPipeline(
-        {
-          name: 'gpg',
-          command: GPG,
-          args: ['--quiet', '--decrypt', '--output', '-', archivePath],
-          env: safeBaseEnvironment(),
-        },
-        {
-          name: 'pg_restore',
-          command: PG_RESTORE,
-          args: recoveryRestoreArguments(useListPath),
-          env: connectionEnvironment(url, false),
-        },
+      withinDiagnosticStage('database-restore-streaming', () =>
+        processPipeline(
+          {
+            name: 'gpg',
+            command: GPG,
+            args: ['--quiet', '--decrypt', '--output', '-', archivePath],
+            env: safeBaseEnvironment(),
+          },
+          {
+            name: 'pg_restore',
+            command: PG_RESTORE,
+            args: recoveryRestoreArguments(useListPath),
+            env: connectionEnvironment(url, false),
+          },
+        ),
       ),
   );
 }
@@ -1383,19 +1519,38 @@ export async function runRecoveryExecutor(
         verification.tableOfContents,
       );
     } catch (error) {
-      const state = inspect(context.connections.migration);
+      let state: TargetState;
+      try {
+        state = inspect(context.connections.migration);
+      } catch {
+        throw new RecoveryDiagnosticError(
+          'rollback-inspection',
+          'inspection-failed',
+        );
+      }
       if (Number(state.userTables) !== 0 || Number(state.discoverySchemas) !== 0) {
-        throw new Error('Recovery executor: partial restore detected');
+        throw new RecoveryDiagnosticError(
+          'rollback-inspection',
+          'partial-restore',
+        );
       }
-      if (error instanceof RecoveryPipelineError) {
+      const failure = diagnosticFailure(
+        'database-restore-streaming',
+        error,
+      );
+      if (failure.pipelineFailure) {
         const containment =
-          error.processName === 'pg_restore' &&
-          !['start-failed', 'stream-failed'].includes(error.category)
-            ? 'restore transaction rolled back; destination remained empty'
-            : 'destination remained empty; no partial restore detected';
-        throw new Error(`${error.message}; ${containment}`);
+          failure.pipelineFailure.processName === 'pg_restore' &&
+          !['start-failed', 'stream-failed'].includes(
+            failure.pipelineFailure.category,
+          )
+            ? 'transaction-rolled-back-empty'
+            : 'destination-empty-no-partial-restore';
+        throw new Error(`${failure.message} containment=${containment}`);
       }
-      throw new Error('Recovery executor: restore failed and rolled back');
+      throw new Error(
+        `${failure.message} containment=destination-empty-no-partial-restore`,
+      );
     }
     if (Number(inspect(context.connections.migration).userTables) === 0) {
       throw new Error('Recovery executor: restore produced no user tables');

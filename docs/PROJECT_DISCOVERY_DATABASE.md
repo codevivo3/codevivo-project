@@ -287,6 +287,13 @@ PostgreSQL output is never logged or included in thrown errors. Restore failures
 reinspect the destination and report whether it remained empty. When
 `pg_restore` terminates early and GnuPG receives a corroborated broken pipe, the
 consumer failure is reported; genuine decryption failures retain precedence.
+Sanitized diagnostic errors identify the precise recovery stage:
+`archive-full-stream-verification`, `archive-catalog-extraction`,
+`toc-filtering`, `database-restore-streaming`, `temporary-toc-preparation`,
+`temporary-toc-cleanup`, or `rollback-inspection`. Pipeline failures also report
+only the process name, classified cause, exit code, termination signal, and
+stream state. They never include captured standard error, archive contents,
+credentials, or passphrases.
 ACL restoration remains enabled: `--no-owner` does not suppress ACL/default-ACL
 entries, and `--no-acl` would prevent the recovery exercise from proving the
 approved runtime and administration grants. Before restore, the executor
