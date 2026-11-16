@@ -19,7 +19,7 @@
  * - Form labels and validation text should remain message-driven.
  */
 import { useActionState, useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { track } from '@vercel/analytics';
 import {
   motion,
@@ -31,10 +31,20 @@ import {
 
 import Button from '@/components/ui/Button';
 import { sendContactEmail } from '@/app/contact/actions';
+import {
+  CONTACT_EMAIL_MAX_LENGTH,
+  CONTACT_EMAIL_PATTERN_SOURCE,
+  CONTACT_MESSAGE_MAX_LENGTH,
+  CONTACT_MESSAGE_MIN_LENGTH,
+  CONTACT_NAME_MAX_LENGTH,
+  isContactLocale,
+} from '@/lib/contact/validation';
 
 export default function ContactForm() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
   const t = useTranslations('contact');
+  const activeLocale = useLocale();
+  const locale = isContactLocale(activeLocale) ? activeLocale : 'en';
   const initialContactFormState = {
     success: false,
     error: null,
@@ -89,6 +99,7 @@ export default function ContactForm() {
           className='glass-effect mt-5 rounded-xl surface-card bg-[var(--panel-bg)] p-5 sm:mt-6 sm:p-6'
           action={formAction}
         >
+          <input type='hidden' name='locale' value={locale} />
           {/* Hidden honeypot field; legitimate users never interact with this input. */}
           <input
             type='text'
@@ -108,6 +119,9 @@ export default function ContactForm() {
                 id='name'
                 name='name'
                 type='text'
+                required
+                maxLength={CONTACT_NAME_MAX_LENGTH}
+                aria-describedby={state.error ? 'contact-form-error' : undefined}
                 className='brand-border border-b bg-transparent px-1 py-2 text-sm text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
                 placeholder={t('namePlaceholder')}
               />
@@ -122,7 +136,9 @@ export default function ContactForm() {
                 name='email'
                 type='email'
                 required
-                pattern='^[^\s@]+@[^\s@]+\.[^\s@]+$'
+                maxLength={CONTACT_EMAIL_MAX_LENGTH}
+                pattern={CONTACT_EMAIL_PATTERN_SOURCE}
+                aria-describedby={state.error ? 'contact-form-error' : undefined}
                 className='brand-border border-b bg-transparent px-1 py-2 text-sm text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
                 placeholder={t('emailPlaceholder')}
               />
@@ -138,16 +154,26 @@ export default function ContactForm() {
               name='message'
               rows={5}
               required
-              minLength={20}
+              minLength={CONTACT_MESSAGE_MIN_LENGTH}
+              maxLength={CONTACT_MESSAGE_MAX_LENGTH}
+              aria-describedby={state.error ? 'contact-form-error' : undefined}
               className='brand-border min-h-[140px] border-b bg-transparent px-1 py-2 text-sm text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
               placeholder={t('messagePlaceholder')}
             />
           </label>
           {state.error ? (
-            <p className='mt-4 text-sm text-red-400'>{t('error')}</p>
+            <p
+              id='contact-form-error'
+              role='alert'
+              className='mt-4 text-sm text-red-400'
+            >
+              {t('error')}
+            </p>
           ) : null}
           {state.success ? (
-            <p className='mt-4 text-sm text-primary'>{t('success')}</p>
+            <p role='status' className='mt-4 text-sm text-primary'>
+              {t('success')}
+            </p>
           ) : null}
           <div className='mt-6 flex justify-center md:justify-end'>
             <div className='w-full max-w-[220px] md:w-auto md:max-w-none'>

@@ -23,63 +23,29 @@ import { Resend } from 'resend';
 import { headers } from 'next/headers';
 import { ratelimit } from '@/lib/rate-limit';
 import ContactEmail from '@/emails/ContactEmail';
+import { isAllowedContactOrigin } from '@/lib/contact/origin';
+import {
+  handleContactSubmission,
+  type ContactFailureCategory,
+  type ContactFormState,
+} from '@/lib/contact/submission-core';
+import type { ContactSubmission } from '@/lib/contact/validation';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendContactEmail(
-  _previousState: { success: boolean; error: string | null },
+  _previousState: ContactFormState,
   formData: FormData,
-): Promise<{ success: boolean; error: string | null }> {
-  try {
-    // Derived values
-    const website = formData.get('website')?.toString();
-    const name = formData.get('name')?.toString().trim();
-    const email = formData.get('email')?.toString().trim();
-    const message = formData.get('message')?.toString().trim();
+): Promise<ContactFormState> {
+  const h = await headers();
+  const ipAddress =
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    h.get('x-real-ip') ||
+    'anonymous';
 
-    // Honeypot field: treat bot submissions as successful no-ops to avoid feedback loops.
-    if (website) {
-      return {
-        success: true,
-        error: null,
-      };
-    }
-
-    // Infer the reply language from the request headers used by the public form.
-    const h = await headers();
-    const acceptLanguage = h.get('accept-language') || '';
-    const isItalian = acceptLanguage.toLowerCase().startsWith('it');
-
-    // Rate limit by the best available client IP signal before performing email work.
-    const ip =
-      h.get('x-forwarded-for')?.split(',')[0] ??
-      h.get('x-real-ip') ??
-      'anonymous';
-
-    const { success } = await ratelimit.limit(ip);
-
-    if (!success) {
-      return {
-        success: false,
-        error: 'Too many requests. Please try again later.',
-      };
-    }
-
-    if (!name || !email || !message) {
-      return {
-        success: false,
-        error: 'Missing required fields',
-      };
-    }
-
-    if (name.length > 100 || email.length > 200 || message.length > 5000) {
-      return {
-        success: false,
-        error: 'Invalid input length',
-      };
-    }
-
-    await resend.emails.send({
+  const sendInternalNotification = async (submission: ContactSubmission) => {
+    const { name, email, message } = submission;
+    const result = await resend.emails.send({
       from: 'CodeVivo Contact <contact@codevivo.dev>',
       to: ['hello@codevivo.dev'],
       replyTo: `${name} <${email}>`,
@@ -101,9 +67,13 @@ ${message}`,
         'X-CodeVivo-Source': 'portfolio-contact',
       },
     });
+    if (result.error) throw new Error('Internal notification rejected');
+  };
 
-    // Auto-reply in the visitor language after the internal notification succeeds.
-    await resend.emails.send({
+  const sendAcknowledgement = async (submission: ContactSubmission) => {
+    const { name, email, locale } = submission;
+    const isItalian = locale === 'it';
+    const result = await resend.emails.send({
       from: 'CodeVivo <contact@codevivo.dev>',
       to: [email],
       subject: isItalian
@@ -147,17 +117,35 @@ https://codevivo.dev`,
         'X-CodeVivo-Source': 'portfolio-autoreply',
       },
     });
+    if (result.error) throw new Error('Acknowledgement rejected');
+  };
 
-    return {
-      success: true,
-      error: null,
-    };
-  } catch (error) {
-    console.error('Contact form error:', error);
+  const logFailure = (category: ContactFailureCategory) => {
+    console.error('Contact form submission failed', { category });
+  };
 
-    return {
-      success: false,
-      error: 'Failed to send message',
-    };
-  }
+  return handleContactSubmission(
+    {
+      email: formData.get('email'),
+      ipAddress,
+      locale: formData.get('locale'),
+      message: formData.get('message'),
+      name: formData.get('name'),
+      website: formData.get('website'),
+    },
+    {
+      isAllowedOrigin: () =>
+        isAllowedContactOrigin({
+          forwardedHost: h.get('x-forwarded-host'),
+          forwardedProtocol: h.get('x-forwarded-proto'),
+          host: h.get('host'),
+          origin: h.get('origin'),
+        }),
+      limit: async (identifier) =>
+        (await ratelimit.limit(identifier)).success,
+      logFailure,
+      sendAcknowledgement,
+      sendInternalNotification,
+    },
+  );
 }
