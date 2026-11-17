@@ -28,6 +28,10 @@ export function isContactLocale(value: unknown): value is ContactLocale {
   return CONTACT_LOCALES.includes(value as ContactLocale);
 }
 
+export function normalizeContactEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
+
 export function validateContactSubmission(input: {
   email: unknown;
   locale: unknown;
