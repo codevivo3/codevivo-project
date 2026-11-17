@@ -17,6 +17,7 @@
     "test:recovery": "node --import tsx --test tests/discovery/recovery-executor.test.ts tests/discovery/recovery-test-guard.test.ts",
     "test:contact": "node --import tsx --test tests/contact/*.test.ts",
     "test:contact:live": "node --import tsx --test tests/contact/contact-repository-live.test.ts",
+    "test:contact:outbox:live": "node --import tsx --test tests/contact/contact-outbox-live.test.ts",
     "test:m2a": "node --import tsx --test tests/discovery/admin-cli-validation.test.ts tests/discovery/credentials.test.ts tests/discovery/isolation-headers.test.ts tests/discovery/recovery-test-guard.test.ts tests/discovery/session-security.test.ts",
     "test:m2b:database": "node --import tsx --test tests/discovery/invitation-live.test.ts",
     "test:m2b:upstash": "node --env-file=.env.local --import tsx --test tests/discovery/upstash-live.test.ts"
