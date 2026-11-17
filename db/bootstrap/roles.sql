@@ -35,6 +35,13 @@ BEGIN
   END IF;
 
   IF NOT EXISTS (
+    SELECT 1 FROM pg_roles WHERE rolname = 'codevivo_contact_runtime'
+  ) THEN
+    CREATE ROLE codevivo_contact_runtime
+      LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION INHERIT;
+  END IF;
+
+  IF NOT EXISTS (
     SELECT 1 FROM pg_roles WHERE rolname = 'codevivo_discovery_migration'
   ) THEN
     CREATE ROLE codevivo_discovery_migration
@@ -54,8 +61,11 @@ GRANT CREATE ON DATABASE neondb TO codevivo_discovery_migration;
 
 CREATE SCHEMA IF NOT EXISTS discovery
   AUTHORIZATION codevivo_discovery_migration;
+CREATE SCHEMA IF NOT EXISTS contact
+  AUTHORIZATION codevivo_discovery_migration;
 
 ALTER SCHEMA discovery OWNER TO codevivo_discovery_migration;
+ALTER SCHEMA contact OWNER TO codevivo_discovery_migration;
 
 -- Schema ACLs must be changed with the authority of the schema owner. SET is
 -- local to this transaction and the bootstrap's membership grant is removed
@@ -65,6 +75,10 @@ SET LOCAL ROLE codevivo_discovery_migration;
 REVOKE ALL ON SCHEMA discovery FROM PUBLIC;
 GRANT USAGE ON SCHEMA discovery TO
   codevivo_discovery_runtime,
+  codevivo_discovery_admin;
+REVOKE ALL ON SCHEMA contact FROM PUBLIC;
+GRANT USAGE ON SCHEMA contact TO
+  codevivo_contact_runtime,
   codevivo_discovery_admin;
 
 RESET ROLE;
@@ -83,6 +97,16 @@ BEGIN
       AND owner.rolname = 'codevivo_discovery_migration'
   ) THEN
     RAISE EXCEPTION 'discovery schema owner verification failed';
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_namespace schema
+    JOIN pg_roles owner ON owner.oid = schema.nspowner
+    WHERE schema.nspname = 'contact'
+      AND owner.rolname = 'codevivo_discovery_migration'
+  ) THEN
+    RAISE EXCEPTION 'contact schema owner verification failed';
   END IF;
 
   IF has_database_privilege(
@@ -117,6 +141,24 @@ BEGIN
     'codevivo_discovery_admin', 'discovery', 'CREATE'
   ) THEN
     RAISE EXCEPTION 'administrative schema privilege verification failed';
+  END IF;
+
+  IF NOT has_schema_privilege(
+    'codevivo_contact_runtime', 'contact', 'USAGE'
+  ) OR has_schema_privilege(
+    'codevivo_contact_runtime', 'contact', 'CREATE'
+  ) OR has_schema_privilege(
+    'codevivo_contact_runtime', 'discovery', 'USAGE'
+  ) THEN
+    RAISE EXCEPTION 'contact runtime schema privilege verification failed';
+  END IF;
+
+  IF NOT has_schema_privilege(
+    'codevivo_discovery_admin', 'contact', 'USAGE'
+  ) OR has_schema_privilege(
+    'codevivo_discovery_admin', 'contact', 'CREATE'
+  ) THEN
+    RAISE EXCEPTION 'contact administrative schema privilege verification failed';
   END IF;
 END
 $verification$;

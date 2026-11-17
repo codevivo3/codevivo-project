@@ -12,9 +12,11 @@ Create the Neon project only after the project, EU region, and billing plan are
 approved. Do not expose connection strings in tickets, commits, logs, or shell
 arguments.
 
-The three credentials have separate purposes:
+The database credentials have separate purposes:
 
 - `DATABASE_URL`: pooled runtime connection configured in Vercel.
+- `CONTACT_DATABASE_URL`: future pooled contact-runtime connection configured
+  in Vercel only when contact persistence is activated.
 - `DISCOVERY_ADMIN_DATABASE_URL`: local administrative role, loaded from
   macOS Keychain at process launch.
 - `DISCOVERY_MIGRATION_DATABASE_URL`: direct migration-role connection, loaded
@@ -26,31 +28,41 @@ credentials.
 ## Bootstrap
 
 Run `db/bootstrap/roles.sql` against the `neondb` database as `neondb_owner`
-using `psql`. The file verifies both values, creates the three login roles
-without passwords, temporarily grants only the PostgreSQL 18 privileges needed
-to assign schema ownership, and creates or repairs the `discovery` schema
-ownership. Schema ACLs are applied while operating as the migration owner:
-runtime and administration receive `USAGE`, never `CREATE`. The bootstrap then
+using `psql`. The file verifies both values, creates the Discovery roles and
+the isolated `codevivo_contact_runtime` login role without passwords,
+temporarily grants only the PostgreSQL 18 privileges needed to assign schema
+ownership, and creates or repairs ownership of the `discovery` and `contact`
+schemas. Schema ACLs are applied while operating as the migration owner:
+each runtime receives `USAGE` only on its own schema, while administration
+receives `USAGE` on both; none receives `CREATE`. The bootstrap then
 resets the active role, revokes only its own temporary membership grant and the
 temporary database privilege, and verifies the effective privileges before
 commit. A failed verification rolls back the transaction. It is safe to rerun
 when the roles and schema already exist under the documented ownership.
 
-Set strong, unique generated passwords with `psql`'s interactive `\password`
-command after the file has completed. The command prompts without placing the
-password in the SQL file or shell history.
+Set strong, unique generated passwords after the file has completed. Neon
+requires the plaintext password at role-update time, so do not use `psql`'s
+`\password` command, which submits a client-generated verifier. Pass each
+password through a short-lived process environment variable, import it with
+`psql`'s `\getenv`, use a parameterized `ALTER ROLE ... PASSWORD :'variable'`
+statement over TLS, and unset it immediately. Never place the password in a
+command argument, SQL file, terminal output, or shell history.
 
-Confirm that the migration role owns the `discovery` schema before running
-migrations.
+Confirm that the migration role owns both the `discovery` and `contact` schemas
+before running migrations.
 
 ## macOS Keychain
 
 Use Keychain Access to create password items with these service names:
 
 - `codevivo.discovery.runtime.database-url`
+- `codevivo.contact.runtime.database-url`
 - `codevivo.discovery.admin.database-url`
 - `codevivo.discovery.migration.database-url`
 - `codevivo.discovery.token-pepper`
+
+The contact-runtime item is reserved for the later persistence-integration
+phase and does not need to be populated until that phase is authorized.
 
 Use `codevivo-project` as the account name. Store the complete connection URL
 as the password value for database items and the high-entropy token pepper as
@@ -80,6 +92,20 @@ The runner:
 - applies each new migration in its own transaction;
 - rolls back a failed migration;
 - never runs down migrations or destructive cleanup automatically.
+
+### Contact database foundation
+
+Migration `0002_contact_database_foundation.sql` adds the isolated `contact`
+schema tables used by the future contact persistence flow. Before applying it
+to a disposable environment, rerun the owner-only bootstrap so the migration
+role owns the `contact` schema and the dedicated `codevivo_contact_runtime`
+role exists. No existing Discovery table is changed.
+
+The migration does not seed privacy-notice records, activate persistence, or
+perform retention deletion. Approved EN/IT notice metadata must be inserted in
+a later authorized step. Contact records carry a configurable retention policy
+version and review timestamp; the current business target is review after 12
+months of inactivity, subject to final legal approval.
 
 ## Integration Tests
 
