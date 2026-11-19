@@ -10,6 +10,7 @@
   "messagePlaceholder": "Parlami del tuo progetto",
   "cta": "Invia il messaggio",
   "sending": "Invio in corso...",
-  "success": "Messaggio inviato con successo.",
+  "success": "La tua richiesta è stata ricevuta.",
+  "privacyLink": "Informativa sulla privacy",
   "error": "Invio del messaggio non riuscito."
 }

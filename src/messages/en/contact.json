@@ -10,6 +10,7 @@
   "messagePlaceholder": "Tell me about your project",
   "cta": "Send Message",
   "sending": "Sending...",
-  "success": "Message sent successfully.",
+  "success": "Your inquiry has been received.",
+  "privacyLink": "Privacy information",
   "error": "Failed to send message."
 }

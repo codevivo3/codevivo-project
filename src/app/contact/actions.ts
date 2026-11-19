@@ -26,12 +26,19 @@ import ContactEmail from '@/emails/ContactEmail';
 import { isAllowedContactOrigin } from '@/lib/contact/origin';
 import {
   handleContactSubmission,
+  resolveContactSubmissionMode,
   type ContactFailureCategory,
   type ContactFormState,
 } from '@/lib/contact/submission-core';
+import { contactInquiryRepository } from '@/lib/contact/repository';
 import type { ContactSubmission } from '@/lib/contact/validation';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | undefined;
+
+function getLegacyResendClient(): Resend {
+  resend ??= new Resend(process.env.RESEND_API_KEY);
+  return resend;
+}
 
 export async function sendContactEmail(
   _previousState: ContactFormState,
@@ -45,7 +52,7 @@ export async function sendContactEmail(
 
   const sendInternalNotification = async (submission: ContactSubmission) => {
     const { name, email, message } = submission;
-    const result = await resend.emails.send({
+    const result = await getLegacyResendClient().emails.send({
       from: 'CodeVivo Contact <contact@codevivo.dev>',
       to: ['hello@codevivo.dev'],
       replyTo: `${name} <${email}>`,
@@ -73,7 +80,7 @@ ${message}`,
   const sendAcknowledgement = async (submission: ContactSubmission) => {
     const { name, email, locale } = submission;
     const isItalian = locale === 'it';
-    const result = await resend.emails.send({
+    const result = await getLegacyResendClient().emails.send({
       from: 'CodeVivo <contact@codevivo.dev>',
       to: [email],
       subject: isItalian
@@ -127,6 +134,7 @@ https://codevivo.dev`,
   return handleContactSubmission(
     {
       email: formData.get('email'),
+      idempotencyKey: formData.get('idempotencyKey'),
       ipAddress,
       locale: formData.get('locale'),
       message: formData.get('message'),
@@ -134,6 +142,8 @@ https://codevivo.dev`,
       website: formData.get('website'),
     },
     {
+      acceptDurableInquiry: (input) =>
+        contactInquiryRepository.acceptInquiry(input),
       isAllowedOrigin: () =>
         isAllowedContactOrigin({
           forwardedHost: h.get('x-forwarded-host'),
@@ -144,6 +154,10 @@ https://codevivo.dev`,
       limit: async (identifier) =>
         (await ratelimit.limit(identifier)).success,
       logFailure,
+      mode: resolveContactSubmissionMode(
+        process.env.CONTACT_SUBMISSION_MODE,
+      ),
+      privacyNoticeVersion: process.env.CONTACT_PRIVACY_NOTICE_VERSION,
       sendAcknowledgement,
       sendInternalNotification,
     },

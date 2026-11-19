@@ -3,7 +3,9 @@ import test from 'node:test';
 import { isAllowedContactOrigin } from '../../src/lib/contact/origin';
 import {
   handleContactSubmission,
+  resolveContactSubmissionMode,
   type ContactFailureCategory,
+  type ContactSubmissionMode,
 } from '../../src/lib/contact/submission-core';
 import {
   CONTACT_EMAIL_MAX_LENGTH,
@@ -16,6 +18,7 @@ import {
 
 const validInput = (overrides: Record<string, unknown> = {}) => ({
   email: 'client@example.test',
+  idempotencyKey: '10000000-0000-4000-8000-000000000001',
   ipAddress: '203.0.113.10',
   locale: 'en',
   message: 'A sufficiently detailed project message.',
@@ -25,16 +28,27 @@ const validInput = (overrides: Record<string, unknown> = {}) => ({
 });
 
 function dependencies(overrides: {
+  acceptDurableInquiry?: (submission: ContactSubmission & {
+    idempotencyKey: string;
+    privacyNoticeVersion: string;
+  }) => Promise<unknown>;
   allowedOrigin?: boolean;
   limit?: () => Promise<boolean>;
   logFailure?: (category: ContactFailureCategory) => void;
+  mode?: ContactSubmissionMode;
+  privacyNoticeVersion?: string;
   sendAcknowledgement?: (submission: ContactSubmission) => Promise<void>;
   sendInternalNotification?: (submission: ContactSubmission) => Promise<void>;
 } = {}) {
   return {
+    acceptDurableInquiry:
+      overrides.acceptDurableInquiry ?? (async () => undefined),
     isAllowedOrigin: () => overrides.allowedOrigin ?? true,
     limit: overrides.limit ?? (async () => true),
     logFailure: overrides.logFailure ?? (() => undefined),
+    mode: overrides.mode ?? 'legacy-email',
+    privacyNoticeVersion:
+      overrides.privacyNoticeVersion ?? 'privacy-2026-01',
     sendAcknowledgement:
       overrides.sendAcknowledgement ?? (async () => undefined),
     sendInternalNotification:
@@ -226,4 +240,165 @@ test('rate-limit infrastructure failure is fail-closed and safely classified', a
   );
   assert.deepEqual(result, { success: false, error: 'submission_failed' });
   assert.deepEqual(categories, ['rate-limit-unavailable']);
+});
+
+test('submission mode defaults safely to the legacy email path', () => {
+  assert.equal(resolveContactSubmissionMode(undefined), 'legacy-email');
+  assert.equal(resolveContactSubmissionMode('unexpected'), 'legacy-email');
+  assert.equal(
+    resolveContactSubmissionMode('durable-outbox'),
+    'durable-outbox',
+  );
+});
+
+test('durable mode accepts one inquiry without synchronous email delivery', async () => {
+  const accepted: Array<ContactSubmission & {
+    idempotencyKey: string;
+    privacyNoticeVersion: string;
+  }> = [];
+  let emailSends = 0;
+
+  const result = await handleContactSubmission(
+    validInput({ locale: 'it' }),
+    dependencies({
+      acceptDurableInquiry: async (submission) => {
+        accepted.push(submission);
+      },
+      mode: 'durable-outbox',
+      sendAcknowledgement: async () => {
+        emailSends += 1;
+      },
+      sendInternalNotification: async () => {
+        emailSends += 1;
+      },
+    }),
+  );
+
+  assert.deepEqual(result, {
+    success: true,
+    error: null,
+    rotateIdempotencyKey: true,
+  });
+  assert.equal(accepted.length, 1);
+  assert.equal(accepted[0].locale, 'it');
+  assert.equal(accepted[0].privacyNoticeVersion, 'privacy-2026-01');
+  assert.equal(emailSends, 0);
+});
+
+test('legacy mode remains exclusive and never persists an inquiry', async () => {
+  let persists = 0;
+  let emails = 0;
+  const result = await handleContactSubmission(
+    validInput(),
+    dependencies({
+      acceptDurableInquiry: async () => {
+        persists += 1;
+      },
+      sendAcknowledgement: async () => {
+        emails += 1;
+      },
+      sendInternalNotification: async () => {
+        emails += 1;
+      },
+    }),
+  );
+
+  assert.equal(result.success, true);
+  assert.equal(persists, 0);
+  assert.equal(emails, 2);
+});
+
+test('durable mode fails closed for missing privacy configuration', async () => {
+  const categories: ContactFailureCategory[] = [];
+  let sideEffects = 0;
+  const result = await handleContactSubmission(
+    validInput(),
+    dependencies({
+      acceptDurableInquiry: async () => {
+        sideEffects += 1;
+      },
+      logFailure: (category) => categories.push(category),
+      mode: 'durable-outbox',
+      privacyNoticeVersion: ' ',
+      sendAcknowledgement: async () => {
+        sideEffects += 1;
+      },
+      sendInternalNotification: async () => {
+        sideEffects += 1;
+      },
+    }),
+  );
+
+  assert.deepEqual(result, { success: false, error: 'submission_failed' });
+  assert.deepEqual(categories, ['privacy-notice-configuration']);
+  assert.equal(sideEffects, 0);
+});
+
+test('durable persistence failures are sanitized and never fall back to email', async () => {
+  for (const error of [
+    Object.assign(new Error('private database diagnostic'), {
+      code: 'database-unavailable',
+    }),
+    new Error('ambiguous transaction outcome with private details'),
+  ]) {
+    const categories: ContactFailureCategory[] = [];
+    let emailSends = 0;
+    const result = await handleContactSubmission(
+      validInput(),
+      dependencies({
+        acceptDurableInquiry: async () => {
+          throw error;
+        },
+        logFailure: (category) => categories.push(category),
+        mode: 'durable-outbox',
+        sendAcknowledgement: async () => {
+          emailSends += 1;
+        },
+        sendInternalNotification: async () => {
+          emailSends += 1;
+        },
+      }),
+    );
+
+    assert.deepEqual(result, { success: false, error: 'submission_failed' });
+    assert.deepEqual(categories, ['durable-persistence']);
+    assert.equal(emailSends, 0);
+  }
+});
+
+test('confirmed durable payload conflicts request idempotency-key rotation', async () => {
+  const result = await handleContactSubmission(
+    validInput(),
+    dependencies({
+      acceptDurableInquiry: async () => {
+        throw Object.assign(new Error('sanitized conflict'), {
+          code: 'idempotency-conflict',
+        });
+      },
+      mode: 'durable-outbox',
+    }),
+  );
+
+  assert.deepEqual(result, {
+    success: false,
+    error: 'submission_failed',
+    rotateIdempotencyKey: true,
+  });
+});
+
+test('durable acceptance does not depend on worker availability', async () => {
+  let accepted = 0;
+  const result = await handleContactSubmission(
+    validInput(),
+    dependencies({
+      acceptDurableInquiry: async () => {
+        accepted += 1;
+        return { queuedNotifications: 2 };
+      },
+      mode: 'durable-outbox',
+    }),
+  );
+
+  assert.equal(result.success, true);
+  assert.equal(accepted, 1);
 });

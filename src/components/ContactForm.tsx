@@ -39,6 +39,22 @@ import {
   CONTACT_NAME_MAX_LENGTH,
   isContactLocale,
 } from '@/lib/contact/validation';
+import {
+  applyContactIdempotencyRotation,
+  getOrCreateContactIdempotencyKey,
+} from '@/lib/contact/idempotency';
+
+function safePrivacyNoticeUrl(value: string | undefined): string | null {
+  if (!value) return null;
+  if (value.startsWith('/') && !value.startsWith('//')) return value;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
 
 export default function ContactForm() {
   // Retrieve localized strings from next-intl messages (DO NOT hardcode text).
@@ -54,6 +70,7 @@ export default function ContactForm() {
     initialContactFormState,
   );
   const contentRef = useRef<HTMLDivElement | null>(null);
+  const idempotencyInputRef = useRef<HTMLInputElement | null>(null);
   const prefersReducedMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: contentRef,
@@ -65,6 +82,26 @@ export default function ContactForm() {
     damping: 24,
     mass: 0.5,
   });
+  const privacyNoticeUrl = safePrivacyNoticeUrl(
+    locale === 'it'
+      ? process.env.NEXT_PUBLIC_CONTACT_PRIVACY_NOTICE_URL_IT
+      : process.env.NEXT_PUBLIC_CONTACT_PRIVACY_NOTICE_URL_EN,
+  );
+
+  useEffect(() => {
+    if (idempotencyInputRef.current) {
+      idempotencyInputRef.current.value =
+        getOrCreateContactIdempotencyKey(window.sessionStorage);
+    }
+  }, []);
+
+  useEffect(() => {
+    applyContactIdempotencyRotation(
+      state,
+      window.sessionStorage,
+      idempotencyInputRef.current,
+    );
+  }, [state]);
 
   useEffect(() => {
     track('contact_form_viewed');
@@ -100,6 +137,11 @@ export default function ContactForm() {
           action={formAction}
         >
           <input type='hidden' name='locale' value={locale} />
+          <input
+            ref={idempotencyInputRef}
+            type='hidden'
+            name='idempotencyKey'
+          />
           {/* Hidden honeypot field; legitimate users never interact with this input. */}
           <input
             type='text'
@@ -175,7 +217,15 @@ export default function ContactForm() {
               {t('success')}
             </p>
           ) : null}
-          <div className='mt-6 flex justify-center md:justify-end'>
+          <div className='mt-6 flex flex-col items-center gap-4 md:items-end'>
+            {privacyNoticeUrl ? (
+              <a
+                href={privacyNoticeUrl}
+                className='text-center text-xs text-fg/70 underline decoration-fg/35 underline-offset-4 transition-colors hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+              >
+                {t('privacyLink')}
+              </a>
+            ) : null}
             <div className='w-full max-w-[220px] md:w-auto md:max-w-none'>
               <Button type='submit' disabled={isPending}>
                 {isPending ? t('sending') : t('cta')}
