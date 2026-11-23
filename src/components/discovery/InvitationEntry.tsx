@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import DiscoveryQuestionnaire from './DiscoveryQuestionnaire';
 
 type EntryState = 'loading' | 'unavailable' | 'expired' | 'established';
 
@@ -58,6 +59,8 @@ export default function InvitationEntry({
 
     return () => controller.abort();
   }, [initialSessionEstablished]);
+
+  if (state === 'established') return <DiscoveryQuestionnaire />;
 
   return (
     <main className='section-block flex min-h-[70vh] items-center justify-center px-6 py-24'>

@@ -1,0 +1,277 @@
+{
+  "overline": "Analisi del progetto",
+  "title": "Scheda di raccolta requisiti",
+  "intro": "Analisi preliminare e definizione del progetto",
+  "version": "Versione del questionario {version}",
+  "required": "Obbligatorio",
+  "optional": "Facoltativo",
+  "selectPlaceholder": "Seleziona un'opzione",
+  "stepNavigationLabel": "Avanzamento del questionario",
+  "stepsLabel": "Fasi del questionario",
+  "progressLabel": "Avanzamento della compilazione",
+  "stepProgress": "Fase {current} di {total}",
+  "steps": {
+    "1": {
+      "short": "Progetto",
+      "title": "Informazioni sul cliente e panoramica del progetto",
+      "description": "Indica chi sei, il nome del progetto e l'esigenza che ne è alla base."
+    },
+    "2": {
+      "short": "Obiettivi",
+      "title": "Obiettivi e pubblico",
+      "description": "Descrivi i risultati desiderati, il pubblico e i criteri di successo."
+    },
+    "3": {
+      "short": "Contenuti",
+      "title": "Contenuti e struttura",
+      "description": "Indica i contenuti previsti, i materiali disponibili e le lingue richieste."
+    },
+    "4": {
+      "short": "Design",
+      "title": "Design e identità visiva",
+      "description": "Condividi la direzione visiva, i riferimenti e gli elementi da evitare."
+    },
+    "5": {
+      "short": "Funzioni",
+      "title": "Funzionalità e requisiti tecnici",
+      "description": "Seleziona le funzionalità richieste e descrivi sistemi esistenti o vincoli."
+    },
+    "6": {
+      "short": "Piano",
+      "title": "Tempistiche e investimento",
+      "description": "Indica date, scadenze, priorità e una fascia indicativa di investimento."
+    },
+    "7": {
+      "short": "Revisione",
+      "title": "Note, revisione e conferma finale",
+      "description": "Aggiungi eventuali note e controlla tutte le risposte prima della futura fase di invio."
+    }
+  },
+  "sections": {
+    "01": "Informazioni sul cliente",
+    "02": "Panoramica del progetto",
+    "03": "Obiettivi e pubblico",
+    "04": "Contenuti e struttura",
+    "05": "Design e identità visiva",
+    "06": "Funzionalità e requisiti tecnici",
+    "07": "Tempistiche e investimento",
+    "08": "Note e prossimi passi"
+  },
+  "fields": {
+    "companyClient": {
+      "label": "Azienda / Cliente",
+      "help": "Nome"
+    },
+    "contactPerson": {
+      "label": "Referente",
+      "help": "Nome e cognome"
+    },
+    "email": {
+      "label": "Email",
+      "help": "Email"
+    },
+    "phone": {
+      "label": "Telefono",
+      "help": "Telefono"
+    },
+    "existingWebsite": {
+      "label": "Sito web attuale",
+      "help": "URL, se presente"
+    },
+    "industry": {
+      "label": "Settore di attività",
+      "help": "Settore"
+    },
+    "projectName": {
+      "label": "Progetto",
+      "help": "Nome del progetto"
+    },
+    "businessDescription": {
+      "label": "Descrizione dell'attività",
+      "help": "Breve descrizione dell'azienda, dei prodotti o dei servizi offerti."
+    },
+    "primaryNeed": {
+      "label": "Esigenza principale",
+      "help": "Quale problema o necessità ha portato il cliente a richiedere il progetto?"
+    },
+    "projectType": {
+      "label": "Tipologia di progetto",
+      "help": "Seleziona un'opzione."
+    },
+    "projectTypeOther": {
+      "label": "Altra soluzione digitale",
+      "help": "Specificare"
+    },
+    "mainObjectives": {
+      "label": "Obiettivi principali",
+      "help": "Descrivere i risultati che il cliente desidera raggiungere."
+    },
+    "targetAudience": {
+      "label": "Pubblico di riferimento",
+      "help": "A chi si rivolge il sito o il servizio?"
+    },
+    "desiredUserActions": {
+      "label": "Azioni desiderate dagli utenti",
+      "help": "Contatto, richiesta preventivo, prenotazione, acquisto, iscrizione o altre azioni."
+    },
+    "successCriteria": {
+      "label": "Criteri di successo",
+      "help": "Come verrà valutata l'efficacia del progetto?"
+    },
+    "plannedPagesOrSections": {
+      "label": "Pagine o sezioni previste",
+      "help": "Home, Chi siamo, Servizi, Contatti, ecc."
+    },
+    "availableMaterials": {
+      "label": "Materiali disponibili",
+      "help": "Seleziona tutte le opzioni pertinenti."
+    },
+    "contentResponsibilities": {
+      "label": "Responsabilità dei contenuti",
+      "help": "Chi fornirà testi, immagini e materiali definitivi?"
+    },
+    "requiredLanguages": {
+      "label": "Lingue richieste",
+      "help": "Italiano, inglese o altre lingue."
+    },
+    "preferredStyle": {
+      "label": "Stile desiderato",
+      "help": "Moderno, minimale, istituzionale, creativo, ecc."
+    },
+    "coloursAndVisualReferences": {
+      "label": "Colori e riferimenti grafici",
+      "help": "Palette, font, brand guidelines."
+    },
+    "referenceWebsites": {
+      "label": "Siti web di riferimento",
+      "help": "URL ed elementi apprezzati."
+    },
+    "elementsToAvoid": {
+      "label": "Elementi da evitare",
+      "help": "Stili, colori o caratteristiche non desiderate."
+    },
+    "requestedFeatures": {
+      "label": "Funzionalità richieste",
+      "help": "Seleziona tutte le opzioni pertinenti."
+    },
+    "requestedFeaturesOther": {
+      "label": "Altre funzionalità",
+      "help": "Specificare"
+    },
+    "domainAndHosting": {
+      "label": "Dominio e hosting",
+      "help": "Già disponibili / Da acquistare / Da verificare."
+    },
+    "existingSystems": {
+      "label": "Sistemi esistenti",
+      "help": "CMS, database, servizi esterni o strumenti da integrare."
+    },
+    "specialRequirements": {
+      "label": "Requisiti particolari",
+      "help": "Accessibilità, prestazioni, sicurezza o altri vincoli."
+    },
+    "preferredStartDate": {
+      "label": "Data di avvio desiderata",
+      "help": "Data"
+    },
+    "desiredCompletionDate": {
+      "label": "Data di consegna desiderata",
+      "help": "Data"
+    },
+    "importantDeadlinesOrEvents": {
+      "label": "Scadenze o eventi rilevanti",
+      "help": "Eventuali lanci, campagne o eventi."
+    },
+    "indicativeBudget": {
+      "label": "Budget indicativo",
+      "help": "Importo o fascia di investimento, se comunicati."
+    },
+    "projectPriorities": {
+      "label": "Priorità del progetto",
+      "help": "Funzionalità essenziali ed eventuali sviluppi futuri."
+    },
+    "additionalNotes": {
+      "label": "Osservazioni aggiuntive",
+      "help": "Informazioni emerse durante il colloquio."
+    },
+    "pointsRequiringClarification": {
+      "label": "Aspetti da chiarire",
+      "help": "Requisiti mancanti, decisioni in sospeso o verifiche necessarie."
+    },
+    "agreedNextStep": {
+      "label": "Prossima attività concordata",
+      "help": "Preparazione del preventivo, incontro successivo, raccolta materiali, ecc."
+    },
+    "expectedDate": {
+      "label": "Data prevista",
+      "help": "Data"
+    },
+    "finalConfirmation": {
+      "label": "Ho controllato le informazioni riportate sopra.",
+      "help": "Questa conferma indica soltanto che hai controllato il questionario locale. Nessuna informazione viene salvata o inviata."
+    }
+  },
+  "options": {
+    "projectType": {
+      "newWebsite": "Nuovo sito web",
+      "existingWebsiteRedesign": "Restyling di un sito esistente",
+      "landingPage": "Landing page",
+      "webApplication": "Applicazione web",
+      "otherDigitalSolution": "Altra soluzione digitale"
+    },
+    "availableMaterials": {
+      "logoAndBrandIdentity": "Logo e identità visiva",
+      "writtenContent": "Testi",
+      "photographsAndImages": "Fotografie e immagini",
+      "videos": "Video",
+      "downloadableDocuments": "Documenti scaricabili",
+      "noneAvailable": "Nessun materiale disponibile"
+    },
+    "requestedFeatures": {
+      "contactForm": "Modulo di contatto",
+      "blogNews": "Blog / News",
+      "photoGallery": "Galleria fotografica",
+      "bookingSystem": "Prenotazioni",
+      "newsletter": "Newsletter",
+      "membersOnlyArea": "Area riservata",
+      "thirdPartyServiceIntegrations": "Integrazione con servizi esterni",
+      "otherFeatures": "Altre funzionalità"
+    },
+    "domainAndHosting": {
+      "alreadyAvailable": "Già disponibili",
+      "toBePurchased": "Da acquistare",
+      "toBeConfirmed": "Da verificare"
+    },
+    "indicativeBudget": {
+      "under1000": "Meno di EUR 1.000",
+      "1000To2499": "EUR 1.000–2.499",
+      "2500To4999": "EUR 2.500–4.999",
+      "5000To9999": "EUR 5.000–9.999",
+      "10000OrMore": "EUR 10.000 o più",
+      "undecided": "Da definire",
+      "preferNotToSay": "Preferisco non indicarlo"
+    }
+  },
+  "validation": {
+    "required": "Questa informazione è obbligatoria.",
+    "email": "Inserisci un indirizzo email valido.",
+    "url": "Inserisci un URL completo http o https.",
+    "minLength": "Inserisci almeno {count} caratteri."
+  },
+  "review": {
+    "title": "Controlla le risposte",
+    "description": "Verifica le informazioni prima della futura fase di invio.",
+    "notProvided": "Non indicato",
+    "confirmed": "Confermato"
+  },
+  "preliminaryNotice": "Il presente documento ha finalità di raccolta preliminare dei requisiti. Non costituisce un'offerta commerciale né un impegno contrattuale. L'ambito definitivo delle attività sarà stabilito nella proposta commerciale eventualmente approvata.",
+  "submissionUnavailable": {
+    "title": "L'invio non è ancora disponibile",
+    "description": "Le risposte rimangono attualmente soltanto in questa pagina e non sono state salvate né inviate a CodeVivo. Il salvataggio delle bozze e l'invio finale appartengono alla prossima fase di implementazione.",
+    "action": "Invio non disponibile"
+  },
+  "navigation": {
+    "previous": "Indietro",
+    "next": "Avanti"
+  }
+}
