@@ -2,14 +2,17 @@
 
 import { useLayoutEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import type { DiscoveryQuestionnairePrefill } from '@/lib/discovery/questionnaire-core';
 import DiscoveryQuestionnaire from './DiscoveryQuestionnaire';
 
 type EntryState = 'loading' | 'unavailable' | 'expired' | 'established';
 
 export default function InvitationEntry({
   initialSessionEstablished,
+  initialPrefill,
 }: {
   initialSessionEstablished: boolean;
+  initialPrefill?: DiscoveryQuestionnairePrefill;
 }) {
   const t = useTranslations('discovery');
   const [state, setState] = useState<EntryState>(
@@ -45,8 +48,14 @@ export default function InvitationEntry({
     })
       .then(async (response) => {
         const result = (await response.json()) as { status?: EntryState };
+        if (result.status === 'established') {
+          window.location.replace(
+            `${window.location.pathname}${window.location.search}`,
+          );
+          return;
+        }
         setState(
-          result.status === 'established' || result.status === 'expired'
+          result.status === 'expired'
             ? result.status
             : 'unavailable',
         );
@@ -60,7 +69,9 @@ export default function InvitationEntry({
     return () => controller.abort();
   }, [initialSessionEstablished]);
 
-  if (state === 'established') return <DiscoveryQuestionnaire />;
+  if (state === 'established') {
+    return <DiscoveryQuestionnaire initialPrefill={initialPrefill} />;
+  }
 
   return (
     <main className='section-block flex min-h-[70vh] items-center justify-center px-6 py-24'>

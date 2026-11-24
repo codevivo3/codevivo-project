@@ -77,12 +77,24 @@ decision.
 
 ### Questionnaire
 
-The questionnaire uses one versioned, language-independent schema with
-localized labels and validation messages. Only essential contact information,
-project name and category, a meaningful description, privacy acknowledgement,
-and deliberate final confirmation are required. All approved source fields
-remain available; most discovery and technical fields are optional or support
-an explicit undecided value.
+Questionnaire schema `2.0` uses stable, language-independent field and option
+identifiers with localized labels and validation messages. First name, last
+name, email, project category, a meaningful business description, conditional
+"Other" details, and deliberate final confirmation
+are required. Company or organisation and project name are optional. Target
+audience, desired visitor actions, required languages, and visual style use
+structured multi-selection answers with explicit undecided choices where
+appropriate. This is a breaking answer-shape change from schema `1.0`, but no
+server-side questionnaire drafts exist yet, so no stored-answer migration is
+required. Phase 2 must create and validate drafts explicitly as schema `2.0`.
+
+An authenticated invitation may pre-fill its own email address. The value
+remains editable and is copied only into local questionnaire state. Invitation
+`client_name` is deliberately not split or assigned to a person or company.
+There is currently no trusted contact-inquiry-to-invitation relationship, so
+contact inquiry data must not be retrieved by matching an email address. Phase
+2 may extend pre-fill only after an explicit, authorization-checked association
+exists.
 
 Budget choices are:
 
@@ -93,6 +105,25 @@ Budget choices are:
 - EUR 10,000 or more;
 - undecided;
 - prefer not to say.
+
+#### Future private attachments (Phase 2.1)
+
+Optional visual-reference attachments belong to the
+`coloursAndVisualReferences` answer. The proposed contract is an ordered array
+of records containing a stable attachment UUID, brief UUID, owning invitation
+UUID, original filename, sanitized display filename, MIME type, byte size,
+SHA-256 digest, private storage object key, upload state, creation timestamp,
+and deletion timestamp. Questionnaire answers store attachment UUID references,
+not public URLs or file contents.
+
+Uploads require an authenticated, invitation-owned brief; a strict MIME and
+size allowlist; server-issued short-lived upload authorization; malware and
+content validation before an object becomes available; encryption in transit
+and at rest; private storage with no anonymous listing or reads; audit-safe
+metadata; retention aligned with the owning draft or submitted brief; and
+authorization checks on every download and deletion. Failed or abandoned
+uploads must be quarantined or removed. No upload control is displayed until
+this complete storage and authorization path exists.
 
 ### Drafts and Submission
 

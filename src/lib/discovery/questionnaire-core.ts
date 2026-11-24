@@ -21,8 +21,23 @@ export type DiscoveryQuestionnaireErrors = Partial<
   Record<DiscoveryQuestionnaireFieldId, DiscoveryQuestionnaireError>
 >;
 
-export function createDiscoveryQuestionnaireAnswers(): DiscoveryQuestionnaireAnswers {
-  return Object.fromEntries(
+export type DiscoveryQuestionnairePrefill = Partial<
+  Record<
+    | 'companyClient'
+    | 'email'
+    | 'existingWebsite'
+    | 'firstName'
+    | 'industry'
+    | 'lastName'
+    | 'phone',
+    string
+  >
+>;
+
+export function createDiscoveryQuestionnaireAnswers(
+  prefill: DiscoveryQuestionnairePrefill = {},
+): DiscoveryQuestionnaireAnswers {
+  const answers = Object.fromEntries(
     discoveryQuestionnaireFields.map((field) => [
       field.id,
       field.control === 'checkbox-group'
@@ -32,6 +47,14 @@ export function createDiscoveryQuestionnaireAnswers(): DiscoveryQuestionnaireAns
           : '',
     ]),
   ) as DiscoveryQuestionnaireAnswers;
+
+  for (const [fieldId, value] of Object.entries(prefill)) {
+    if (typeof value === 'string' && fieldId in answers) {
+      answers[fieldId as DiscoveryQuestionnaireFieldId] = value;
+    }
+  }
+
+  return answers;
 }
 
 export function updateDiscoveryQuestionnaireAnswer(

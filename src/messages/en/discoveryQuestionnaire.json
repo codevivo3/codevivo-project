@@ -59,32 +59,29 @@
   },
   "fields": {
     "companyClient": {
-      "label": "Company / Client",
-      "help": "Name"
+      "label": "Company / Organisation"
     },
-    "contactPerson": {
-      "label": "Contact Person",
-      "help": "Full Name"
+    "firstName": {
+      "label": "First Name"
+    },
+    "lastName": {
+      "label": "Last Name"
     },
     "email": {
-      "label": "Email",
-      "help": "Email"
+      "label": "Email"
     },
     "phone": {
-      "label": "Phone",
-      "help": "Phone Number"
+      "label": "Phone"
     },
     "existingWebsite": {
       "label": "Existing Website",
       "help": "URL, if applicable"
     },
     "industry": {
-      "label": "Industry",
-      "help": "Industry"
+      "label": "Industry"
     },
     "projectName": {
-      "label": "Project",
-      "help": "Project Name"
+      "label": "Project Name"
     },
     "businessDescription": {
       "label": "Business Description",
@@ -100,7 +97,7 @@
     },
     "projectTypeOther": {
       "label": "Other digital solution",
-      "help": "Specify"
+      "placeholder": "Describe the solution"
     },
     "mainObjectives": {
       "label": "Main Objectives",
@@ -108,11 +105,19 @@
     },
     "targetAudience": {
       "label": "Target Audience",
-      "help": "Who is the website or service intended for?"
+      "help": "Select all audiences the website or service is intended for."
+    },
+    "targetAudienceOther": {
+      "label": "Other target audience",
+      "placeholder": "Describe the audience"
     },
     "desiredUserActions": {
       "label": "Desired User Actions",
-      "help": "Contact, quotation request, booking, purchase, subscription or other actions."
+      "help": "Select all actions visitors should be able to take."
+    },
+    "desiredUserActionsOther": {
+      "label": "Other desired action",
+      "placeholder": "Describe the action"
     },
     "successCriteria": {
       "label": "Success Criteria",
@@ -132,11 +137,19 @@
     },
     "requiredLanguages": {
       "label": "Required Languages",
-      "help": "Italian, English or other languages."
+      "help": "Select all languages that may be required."
+    },
+    "requiredLanguagesOther": {
+      "label": "Other language",
+      "placeholder": "Enter the language"
     },
     "preferredStyle": {
       "label": "Preferred Style",
-      "help": "Modern, minimalist, corporate, creative, etc."
+      "help": "Select every visual direction that feels appropriate."
+    },
+    "preferredStyleOther": {
+      "label": "Other preferred style",
+      "placeholder": "Describe the style"
     },
     "coloursAndVisualReferences": {
       "label": "Colours and Visual References",
@@ -156,7 +169,7 @@
     },
     "requestedFeaturesOther": {
       "label": "Other features",
-      "help": "Specify"
+      "placeholder": "Describe the feature"
     },
     "domainAndHosting": {
       "label": "Domain and Hosting",
@@ -171,12 +184,10 @@
       "help": "Accessibility, performance, security or other constraints."
     },
     "preferredStartDate": {
-      "label": "Preferred Start Date",
-      "help": "Date"
+      "label": "Preferred Start Date"
     },
     "desiredCompletionDate": {
-      "label": "Desired Completion Date",
-      "help": "Date"
+      "label": "Desired Completion Date"
     },
     "importantDeadlinesOrEvents": {
       "label": "Important Deadlines or Events",
@@ -203,8 +214,7 @@
       "help": "Preparation of the Commercial Proposal, follow-up meeting, collection of materials, etc."
     },
     "expectedDate": {
-      "label": "Expected Date",
-      "help": "Date"
+      "label": "Expected Date"
     },
     "finalConfirmation": {
       "label": "I have reviewed the information shown above.",
@@ -226,6 +236,44 @@
       "videos": "Videos",
       "downloadableDocuments": "Downloadable documents",
       "noneAvailable": "No materials currently available"
+    },
+    "targetAudience": {
+      "privateIndividuals": "Private individuals",
+      "businessesB2B": "Businesses (B2B)",
+      "professionals": "Professionals",
+      "localCustomers": "Local customers",
+      "internationalCustomers": "International customers",
+      "other": "Other"
+    },
+    "desiredUserActions": {
+      "contactBusiness": "Contact the business",
+      "requestQuote": "Request a quote",
+      "bookAppointment": "Book an appointment",
+      "purchaseProduct": "Purchase a product",
+      "registerAccount": "Register an account",
+      "subscribeNewsletter": "Subscribe to a newsletter",
+      "exploreContent": "Explore content",
+      "other": "Other"
+    },
+    "requiredLanguages": {
+      "english": "English",
+      "italian": "Italian",
+      "french": "French",
+      "german": "German",
+      "spanish": "Spanish",
+      "other": "Other",
+      "notDecidedYet": "Not decided yet"
+    },
+    "preferredStyle": {
+      "minimalist": "Minimalist",
+      "modern": "Modern",
+      "corporate": "Corporate",
+      "elegantPremium": "Elegant / Premium",
+      "creative": "Creative",
+      "editorial": "Editorial",
+      "technical": "Technical",
+      "other": "Other",
+      "openToSuggestions": "Open to suggestions"
     },
     "requestedFeatures": {
       "contactForm": "Contact form",
@@ -252,6 +300,13 @@
       "preferNotToSay": "Prefer not to say"
     }
   },
+  "contextualHelp": {
+    "open": "More information about {term}",
+    "requestedFeatures": "Third-party integrations connect the project to services operated by another provider, such as booking, payment or customer-management tools.",
+    "domainAndHosting": "A domain name is the web address people use to find the site. Hosting is the service that keeps the website available online.",
+    "existingSystems": "A CMS is a content management system used to edit website content. List any CMS, database or external service the new project must work with.",
+    "specialRequirements": "Technical requirements may include accessibility, performance, security or SEO. SEO helps search engines understand and display website content."
+  },
   "validation": {
     "required": "This information is required.",
     "email": "Enter a valid email address.",
@@ -272,6 +327,9 @@
   },
   "navigation": {
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "currentStep": "Current step: {step}",
+    "availableStep": "Go to completed step: {step}",
+    "unavailableStep": "Complete the preceding steps before opening: {step}"
   }
 }

@@ -1,4 +1,4 @@
-export const DISCOVERY_QUESTIONNAIRE_VERSION = '1.0';
+export const DISCOVERY_QUESTIONNAIRE_VERSION = '2.0';
 
 export const discoveryQuestionnaireSteps = [
   { id: 1, sectionIds: ['01', '02'] },
@@ -49,6 +49,11 @@ export type DiscoveryQuestionnaireField = {
     value?: string;
   };
   control: QuestionnaireControl;
+  contextualHelp?:
+    | 'domainAndHosting'
+    | 'existingSystems'
+    | 'requestedFeatures'
+    | 'specialRequirements';
   exclusiveOptionId?: string;
   id: string;
   minLength?: number;
@@ -61,11 +66,19 @@ export type DiscoveryQuestionnaireField = {
 
 export const discoveryQuestionnaireFields = [
   {
-    id: 'companyClient', sectionId: '01', step: 1, control: 'text', required: true,
+    id: 'firstName', sectionId: '01', step: 1, control: 'text', required: true,
     source: 'approved-brief',
   },
   {
-    id: 'contactPerson', sectionId: '01', step: 1, control: 'text', required: true,
+    id: 'lastName', sectionId: '01', step: 1, control: 'text', required: true,
+    source: 'approved-brief',
+  },
+  {
+    id: 'companyClient', sectionId: '01', step: 1, control: 'text', required: false,
+    source: 'approved-brief',
+  },
+  {
+    id: 'industry', sectionId: '01', step: 1, control: 'text', required: false,
     source: 'approved-brief',
   },
   {
@@ -81,11 +94,7 @@ export const discoveryQuestionnaireFields = [
     source: 'approved-brief',
   },
   {
-    id: 'industry', sectionId: '01', step: 1, control: 'text', required: false,
-    source: 'approved-brief',
-  },
-  {
-    id: 'projectName', sectionId: '02', step: 1, control: 'text', required: true,
+    id: 'projectName', sectionId: '02', step: 1, control: 'text', required: false,
     source: 'approved-brief',
   },
   {
@@ -117,12 +126,40 @@ export const discoveryQuestionnaireFields = [
     source: 'approved-brief',
   },
   {
-    id: 'targetAudience', sectionId: '03', step: 2, control: 'textarea', required: false,
-    source: 'approved-brief',
+    id: 'targetAudience', sectionId: '03', step: 2, control: 'checkbox-group',
+    required: false, source: 'approved-brief',
+    options: [
+      { id: 'privateIndividuals' },
+      { id: 'businessesB2B' },
+      { id: 'professionals' },
+      { id: 'localCustomers' },
+      { id: 'internationalCustomers' },
+      { id: 'other' },
+    ],
   },
   {
-    id: 'desiredUserActions', sectionId: '03', step: 2, control: 'textarea', required: false,
-    source: 'approved-brief',
+    id: 'targetAudienceOther', sectionId: '03', step: 2, control: 'text',
+    required: true, source: 'approved-brief',
+    conditional: { fieldId: 'targetAudience', includes: 'other' },
+  },
+  {
+    id: 'desiredUserActions', sectionId: '03', step: 2, control: 'checkbox-group',
+    required: false, source: 'approved-brief',
+    options: [
+      { id: 'contactBusiness' },
+      { id: 'requestQuote' },
+      { id: 'bookAppointment' },
+      { id: 'purchaseProduct' },
+      { id: 'registerAccount' },
+      { id: 'subscribeNewsletter' },
+      { id: 'exploreContent' },
+      { id: 'other' },
+    ],
+  },
+  {
+    id: 'desiredUserActionsOther', sectionId: '03', step: 2, control: 'text',
+    required: true, source: 'approved-brief',
+    conditional: { fieldId: 'desiredUserActions', includes: 'other' },
   },
   {
     id: 'successCriteria', sectionId: '03', step: 2, control: 'textarea', required: false,
@@ -149,12 +186,42 @@ export const discoveryQuestionnaireFields = [
     required: false, source: 'approved-brief',
   },
   {
-    id: 'requiredLanguages', sectionId: '04', step: 3, control: 'text', required: false,
-    source: 'approved-brief',
+    id: 'requiredLanguages', sectionId: '04', step: 3, control: 'checkbox-group',
+    required: false, source: 'approved-brief', exclusiveOptionId: 'notDecidedYet',
+    options: [
+      { id: 'english' },
+      { id: 'italian' },
+      { id: 'french' },
+      { id: 'german' },
+      { id: 'spanish' },
+      { id: 'other' },
+      { id: 'notDecidedYet' },
+    ],
   },
   {
-    id: 'preferredStyle', sectionId: '05', step: 4, control: 'textarea', required: false,
-    source: 'approved-brief',
+    id: 'requiredLanguagesOther', sectionId: '04', step: 3, control: 'text',
+    required: true, source: 'approved-brief',
+    conditional: { fieldId: 'requiredLanguages', includes: 'other' },
+  },
+  {
+    id: 'preferredStyle', sectionId: '05', step: 4, control: 'checkbox-group',
+    required: false, source: 'approved-brief', exclusiveOptionId: 'openToSuggestions',
+    options: [
+      { id: 'minimalist' },
+      { id: 'modern' },
+      { id: 'corporate' },
+      { id: 'elegantPremium' },
+      { id: 'creative' },
+      { id: 'editorial' },
+      { id: 'technical' },
+      { id: 'other' },
+      { id: 'openToSuggestions' },
+    ],
+  },
+  {
+    id: 'preferredStyleOther', sectionId: '05', step: 4, control: 'text',
+    required: true, source: 'approved-brief',
+    conditional: { fieldId: 'preferredStyle', includes: 'other' },
   },
   {
     id: 'coloursAndVisualReferences', sectionId: '05', step: 4, control: 'textarea',
@@ -170,7 +237,7 @@ export const discoveryQuestionnaireFields = [
   },
   {
     id: 'requestedFeatures', sectionId: '06', step: 5, control: 'checkbox-group',
-    required: false, source: 'approved-brief',
+    required: false, source: 'approved-brief', contextualHelp: 'requestedFeatures',
     options: [
       { id: 'contactForm' },
       { id: 'blogNews' },
@@ -189,7 +256,7 @@ export const discoveryQuestionnaireFields = [
   },
   {
     id: 'domainAndHosting', sectionId: '06', step: 5, control: 'radio-group',
-    required: false, source: 'approved-brief',
+    required: false, source: 'approved-brief', contextualHelp: 'domainAndHosting',
     options: [
       { id: 'alreadyAvailable' },
       { id: 'toBePurchased' },
@@ -198,11 +265,11 @@ export const discoveryQuestionnaireFields = [
   },
   {
     id: 'existingSystems', sectionId: '06', step: 5, control: 'textarea', required: false,
-    source: 'approved-brief',
+    source: 'approved-brief', contextualHelp: 'existingSystems',
   },
   {
     id: 'specialRequirements', sectionId: '06', step: 5, control: 'textarea',
-    required: false, source: 'approved-brief',
+    required: false, source: 'approved-brief', contextualHelp: 'specialRequirements',
   },
   {
     id: 'preferredStartDate', sectionId: '07', step: 6, control: 'date', required: false,

@@ -19,12 +19,13 @@ import {
 } from '../../src/lib/discovery/questionnaire-schema';
 
 const expectedApprovedFieldIds = [
+  'firstName',
+  'lastName',
   'companyClient',
-  'contactPerson',
+  'industry',
   'email',
   'phone',
   'existingWebsite',
-  'industry',
   'projectName',
   'businessDescription',
   'primaryNeed',
@@ -32,13 +33,17 @@ const expectedApprovedFieldIds = [
   'projectTypeOther',
   'mainObjectives',
   'targetAudience',
+  'targetAudienceOther',
   'desiredUserActions',
+  'desiredUserActionsOther',
   'successCriteria',
   'plannedPagesOrSections',
   'availableMaterials',
   'contentResponsibilities',
   'requiredLanguages',
+  'requiredLanguagesOther',
   'preferredStyle',
+  'preferredStyleOther',
   'coloursAndVisualReferences',
   'referenceWebsites',
   'elementsToAvoid',
@@ -73,6 +78,44 @@ const expectedOptionIds = {
     'videos',
     'downloadableDocuments',
     'noneAvailable',
+  ],
+  targetAudience: [
+    'privateIndividuals',
+    'businessesB2B',
+    'professionals',
+    'localCustomers',
+    'internationalCustomers',
+    'other',
+  ],
+  desiredUserActions: [
+    'contactBusiness',
+    'requestQuote',
+    'bookAppointment',
+    'purchaseProduct',
+    'registerAccount',
+    'subscribeNewsletter',
+    'exploreContent',
+    'other',
+  ],
+  requiredLanguages: [
+    'english',
+    'italian',
+    'french',
+    'german',
+    'spanish',
+    'other',
+    'notDecidedYet',
+  ],
+  preferredStyle: [
+    'minimalist',
+    'modern',
+    'corporate',
+    'elegantPremium',
+    'creative',
+    'editorial',
+    'technical',
+    'other',
+    'openToSuggestions',
   ],
   requestedFeatures: [
     'contactForm',
@@ -112,7 +155,8 @@ async function messages(locale: 'en' | 'it') {
       'utf8',
     ),
   ) as {
-    fields: Record<string, { help: string; label: string }>;
+    contextualHelp: Record<string, string>;
+    fields: Record<string, { help?: string; label: string; placeholder?: string }>;
     options: Record<string, Record<string, string>>;
     sections: Record<string, string>;
     steps: Record<string, { description: string; short: string; title: string }>;
@@ -120,7 +164,7 @@ async function messages(locale: 'en' | 'it') {
 }
 
 test('versioned contract covers every approved brief field across eight sections', () => {
-  assert.equal(DISCOVERY_QUESTIONNAIRE_VERSION, '1.0');
+  assert.equal(DISCOVERY_QUESTIONNAIRE_VERSION, '2.0');
   assert.deepEqual(approvedBriefFieldIds, expectedApprovedFieldIds);
   assert.deepEqual(
     discoveryQuestionnaireSections.map((section) => section.id),
@@ -154,14 +198,13 @@ test('English and Italian fields, options, sections and steps stay in parity', a
 
   for (const questionnaireField of discoveryQuestionnaireFields as readonly DiscoveryQuestionnaireField[]) {
     assert.ok(english.fields[questionnaireField.id]?.label);
-    assert.ok(english.fields[questionnaireField.id]?.help);
     assert.ok(italian.fields[questionnaireField.id]?.label);
-    assert.ok(italian.fields[questionnaireField.id]?.help);
     for (const option of questionnaireField.options ?? []) {
       assert.ok(english.options[questionnaireField.id]?.[option.id]);
       assert.ok(italian.options[questionnaireField.id]?.[option.id]);
     }
   }
+  assert.deepEqual(Object.keys(english.contextualHelp), Object.keys(italian.contextualHelp));
 });
 
 test('requiredness is limited to approved essential information and confirmation', () => {
@@ -169,31 +212,32 @@ test('requiredness is limited to approved essential information and confirmation
     .filter((questionnaireField) => questionnaireField.required)
     .map((questionnaireField) => questionnaireField.id);
   assert.deepEqual(requiredIds, [
-    'companyClient',
-    'contactPerson',
+    'firstName',
+    'lastName',
     'email',
-    'projectName',
     'businessDescription',
     'projectType',
     'projectTypeOther',
+    'targetAudienceOther',
+    'desiredUserActionsOther',
+    'requiredLanguagesOther',
+    'preferredStyleOther',
     'requestedFeaturesOther',
     'finalConfirmation',
   ]);
 
   let answers = createDiscoveryQuestionnaireAnswers();
   assert.deepEqual(validateDiscoveryQuestionnaireStep(1, answers), {
-    companyClient: 'required',
-    contactPerson: 'required',
+    firstName: 'required',
+    lastName: 'required',
     email: 'required',
-    projectName: 'required',
     businessDescription: 'required',
     projectType: 'required',
   });
 
-  answers = updateDiscoveryQuestionnaireAnswer(answers, 'companyClient', 'CodeVivo Client');
-  answers = updateDiscoveryQuestionnaireAnswer(answers, 'contactPerson', 'Client Contact');
+  answers = updateDiscoveryQuestionnaireAnswer(answers, 'firstName', 'Client');
+  answers = updateDiscoveryQuestionnaireAnswer(answers, 'lastName', 'Contact');
   answers = updateDiscoveryQuestionnaireAnswer(answers, 'email', 'client@example.invalid');
-  answers = updateDiscoveryQuestionnaireAnswer(answers, 'projectName', 'New project');
   answers = updateDiscoveryQuestionnaireAnswer(
     answers,
     'businessDescription',
@@ -205,10 +249,9 @@ test('requiredness is limited to approved essential information and confirmation
 
 test('conditional Other fields validate only when their option is selected', () => {
   let answers = createDiscoveryQuestionnaireAnswers();
-  answers = updateDiscoveryQuestionnaireAnswer(answers, 'companyClient', 'Client');
-  answers = updateDiscoveryQuestionnaireAnswer(answers, 'contactPerson', 'Person');
+  answers = updateDiscoveryQuestionnaireAnswer(answers, 'firstName', 'Client');
+  answers = updateDiscoveryQuestionnaireAnswer(answers, 'lastName', 'Person');
   answers = updateDiscoveryQuestionnaireAnswer(answers, 'email', 'person@example.invalid');
-  answers = updateDiscoveryQuestionnaireAnswer(answers, 'projectName', 'Project');
   answers = updateDiscoveryQuestionnaireAnswer(
     answers,
     'businessDescription',
@@ -235,6 +278,85 @@ test('conditional Other fields validate only when their option is selected', () 
     validateDiscoveryQuestionnaireStep(5, answers).requestedFeaturesOther,
     'required',
   );
+
+  for (const [fieldId, otherId, step] of [
+    ['targetAudience', 'targetAudienceOther', 2],
+    ['desiredUserActions', 'desiredUserActionsOther', 2],
+    ['requiredLanguages', 'requiredLanguagesOther', 3],
+    ['preferredStyle', 'preferredStyleOther', 4],
+  ] as const) {
+    answers = updateDiscoveryQuestionnaireAnswer(answers, fieldId, ['other']);
+    assert.equal(isDiscoveryQuestionnaireFieldVisible(field(otherId), answers), true);
+    assert.equal(validateDiscoveryQuestionnaireStep(step, answers)[otherId], 'required');
+  }
+});
+
+test('exclusive structured choices clear concrete selections in both directions', () => {
+  for (const [fieldId, concreteOption, exclusiveOption] of [
+    ['requiredLanguages', 'english', 'notDecidedYet'],
+    ['preferredStyle', 'modern', 'openToSuggestions'],
+  ] as const) {
+    const questionnaireField = field(fieldId);
+    let answers = createDiscoveryQuestionnaireAnswers();
+    answers = toggleDiscoveryQuestionnaireOption(
+      answers,
+      questionnaireField,
+      concreteOption,
+      true,
+    );
+    answers = toggleDiscoveryQuestionnaireOption(
+      answers,
+      questionnaireField,
+      exclusiveOption,
+      true,
+    );
+    assert.deepEqual(answers[fieldId], [exclusiveOption]);
+    answers = toggleDiscoveryQuestionnaireOption(
+      answers,
+      questionnaireField,
+      concreteOption,
+      true,
+    );
+    assert.deepEqual(answers[fieldId], [concreteOption]);
+  }
+});
+
+test('trusted invitation prefill initializes editable answers without inventing names', () => {
+  const answers = createDiscoveryQuestionnaireAnswers({
+    email: 'invited@example.invalid',
+  });
+  assert.equal(answers.email, 'invited@example.invalid');
+  assert.equal(answers.firstName, '');
+  assert.equal(answers.lastName, '');
+
+  const edited = updateDiscoveryQuestionnaireAnswer(
+    answers,
+    'email',
+    'edited@example.invalid',
+  );
+  assert.equal(edited.email, 'edited@example.invalid');
+  assert.equal(answers.email, 'invited@example.invalid');
+});
+
+test('authenticated prefill uses only invitation-owned email metadata', async () => {
+  const [repository, page, entry] = await Promise.all([
+    readFile(
+      new URL('../../src/lib/discovery/repository-core.ts', import.meta.url),
+      'utf8',
+    ),
+    readFile(
+      new URL('../../src/app/[locale]/discovery/page.tsx', import.meta.url),
+      'utf8',
+    ),
+    readFile(
+      new URL('../../src/components/discovery/InvitationEntry.tsx', import.meta.url),
+      'utf8',
+    ),
+  ]);
+  assert.match(repository, /invitations\.client_email AS invitation_email/u);
+  assert.doesNotMatch(repository, /contact\.inquiries/u);
+  assert.match(page, /initialPrefill=\{invitationEmail \? \{ email: invitationEmail \}/u);
+  assert.match(entry, /window\.location\.replace/u);
 });
 
 test('No materials is mutually exclusive with every concrete material', () => {
@@ -281,9 +403,14 @@ test('component preserves accessibility, responsive and no-persistence boundarie
   assert.match(source, /<fieldset/u);
   assert.match(source, /<legend/u);
   assert.match(source, /role='progressbar'/u);
+  assert.match(source, /highestStepReached/u);
+  assert.match(source, /disabled=\{!isAvailable\}/u);
+  assert.match(source, /<ContextualInfo/u);
+  assert.match(source, /discovery-date-input/u);
   assert.match(source, /sm:grid-cols-2/u);
   assert.match(source, /md:grid-cols-2/u);
   assert.match(source, /motion-reduce:transition-none/u);
   assert.match(source, /disabled\s*\n\s*aria-describedby='discovery-submission-unavailable'/u);
   assert.doesNotMatch(source, /fetch\(/u);
+  assert.equal(source.match(/t\('stepProgress'/gu)?.length, 1);
 });

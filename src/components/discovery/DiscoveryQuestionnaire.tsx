@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { CalendarDays, Info } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import {
   createDiscoveryQuestionnaireAnswers,
@@ -12,6 +13,7 @@ import {
   validateDiscoveryQuestionnaireStep,
   type DiscoveryQuestionnaireAnswers,
   type DiscoveryQuestionnaireErrors,
+  type DiscoveryQuestionnairePrefill,
 } from '@/lib/discovery/questionnaire-core';
 import {
   DISCOVERY_QUESTIONNAIRE_VERSION,
@@ -26,9 +28,68 @@ import {
 const fieldLabelClassName =
   'font-mono-var text-[11px] font-medium uppercase tracking-[0.18em] text-fg/70';
 const inputClassName =
-  'brand-border mt-2 w-full rounded-md border bg-surface/35 px-3 py-3 text-sm text-fg outline-none transition-colors placeholder:text-fg/40 focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+  'brand-border mt-2 w-full rounded-lg border bg-surface/35 px-3 py-3 text-sm text-fg outline-none transition-colors placeholder:text-fg/40 focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const choiceClassName =
   'flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-border/80 bg-surface/25 px-3 py-2.5 text-sm leading-relaxed text-fg transition-colors hover:border-primary/60 focus-within:border-primary';
+
+function ContextualInfo({
+  content,
+  label,
+}: {
+  content: string;
+  label: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const popoverId = useId();
+  const containerRef = useRef<HTMLSpanElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const dismissOnPointerDown = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+
+    document.addEventListener('pointerdown', dismissOnPointerDown);
+    document.addEventListener('keydown', dismissOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', dismissOnPointerDown);
+      document.removeEventListener('keydown', dismissOnEscape);
+    };
+  }, [open]);
+
+  return (
+    <span
+      ref={containerRef}
+      className='relative inline-flex align-middle'
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+    >
+      <button
+        type='button'
+        aria-label={label}
+        aria-expanded={open}
+        aria-controls={popoverId}
+        onClick={() => setOpen(true)}
+        className='ml-1 inline-flex h-6 w-6 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+      >
+        <Info className='h-4 w-4' aria-hidden='true' />
+      </button>
+      {open ? (
+        <span
+          id={popoverId}
+          role='tooltip'
+          className='surface-card fixed inset-x-6 bottom-6 z-30 rounded-lg bg-surface px-3 py-2 font-sans-var text-xs font-normal normal-case leading-relaxed tracking-normal text-fg shadow-lg sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[min(18rem,calc(100vw-3rem))]'
+        >
+          {content}
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 function fieldId(id: string) {
   return `discovery-${id}`;
@@ -42,12 +103,18 @@ function helpId(id: string) {
   return `${fieldId(id)}-help`;
 }
 
-export default function DiscoveryQuestionnaire() {
+export default function DiscoveryQuestionnaire({
+  initialPrefill,
+}: {
+  initialPrefill?: DiscoveryQuestionnairePrefill;
+}) {
   const t = useTranslations('discoveryQuestionnaire');
   const [answers, setAnswers] = useState<DiscoveryQuestionnaireAnswers>(
-    createDiscoveryQuestionnaireAnswers,
+    () => createDiscoveryQuestionnaireAnswers(initialPrefill),
   );
   const [currentStep, setCurrentStep] = useState<DiscoveryQuestionnaireStep>(1);
+  const [highestStepReached, setHighestStepReached] =
+    useState<DiscoveryQuestionnaireStep>(1);
   const [errors, setErrors] = useState<DiscoveryQuestionnaireErrors>({});
   const stepHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const currentFields = useMemo(
@@ -61,6 +128,12 @@ export default function DiscoveryQuestionnaire() {
   useEffect(() => {
     stepHeadingRef.current?.focus();
   }, [currentStep]);
+
+  const navigateToStep = (step: DiscoveryQuestionnaireStep) => {
+    if (step > highestStepReached) return;
+    setErrors({});
+    setCurrentStep(step);
+  };
 
   const setAnswer = (
     id: DiscoveryQuestionnaireFieldId,
@@ -86,23 +159,46 @@ export default function DiscoveryQuestionnaire() {
       return;
     }
     if (currentStep < 7) {
-      setCurrentStep((currentStep + 1) as DiscoveryQuestionnaireStep);
+      const nextStep = (currentStep + 1) as DiscoveryQuestionnaireStep;
+      setHighestStepReached((highest) => Math.max(highest, nextStep) as DiscoveryQuestionnaireStep);
+      setCurrentStep(nextStep);
     }
   };
 
   const goToPreviousStep = () => {
     setErrors({});
     if (currentStep > 1) {
-      setCurrentStep((currentStep - 1) as DiscoveryQuestionnaireStep);
+      navigateToStep((currentStep - 1) as DiscoveryQuestionnaireStep);
     }
   };
 
-  const describedBy = (field: DiscoveryQuestionnaireField) =>
-    [helpId(field.id), errors[field.id as DiscoveryQuestionnaireFieldId]
+  const hasFieldHelp = (field: DiscoveryQuestionnaireField) =>
+    t.has(`fields.${field.id}.help`);
+
+  const describedBy = (field: DiscoveryQuestionnaireField) => {
+    const ids = [hasFieldHelp(field) ? helpId(field.id) : null, errors[field.id as DiscoveryQuestionnaireFieldId]
       ? errorId(field.id)
       : null]
-      .filter(Boolean)
-      .join(' ');
+      .filter(Boolean);
+    return ids.length ? ids.join(' ') : undefined;
+  };
+
+  const renderFieldLabel = (field: DiscoveryQuestionnaireField, label: string) => (
+    <>
+      {label}{' '}
+      <span className='normal-case tracking-normal text-fg/45'>
+        ({field.required ? t('required') : t('optional')})
+      </span>
+    </>
+  );
+
+  const renderContextualInfo = (field: DiscoveryQuestionnaireField, label: string) =>
+    field.contextualHelp ? (
+      <ContextualInfo
+        label={t('contextualHelp.open', { term: label })}
+        content={t(`contextualHelp.${field.contextualHelp}`)}
+      />
+    ) : null;
 
   const renderError = (field: DiscoveryQuestionnaireField) => {
     const error = errors[field.id as DiscoveryQuestionnaireFieldId];
@@ -120,8 +216,10 @@ export default function DiscoveryQuestionnaire() {
     const id = field.id as DiscoveryQuestionnaireFieldId;
     const answer = answers[id];
     const label = t(`fields.${field.id}.label`);
-    const help = t(`fields.${field.id}.help`);
-    const requiredLabel = field.required ? t('required') : t('optional');
+    const help = hasFieldHelp(field) ? t(`fields.${field.id}.help`) : null;
+    const placeholder = t.has(`fields.${field.id}.placeholder`)
+      ? t(`fields.${field.id}.placeholder`)
+      : undefined;
 
     if (field.control === 'workflow-confirmation') {
       return (
@@ -138,9 +236,11 @@ export default function DiscoveryQuestionnaire() {
             />
             <span>{label}</span>
           </label>
-          <p id={helpId(field.id)} className='mt-2 text-xs leading-relaxed text-fg/60'>
-            {help}
-          </p>
+          {help ? (
+            <p id={helpId(field.id)} className='mt-2 text-xs leading-relaxed text-fg/60'>
+              {help}
+            </p>
+          ) : null}
           {renderError(field)}
         </div>
       );
@@ -151,11 +251,14 @@ export default function DiscoveryQuestionnaire() {
       return (
         <fieldset key={field.id} className='min-w-0'>
           <legend className={fieldLabelClassName}>
-            {label} <span className='normal-case tracking-normal text-fg/45'>({requiredLabel})</span>
+            {renderFieldLabel(field, label)}
+            {renderContextualInfo(field, label)}
           </legend>
-          <p id={helpId(field.id)} className='mt-1 text-sm leading-relaxed text-fg/60'>
-            {help}
-          </p>
+          {help ? (
+            <p id={helpId(field.id)} className='mt-1 text-sm leading-relaxed text-fg/60'>
+              {help}
+            </p>
+          ) : null}
           <div className='mt-3 grid gap-2 sm:grid-cols-2'>
             {(field.options ?? []).map((option) => {
               const checked = field.control === 'radio-group'
@@ -205,13 +308,18 @@ export default function DiscoveryQuestionnaire() {
 
     if (field.control === 'select') {
       return (
-        <label key={field.id} htmlFor={fieldId(field.id)} className='block min-w-0'>
-          <span className={fieldLabelClassName}>
-            {label} <span className='normal-case tracking-normal text-fg/45'>({requiredLabel})</span>
+        <div key={field.id} className='block min-w-0'>
+          <span className='flex items-center'>
+            <label htmlFor={fieldId(field.id)} className={fieldLabelClassName}>
+              {renderFieldLabel(field, label)}
+            </label>
+            {renderContextualInfo(field, label)}
           </span>
-          <span id={helpId(field.id)} className='mt-1 block text-sm leading-relaxed text-fg/60'>
-            {help}
-          </span>
+          {help ? (
+            <span id={helpId(field.id)} className='mt-1 block text-sm leading-relaxed text-fg/60'>
+              {help}
+            </span>
+          ) : null}
           <select
             id={fieldId(field.id)}
             value={typeof answer === 'string' ? answer : ''}
@@ -228,7 +336,7 @@ export default function DiscoveryQuestionnaire() {
             ))}
           </select>
           {renderError(field)}
-        </label>
+        </div>
       );
     }
 
@@ -243,27 +351,48 @@ export default function DiscoveryQuestionnaire() {
         event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
       ) => setAnswer(id, event.target.value),
       className: inputClassName,
+      placeholder,
     };
 
+    const input = field.control === 'textarea' ? (
+      <textarea {...commonProps} rows={4} minLength={field.minLength} />
+    ) : field.control === 'date' ? (
+      <span className='relative block'>
+        <input
+          {...commonProps}
+          type='date'
+          minLength={field.minLength}
+          className={`${inputClassName} discovery-date-input pr-11`}
+        />
+        <CalendarDays
+          className='pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--brand-blue)]'
+          aria-hidden='true'
+        />
+      </span>
+    ) : (
+      <input
+        {...commonProps}
+        type={field.control === 'text' ? 'text' : field.control}
+        minLength={field.minLength}
+      />
+    );
+
     return (
-      <label key={field.id} htmlFor={fieldId(field.id)} className='block min-w-0'>
-        <span className={fieldLabelClassName}>
-          {label} <span className='normal-case tracking-normal text-fg/45'>({requiredLabel})</span>
+      <div key={field.id} className='block min-w-0'>
+        <span className='flex items-center'>
+          <label htmlFor={fieldId(field.id)} className={fieldLabelClassName}>
+            {renderFieldLabel(field, label)}
+          </label>
+          {renderContextualInfo(field, label)}
         </span>
-        <span id={helpId(field.id)} className='mt-1 block text-sm leading-relaxed text-fg/60'>
-          {help}
-        </span>
-        {field.control === 'textarea' ? (
-          <textarea {...commonProps} rows={4} minLength={field.minLength} />
-        ) : (
-          <input
-            {...commonProps}
-            type={field.control === 'text' ? 'text' : field.control}
-            minLength={field.minLength}
-          />
-        )}
+        {help ? (
+          <span id={helpId(field.id)} className='mt-1 block text-sm leading-relaxed text-fg/60'>
+            {help}
+          </span>
+        ) : null}
+        {input}
         {renderError(field)}
-      </label>
+      </div>
     );
   };
 
@@ -286,7 +415,9 @@ export default function DiscoveryQuestionnaire() {
       isDiscoveryQuestionnaireFieldVisible(field, answers),
   ) as readonly DiscoveryQuestionnaireField[];
 
-  const progress = Math.round((currentStep / discoveryQuestionnaireSteps.length) * 100);
+  const progress = Math.round(
+    (highestStepReached / discoveryQuestionnaireSteps.length) * 100,
+  );
 
   return (
     <main className='px-4 pb-16 pt-6 sm:px-6 sm:pt-10'>
@@ -317,7 +448,7 @@ export default function DiscoveryQuestionnaire() {
             role='progressbar'
             aria-valuemin={1}
             aria-valuemax={discoveryQuestionnaireSteps.length}
-            aria-valuenow={currentStep}
+            aria-valuenow={highestStepReached}
             aria-label={t('progressLabel')}
             className='h-2 overflow-hidden rounded-full bg-surface/70'
           >
@@ -327,22 +458,38 @@ export default function DiscoveryQuestionnaire() {
             />
           </div>
           <ol className='mt-4 grid grid-cols-7 gap-1.5' aria-label={t('stepsLabel')}>
-            {discoveryQuestionnaireSteps.map((step) => (
-              <li
-                key={step.id}
-                aria-current={step.id === currentStep ? 'step' : undefined}
-                className={`rounded-md border px-1 py-2 text-center font-mono-var text-[10px] sm:px-2 ${
-                  step.id === currentStep
-                    ? 'border-primary bg-primary/15 text-primary'
-                    : step.id < currentStep
-                      ? 'border-primary/40 text-fg/70'
-                      : 'border-border text-fg/40'
-                }`}
-              >
-                <span className='sm:hidden'>{step.id}</span>
-                <span className='hidden sm:inline'>{t(`steps.${step.id}.short`)}</span>
-              </li>
-            ))}
+            {discoveryQuestionnaireSteps.map((step) => {
+              const isCurrent = step.id === currentStep;
+              const isAvailable = step.id <= highestStepReached;
+              return (
+                <li key={step.id}>
+                  <button
+                    type='button'
+                    disabled={!isAvailable}
+                    aria-current={isCurrent ? 'step' : undefined}
+                    aria-label={t(
+                      isCurrent
+                        ? 'navigation.currentStep'
+                        : isAvailable
+                          ? 'navigation.availableStep'
+                          : 'navigation.unavailableStep',
+                      { step: t(`steps.${step.id}.short`) },
+                    )}
+                    onClick={() => navigateToStep(step.id)}
+                    className={`min-h-11 w-full rounded-lg border px-1 py-2 text-center font-mono-var text-[10px] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:px-2 ${
+                      isCurrent
+                        ? 'border-primary bg-primary/30 text-primary'
+                        : isAvailable
+                          ? 'cursor-pointer border-primary/55 bg-surface/85 text-fg hover:bg-primary/15'
+                          : 'cursor-not-allowed border-border bg-surface/45 text-fg/40'
+                    }`}
+                  >
+                    <span className='sm:hidden'>{step.id}</span>
+                    <span className='hidden sm:inline'>{t(`steps.${step.id}.short`)}</span>
+                  </button>
+                </li>
+              );
+            })}
           </ol>
         </nav>
 
@@ -352,13 +499,10 @@ export default function DiscoveryQuestionnaire() {
           noValidate
         >
           <div className='border-b border-border/80 pb-5'>
-            <p className='font-mono-var text-xs uppercase tracking-[0.18em] text-fg/55'>
-              {t('stepProgress', { current: currentStep, total: discoveryQuestionnaireSteps.length })}
-            </p>
             <h2
               ref={stepHeadingRef}
               tabIndex={-1}
-              className='mt-2 text-2xl font-semibold outline-none sm:text-3xl'
+              className='text-2xl font-semibold outline-none sm:text-3xl'
             >
               {t(`steps.${currentStep}.title`)}
             </h2>
@@ -435,7 +579,7 @@ export default function DiscoveryQuestionnaire() {
                   type='button'
                   disabled
                   aria-describedby='discovery-submission-unavailable'
-                  className='mt-4 inline-flex min-h-11 w-full cursor-not-allowed items-center justify-center rounded-md border border-border bg-surface/40 px-4 py-2 text-sm font-semibold text-fg/45 sm:w-auto'
+                  className='mt-4 inline-flex min-h-11 w-full cursor-not-allowed items-center justify-center rounded-lg border border-border bg-surface/40 px-4 py-2 text-sm font-semibold text-fg/45 sm:w-auto'
                 >
                   {t('submissionUnavailable.action')}
                 </button>
@@ -448,18 +592,24 @@ export default function DiscoveryQuestionnaire() {
               type='button'
               onClick={goToPreviousStep}
               disabled={currentStep === 1}
-              className='min-h-11 disabled:cursor-not-allowed disabled:opacity-40'
+              className='min-h-11 rounded-lg! disabled:cursor-not-allowed disabled:opacity-40'
             >
               {t('navigation.previous')}
             </Button>
             {currentStep < 7 ? (
-              <Button type='button' onClick={goToNextStep} className='min-h-11'>
+              <Button type='button' onClick={goToNextStep} className='min-h-11 rounded-lg!'>
                 {t('navigation.next')}
               </Button>
             ) : null}
           </div>
         </form>
       </div>
+      <style jsx global>{`
+        input.discovery-date-input::-webkit-calendar-picker-indicator {
+          cursor: pointer;
+          opacity: 0;
+        }
+      `}</style>
     </main>
   );
 }

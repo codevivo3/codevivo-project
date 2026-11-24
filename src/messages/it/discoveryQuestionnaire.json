@@ -59,32 +59,29 @@
   },
   "fields": {
     "companyClient": {
-      "label": "Azienda / Cliente",
-      "help": "Nome"
+      "label": "Azienda / Organizzazione"
     },
-    "contactPerson": {
-      "label": "Referente",
-      "help": "Nome e cognome"
+    "firstName": {
+      "label": "Nome"
+    },
+    "lastName": {
+      "label": "Cognome"
     },
     "email": {
-      "label": "Email",
-      "help": "Email"
+      "label": "Email"
     },
     "phone": {
-      "label": "Telefono",
-      "help": "Telefono"
+      "label": "Telefono"
     },
     "existingWebsite": {
       "label": "Sito web attuale",
       "help": "URL, se presente"
     },
     "industry": {
-      "label": "Settore di attività",
-      "help": "Settore"
+      "label": "Settore di attività"
     },
     "projectName": {
-      "label": "Progetto",
-      "help": "Nome del progetto"
+      "label": "Nome del progetto"
     },
     "businessDescription": {
       "label": "Descrizione dell'attività",
@@ -100,7 +97,7 @@
     },
     "projectTypeOther": {
       "label": "Altra soluzione digitale",
-      "help": "Specificare"
+      "placeholder": "Descrivi la soluzione"
     },
     "mainObjectives": {
       "label": "Obiettivi principali",
@@ -108,11 +105,19 @@
     },
     "targetAudience": {
       "label": "Pubblico di riferimento",
-      "help": "A chi si rivolge il sito o il servizio?"
+      "help": "Seleziona tutti i tipi di pubblico a cui si rivolge il sito o il servizio."
+    },
+    "targetAudienceOther": {
+      "label": "Altro pubblico di riferimento",
+      "placeholder": "Descrivi il pubblico"
     },
     "desiredUserActions": {
       "label": "Azioni desiderate dagli utenti",
-      "help": "Contatto, richiesta preventivo, prenotazione, acquisto, iscrizione o altre azioni."
+      "help": "Seleziona tutte le azioni che i visitatori dovrebbero poter compiere."
+    },
+    "desiredUserActionsOther": {
+      "label": "Altra azione desiderata",
+      "placeholder": "Descrivi l'azione"
     },
     "successCriteria": {
       "label": "Criteri di successo",
@@ -132,11 +137,19 @@
     },
     "requiredLanguages": {
       "label": "Lingue richieste",
-      "help": "Italiano, inglese o altre lingue."
+      "help": "Seleziona tutte le lingue che potrebbero essere necessarie."
+    },
+    "requiredLanguagesOther": {
+      "label": "Altra lingua",
+      "placeholder": "Inserisci la lingua"
     },
     "preferredStyle": {
       "label": "Stile desiderato",
-      "help": "Moderno, minimale, istituzionale, creativo, ecc."
+      "help": "Seleziona tutte le direzioni visive che ritieni appropriate."
+    },
+    "preferredStyleOther": {
+      "label": "Altro stile desiderato",
+      "placeholder": "Descrivi lo stile"
     },
     "coloursAndVisualReferences": {
       "label": "Colori e riferimenti grafici",
@@ -156,7 +169,7 @@
     },
     "requestedFeaturesOther": {
       "label": "Altre funzionalità",
-      "help": "Specificare"
+      "placeholder": "Descrivi la funzionalità"
     },
     "domainAndHosting": {
       "label": "Dominio e hosting",
@@ -171,12 +184,10 @@
       "help": "Accessibilità, prestazioni, sicurezza o altri vincoli."
     },
     "preferredStartDate": {
-      "label": "Data di avvio desiderata",
-      "help": "Data"
+      "label": "Data di avvio desiderata"
     },
     "desiredCompletionDate": {
-      "label": "Data di consegna desiderata",
-      "help": "Data"
+      "label": "Data di consegna desiderata"
     },
     "importantDeadlinesOrEvents": {
       "label": "Scadenze o eventi rilevanti",
@@ -203,8 +214,7 @@
       "help": "Preparazione del preventivo, incontro successivo, raccolta materiali, ecc."
     },
     "expectedDate": {
-      "label": "Data prevista",
-      "help": "Data"
+      "label": "Data prevista"
     },
     "finalConfirmation": {
       "label": "Ho controllato le informazioni riportate sopra.",
@@ -226,6 +236,44 @@
       "videos": "Video",
       "downloadableDocuments": "Documenti scaricabili",
       "noneAvailable": "Nessun materiale disponibile"
+    },
+    "targetAudience": {
+      "privateIndividuals": "Privati",
+      "businessesB2B": "Aziende (B2B)",
+      "professionals": "Professionisti",
+      "localCustomers": "Clienti locali",
+      "internationalCustomers": "Clienti internazionali",
+      "other": "Altro"
+    },
+    "desiredUserActions": {
+      "contactBusiness": "Contattare l'attività",
+      "requestQuote": "Richiedere un preventivo",
+      "bookAppointment": "Prenotare un appuntamento",
+      "purchaseProduct": "Acquistare un prodotto",
+      "registerAccount": "Creare un account",
+      "subscribeNewsletter": "Iscriversi a una newsletter",
+      "exploreContent": "Esplorare i contenuti",
+      "other": "Altro"
+    },
+    "requiredLanguages": {
+      "english": "Inglese",
+      "italian": "Italiano",
+      "french": "Francese",
+      "german": "Tedesco",
+      "spanish": "Spagnolo",
+      "other": "Altro",
+      "notDecidedYet": "Non ancora deciso"
+    },
+    "preferredStyle": {
+      "minimalist": "Minimalista",
+      "modern": "Moderno",
+      "corporate": "Istituzionale",
+      "elegantPremium": "Elegante / Premium",
+      "creative": "Creativo",
+      "editorial": "Editoriale",
+      "technical": "Tecnico",
+      "other": "Altro",
+      "openToSuggestions": "Aperto a suggerimenti"
     },
     "requestedFeatures": {
       "contactForm": "Modulo di contatto",
@@ -252,6 +300,13 @@
       "preferNotToSay": "Preferisco non indicarlo"
     }
   },
+  "contextualHelp": {
+    "open": "Maggiori informazioni su {term}",
+    "requestedFeatures": "Le integrazioni con servizi esterni collegano il progetto a strumenti gestiti da altri fornitori, ad esempio sistemi di prenotazione, pagamento o gestione clienti.",
+    "domainAndHosting": "Il dominio è l'indirizzo web utilizzato per trovare il sito. L'hosting è il servizio che mantiene il sito disponibile online.",
+    "existingSystems": "Un CMS è un sistema di gestione dei contenuti utilizzato per aggiornare un sito. Indica eventuali CMS, database o servizi esterni con cui il nuovo progetto dovrà funzionare.",
+    "specialRequirements": "I requisiti tecnici possono includere accessibilità, prestazioni, sicurezza o SEO. La SEO aiuta i motori di ricerca a comprendere e mostrare i contenuti del sito."
+  },
   "validation": {
     "required": "Questa informazione è obbligatoria.",
     "email": "Inserisci un indirizzo email valido.",
@@ -272,6 +327,9 @@
   },
   "navigation": {
     "previous": "Indietro",
-    "next": "Avanti"
+    "next": "Avanti",
+    "currentStep": "Fase attuale: {step}",
+    "availableStep": "Vai alla fase già raggiunta: {step}",
+    "unavailableStep": "Completa le fasi precedenti prima di aprire: {step}"
   }
 }

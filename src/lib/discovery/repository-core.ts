@@ -11,6 +11,7 @@ type ExchangeRow = {
 
 type AuthorizationRow = {
   invitation_id: string;
+  invitation_email: string;
   brief_id: string | null;
   brief_state: 'draft' | 'submitted' | null;
 };
@@ -88,6 +89,7 @@ export function createDiscoverySessionRepository(
       const rows = await sql`
         SELECT
           invitations.id AS invitation_id,
+          invitations.client_email AS invitation_email,
           project_briefs.id AS brief_id,
           project_briefs.state AS brief_state
         FROM discovery.sessions
@@ -108,6 +110,7 @@ export function createDiscoverySessionRepository(
       return row
         ? {
             invitationId: row.invitation_id,
+            invitationEmail: row.invitation_email,
             briefId: row.brief_id,
             briefState: row.brief_state,
           }

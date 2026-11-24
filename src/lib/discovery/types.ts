@@ -14,6 +14,7 @@ export interface DiscoverySessionRepository {
     sessionHash: Buffer;
   }): Promise<{
     invitationId: string;
+    invitationEmail?: string;
     briefId: string | null;
     briefState: 'draft' | 'submitted' | null;
   } | null>;
