@@ -12,6 +12,7 @@
     "discovery:admin": "node --import tsx scripts/discovery-admin.ts",
     "discovery:recovery": "node --import tsx scripts/discovery-recovery-executor.ts",
     "discovery:verify-pepper": "node --import tsx scripts/discovery-verify-pepper.ts",
+    "discovery:phase2:validate": "node --import tsx scripts/discovery-phase2-validation.ts",
     "test:db": "node --test tests/database/*.test.mjs",
     "test:db:recovery": "node --import tsx scripts/discovery-recovery-test.ts",
     "test:recovery": "node --import tsx --test tests/discovery/recovery-executor.test.ts tests/discovery/recovery-test-guard.test.ts",
@@ -19,6 +20,8 @@
     "test:contact:live": "node --import tsx --test tests/contact/contact-repository-live.test.ts",
     "test:contact:outbox:live": "node --import tsx --test tests/contact/contact-outbox-live.test.ts",
     "test:m2a": "node --import tsx --test tests/discovery/admin-cli-validation.test.ts tests/discovery/credentials.test.ts tests/discovery/isolation-headers.test.ts tests/discovery/recovery-test-guard.test.ts tests/discovery/session-security.test.ts",
+    "test:discovery:drafts": "node --import tsx --test tests/discovery/draft-*.test.ts tests/discovery/admin-prefill.test.ts tests/discovery/phase2-validation-guard.test.ts",
+    "test:discovery:drafts:live": "node --import tsx --test tests/discovery/draft-live.test.ts",
     "test:m2b:database": "node --import tsx --test tests/discovery/invitation-live.test.ts",
     "test:m2b:upstash": "node --env-file=.env.local --import tsx --test tests/discovery/upstash-live.test.ts"
   },

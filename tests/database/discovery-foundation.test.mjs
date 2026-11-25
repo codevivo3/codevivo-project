@@ -43,7 +43,15 @@ test('Project Discovery database behavior', { skip: skipReason }, async (t) => {
           current_user,
           'discovery.project_briefs',
           'SELECT'
-        ) AS brief_select
+        ) AS brief_select,
+        has_column_privilege(
+          current_user,
+          'discovery.project_briefs',
+          'state',
+          'UPDATE'
+        ) AS brief_state_update,
+        has_schema_privilege(current_user, 'contact', 'USAGE')
+          AS contact_schema_usage
     `;
     const [adminPrivileges] = await admin`
       SELECT
@@ -69,6 +77,8 @@ test('Project Discovery database behavior', { skip: skipReason }, async (t) => {
     assert.equal(runtimePrivileges.schema_create, false);
     assert.equal(runtimePrivileges.invitation_insert, false);
     assert.equal(runtimePrivileges.brief_select, true);
+    assert.equal(runtimePrivileges.brief_state_update, false);
+    assert.equal(runtimePrivileges.contact_schema_usage, false);
     assert.equal(adminPrivileges.invitation_insert, true);
     assert.equal(adminPrivileges.brief_update, false);
     assert.equal(migrationPrivileges.schema_create, true);
@@ -155,7 +165,13 @@ test('Project Discovery database behavior', { skip: skipReason }, async (t) => {
     });
 
     await t.test('submitted briefs cannot be changed', async () => {
-      await runtime`
+      await assert.rejects(runtime`
+        UPDATE discovery.project_briefs
+        SET state = 'submitted'
+        WHERE id = ${committedBriefId}
+      `);
+
+      await migration`
         UPDATE discovery.project_briefs
         SET
           state = 'submitted',
@@ -164,7 +180,7 @@ test('Project Discovery database behavior', { skip: skipReason }, async (t) => {
         WHERE id = ${committedBriefId}
       `;
 
-      await assert.rejects(runtime`
+      await assert.rejects(migration`
         UPDATE discovery.project_briefs
         SET answers = ${{ changed: true }}
         WHERE id = ${committedBriefId}

@@ -11,6 +11,10 @@ const contactFoundationSql = await readFile(
   'db/migrations/0002_contact_database_foundation.sql',
   'utf8',
 );
+const discoveryPersistenceSql = await readFile(
+  'db/migrations/0003_discovery_persistence_foundation.sql',
+  'utf8',
+);
 
 test('database bootstrap defines the approved isolated roles', () => {
   for (const role of ['runtime', 'admin', 'migration']) {
@@ -115,5 +119,38 @@ test('contact inquiry integrity and notification events are constrained', () => 
   assert.match(
     contactFoundationSql,
     /sent contact notification events are immutable/iu,
+  );
+});
+
+test('Discovery persistence migration is additive and preserves role isolation', () => {
+  assert.doesNotMatch(
+    discoveryPersistenceSql,
+    /\b(?:DROP|TRUNCATE)\b|\bDELETE\s+FROM\b/iu,
+  );
+  assert.match(
+    discoveryPersistenceSql,
+    /ADD COLUMN current_step smallint NOT NULL DEFAULT 1/iu,
+  );
+  assert.match(discoveryPersistenceSql, /highest_step_reached >= current_step/iu);
+  assert.match(discoveryPersistenceSql, /octet_length\(last_mutation_hash\) = 32/iu);
+  assert.match(
+    discoveryPersistenceSql,
+    /CREATE TABLE discovery\.invitation_inquiry_links/iu,
+  );
+  assert.match(
+    discoveryPersistenceSql,
+    /REFERENCES contact\.inquiries \(id\)[\s\S]*?ON DELETE RESTRICT/iu,
+  );
+  assert.doesNotMatch(
+    discoveryPersistenceSql,
+    /GRANT[^;]*?ON\s+contact\.[^;]*?TO\s+codevivo_discovery_runtime/iu,
+  );
+  assert.doesNotMatch(
+    discoveryPersistenceSql,
+    /GRANT[^;]*?invitation_inquiry_links[^;]*?TO\s+codevivo_discovery_runtime/iu,
+  );
+  assert.match(
+    discoveryPersistenceSql,
+    /REVOKE UPDATE \(state, submission_reference, submitted_at\)[\s\S]*?codevivo_discovery_runtime/iu,
   );
 });

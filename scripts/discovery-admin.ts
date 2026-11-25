@@ -17,6 +17,14 @@ import {
   connectDiscoveryValidationDatabase,
   prepareDiscoveryValidationInvitation,
 } from './discovery-admin-validation';
+import {
+  buildInvitationPrefill,
+  invitationDisplayName,
+  parseOptionalAdminValue,
+  validateAdminEmail,
+  validateInvitationExtensionDays,
+  validateOptionalInquiryId,
+} from './discovery-admin-core';
 
 const DEFAULT_VALIDITY_DAYS = 14;
 const command = process.argv[2];
@@ -39,6 +47,10 @@ async function askRequired(label: string): Promise<string> {
   return value;
 }
 
+async function askOptional(label: string) {
+  return parseOptionalAdminValue(await prompt.question(label));
+}
+
 async function copyInvitationLink(link: string): Promise<void> {
   const result = spawnSync('/usr/bin/pbcopy', [], {
     input: link,
@@ -56,8 +68,49 @@ async function createInvitation() {
     connectionString: readKeychainSecret(DISCOVERY_ADMIN_URL_SERVICE),
     connect: (validated) => neon(validated),
   });
-  const clientName = await askRequired('Client or company name: ');
-  const clientEmail = await askRequired('Client email: ');
+  const inquiryId = validateOptionalInquiryId(
+    await prompt.question('Associated contact inquiry ID (optional): '),
+  );
+  const inquiryRows = inquiryId
+    ? await sql`
+        SELECT submitted_name, submitted_email
+        FROM contact.inquiries
+        WHERE id = ${inquiryId}::uuid
+        LIMIT 1
+      `
+    : [];
+  if (inquiryId && !inquiryRows[0]) {
+    throw new Error('The contact inquiry was not found');
+  }
+  const firstName = await askOptional(
+    'First name (optional; use - for an intentional empty value): ',
+  );
+  const lastName = await askOptional(
+    'Last name (optional; use - for an intentional empty value): ',
+  );
+  const company = await askOptional(
+    'Company (optional; use - for an intentional empty value): ',
+  );
+  const emailInput = (
+    await prompt.question('Authorized email (blank uses associated inquiry): ')
+  ).trim();
+  const clientEmail = validateAdminEmail(
+    emailInput || String(inquiryRows[0]?.submitted_email ?? ''),
+  );
+  const copiedInquiryFields = inquiryId && !emailInput ? '{email}' : '{}';
+  const clientName = invitationDisplayName({
+    company,
+    firstName,
+    inquiryDisplayName: inquiryRows[0]?.submitted_name,
+    lastName,
+  });
+  const prefill = buildInvitationPrefill({
+    company,
+    email: clientEmail,
+    firstName,
+    inquiryEmail: inquiryRows[0]?.submitted_email,
+    lastName,
+  });
   const localeInput = (await prompt.question('Locale [en/it] (en): '))
     .trim()
     .toLowerCase();
@@ -77,23 +130,45 @@ async function createInvitation() {
     Date.now() + DEFAULT_VALIDITY_DAYS * 24 * 60 * 60 * 1000,
   );
 
-  await sql`
+  const insertInvitation = sql`
     INSERT INTO discovery.invitations (
       id,
       token_hash,
       client_name,
       client_email,
       preferred_locale,
-      expires_at
+      expires_at,
+      prefill_schema_version,
+      prefill_answers
     ) VALUES (
       ${invitationId},
       ${tokenHash},
       ${clientName},
       ${clientEmail},
       ${locale},
-      ${expiresAt.toISOString()}::timestamptz
+      ${expiresAt.toISOString()}::timestamptz,
+      ${'2.0'},
+      ${prefill}::jsonb
     )
   `;
+  if (inquiryId) {
+    await sql.transaction([
+      insertInvitation,
+      sql`
+        INSERT INTO discovery.invitation_inquiry_links (
+          invitation_id,
+          inquiry_id,
+          copied_fields
+        ) VALUES (
+          ${invitationId}::uuid,
+          ${inquiryId}::uuid,
+          ${copiedInquiryFields}::text[]
+        )
+      `,
+    ]);
+  } else {
+    await insertInvitation;
+  }
 
   baseUrl.pathname = locale === 'it' ? '/it/discovery' : '/discovery';
   baseUrl.search = '';
@@ -198,13 +273,40 @@ async function revokeInvitation() {
   console.log(`Sessions invalidated: ${rows[0].invalidated_count}`);
 }
 
+async function extendInvitation() {
+  const invitationId = await askRequired('Invitation ID: ');
+  const days = validateInvitationExtensionDays(
+    await askRequired('Additional validity days [1-365]: '),
+  );
+  const confirmation = (
+    await prompt.question(`Type EXTEND ${days} to confirm: `)
+  ).trim();
+  if (confirmation !== `EXTEND ${days}`) throw new Error('Extension cancelled');
+
+  const sql = getAdministrationDatabase();
+  const rows = await sql`
+    UPDATE discovery.invitations
+    SET expires_at = expires_at + (${days}::text || ' days')::interval
+    WHERE id = ${invitationId}::uuid
+      AND revoked_at IS NULL
+      AND expires_at > now()
+    RETURNING expires_at
+  `;
+  if (!rows[0]) {
+    throw new Error('Invitation was not found, has expired, or was revoked');
+  }
+  console.log(`Invitation extended: ${invitationId}`);
+  console.log(`Expires: ${new Date(rows[0].expires_at).toISOString()}`);
+}
+
 async function main() {
   try {
     if (command === 'create') await createInvitation();
     else if (command === 'inspect') await inspectInvitation();
     else if (command === 'revoke') await revokeInvitation();
+    else if (command === 'extend') await extendInvitation();
     else {
-      throw new Error('Usage: npm run discovery:admin -- <create|inspect|revoke>');
+      throw new Error('Usage: npm run discovery:admin -- <create|inspect|revoke|extend>');
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Operation failed';

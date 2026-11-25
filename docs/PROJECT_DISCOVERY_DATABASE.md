@@ -107,6 +107,28 @@ a later authorized step. Contact records carry a configurable retention policy
 version and review timestamp; the current business target is review after 12
 months of inactivity, subject to final legal approval.
 
+### Discovery draft persistence foundation
+
+Migration `0003_discovery_persistence_foundation.sql` extends the existing
+one-brief-per-invitation model with bounded questionnaire progress, canonical
+mutation hashes, a small draft-only editing-state object, and retention-review
+metadata. It also adds structured invitation prefill and an optional,
+administratively created inquiry-provenance link. Discovery runtime receives
+neither access to that administrative link nor `USAGE` or table access in the
+`contact` schema.
+
+Draft retention eligibility is recorded when a brief is first initialized as
+the invitation expiry plus `DISCOVERY_ABANDONED_RETENTION_DAYS` (30 by
+default). This milestone does not run deletion or cleanup. The submitted-brief
+immutability trigger remains unchanged.
+
+Draft HTTP routes are disabled unless
+`DISCOVERY_DRAFT_PERSISTENCE_ENABLED=true`. Keep the flag false until migration
+`0003` and its role boundaries have passed live verification on a disposable
+Neon branch. The routes reuse the pooled `DATABASE_URL`, session cookie,
+canonical origin, and Upstash credentials; no additional database credential
+is introduced.
+
 ## Integration Tests
 
 Database tests mutate and clean up disposable fixture data. They refuse to run
@@ -135,13 +157,19 @@ DISCOVERY_BASE_URL='https://codevivo-project-git-discovery-validation-codevivo-t
   npm run discovery:admin -- create
 npm run discovery:admin -- inspect
 npm run discovery:admin -- revoke
+npm run discovery:admin -- extend
 ```
 
-Create prompts for client details and locale, stores only the invitation HMAC,
-and copies the locale-aware link to the macOS clipboard. Inspect prompts for a
-stable invitation ID. Revoke requires an explicit confirmation, is irreversible,
-and atomically invalidates the invitation's active sessions. Invitation
-replacement and email delivery are not implemented.
+Create prompts for separate first name, last name, company, authorized email,
+and an optional explicit contact-inquiry ID. Only the inquiry email is currently
+compatible with questionnaire prefill; the unstructured inquiry name is never
+split or copied into questionnaire person fields. The source inquiry remains
+immutable. The command stores only the invitation HMAC and copies the
+locale-aware link to the macOS clipboard. Inspect prompts for a stable
+invitation ID. Revoke requires explicit confirmation, is irreversible, and
+atomically invalidates active sessions. Extend can add 1-365 days only while an
+invitation is active; it cannot reactivate an expired or revoked invitation.
+Invitation replacement and email delivery are not implemented.
 
 Before creating a validation invitation, compare the local Keychain pepper with
 the branch-scoped deployed secret through an authenticated, linked Vercel CLI:

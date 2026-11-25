@@ -27,6 +27,13 @@
   "stepsLabel": "Fasi del questionario",
   "progressLabel": "Avanzamento della compilazione",
   "stepProgress": "Fase {current} di {total}",
+  "saveStatus": {
+    "saved": "Tutte le modifiche salvate",
+    "saving": "Salvataggio in corso…",
+    "offline": "Connessione persa — modifiche non salvate",
+    "error": "Salvataggio non riuscito",
+    "retry": "Riprova"
+  },
   "steps": {
     "1": {
       "short": "Progetto",

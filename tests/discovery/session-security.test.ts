@@ -12,6 +12,7 @@ import {
 import { generateDiscoveryCredential } from '../../src/lib/discovery/credential-core';
 import { isAllowedDiscoveryOrigin } from '../../src/lib/discovery/origin';
 import { handleDiscoverySessionPost } from '../../src/lib/discovery/session-handler';
+import { exchangeInvitationToken } from '../../src/lib/discovery/session-service';
 import type { DiscoverySessionRepository } from '../../src/lib/discovery/types';
 
 const NOW = new Date('2026-11-13T12:00:00.000Z');
@@ -221,4 +222,162 @@ test('submitted briefs reject mutations while remaining readable', async () => {
     (error: unknown) =>
       error instanceof DiscoveryAuthorizationError && error.code === 'submitted',
   );
+});
+
+function controlledSessionLifecycle(input: {
+  invitationExpiresAt: Date;
+  revoked?: boolean;
+}) {
+  let now = NOW.getTime();
+  let revoked = input.revoked ?? false;
+  let invalidated = false;
+  let sessionExpiresAt: Date | undefined;
+  let sessionCreations = 0;
+
+  const repository: DiscoverySessionRepository = {
+    async createSessionIfInvitationValid(request) {
+      if (revoked) return { outcome: 'unavailable' };
+      if (input.invitationExpiresAt.getTime() <= now) {
+        return { outcome: 'expired' };
+      }
+
+      sessionCreations += 1;
+      sessionExpiresAt = new Date(
+        Math.min(
+          request.requestedSessionExpiry.getTime(),
+          input.invitationExpiresAt.getTime(),
+        ),
+      );
+      return { outcome: 'established', sessionExpiresAt };
+    },
+    async findAuthorizedSession() {
+      if (
+        !sessionExpiresAt ||
+        invalidated ||
+        revoked ||
+        sessionExpiresAt.getTime() <= now ||
+        input.invitationExpiresAt.getTime() <= now
+      ) {
+        return null;
+      }
+      return {
+        invitationId: 'controlled-invitation',
+        briefId: null,
+        briefState: null,
+      };
+    },
+  };
+
+  return {
+    repository,
+    now: () => new Date(now),
+    setNow: (value: Date) => {
+      now = value.getTime();
+    },
+    revoke: () => {
+      revoked = true;
+      invalidated = true;
+    },
+    attemptInvitationRestore: () => {
+      revoked = false;
+    },
+    getSessionExpiresAt: () => sessionExpiresAt,
+    getSessionCreations: () => sessionCreations,
+  };
+}
+
+function exchangeWithControlledClock(
+  lifecycle: ReturnType<typeof controlledSessionLifecycle>,
+) {
+  return exchangeInvitationToken('controlled-invitation-token', {
+    repository: lifecycle.repository,
+    hashInvitationToken: () => Buffer.alloc(32, 1),
+    hashSessionCredential: () => Buffer.alloc(32, 2),
+    generateSessionCredential: generateDiscoveryCredential,
+    now: lifecycle.now,
+  });
+}
+
+function authorizeControlledSession(
+  lifecycle: ReturnType<typeof controlledSessionLifecycle>,
+) {
+  return authorizeDiscoverySession({
+    credential: 'controlled-session',
+    repository: lifecycle.repository,
+    hashCredential: () => Buffer.alloc(32, 2),
+  });
+}
+
+test('session remains valid until the exact 12-hour boundary without renewal', async () => {
+  const lifecycle = controlledSessionLifecycle({
+    invitationExpiresAt: new Date(NOW.getTime() + 24 * 60 * 60 * 1000),
+  });
+  const exchange = await exchangeWithControlledClock(lifecycle);
+  assert.equal(exchange.outcome, 'established');
+
+  const expectedExpiry = new Date(
+    NOW.getTime() + DISCOVERY_SESSION_SECONDS * 1000,
+  );
+  assert.equal(
+    lifecycle.getSessionExpiresAt()?.toISOString(),
+    expectedExpiry.toISOString(),
+  );
+  assert.equal(lifecycle.getSessionCreations(), 1);
+
+  await authorizeControlledSession(lifecycle);
+  lifecycle.setNow(new Date(expectedExpiry.getTime() - 1));
+  await authorizeControlledSession(lifecycle);
+  assert.equal(
+    lifecycle.getSessionExpiresAt()?.toISOString(),
+    expectedExpiry.toISOString(),
+  );
+  assert.equal(lifecycle.getSessionCreations(), 1);
+
+  lifecycle.setNow(expectedExpiry);
+  await assert.rejects(authorizeControlledSession(lifecycle), {
+    name: 'DiscoveryAuthorizationError',
+    code: 'unauthorized',
+  });
+  lifecycle.setNow(new Date(expectedExpiry.getTime() + 1));
+  await assert.rejects(authorizeControlledSession(lifecycle), {
+    name: 'DiscoveryAuthorizationError',
+    code: 'unauthorized',
+  });
+});
+
+test('expired and revoked invitations cannot create sessions', async () => {
+  const expired = controlledSessionLifecycle({ invitationExpiresAt: NOW });
+  assert.deepEqual(await exchangeWithControlledClock(expired), {
+    outcome: 'expired',
+  });
+  assert.equal(expired.getSessionCreations(), 0);
+
+  const revoked = controlledSessionLifecycle({
+    invitationExpiresAt: new Date(NOW.getTime() + 24 * 60 * 60 * 1000),
+    revoked: true,
+  });
+  assert.deepEqual(await exchangeWithControlledClock(revoked), {
+    outcome: 'unavailable',
+  });
+  assert.equal(revoked.getSessionCreations(), 0);
+});
+
+test('a session invalidated by revocation cannot regain access', async () => {
+  const lifecycle = controlledSessionLifecycle({
+    invitationExpiresAt: new Date(NOW.getTime() + 24 * 60 * 60 * 1000),
+  });
+  assert.equal((await exchangeWithControlledClock(lifecycle)).outcome, 'established');
+  await authorizeControlledSession(lifecycle);
+
+  lifecycle.revoke();
+  await assert.rejects(authorizeControlledSession(lifecycle), {
+    name: 'DiscoveryAuthorizationError',
+    code: 'unauthorized',
+  });
+
+  lifecycle.attemptInvitationRestore();
+  await assert.rejects(authorizeControlledSession(lifecycle), {
+    name: 'DiscoveryAuthorizationError',
+    code: 'unauthorized',
+  });
 });

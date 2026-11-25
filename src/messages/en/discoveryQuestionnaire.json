@@ -27,6 +27,13 @@
   "stepsLabel": "Questionnaire steps",
   "progressLabel": "Questionnaire completion progress",
   "stepProgress": "Step {current} of {total}",
+  "saveStatus": {
+    "saved": "All changes saved",
+    "saving": "Saving changes…",
+    "offline": "Connection lost — changes not saved",
+    "error": "Unable to save",
+    "retry": "Retry"
+  },
   "steps": {
     "1": {
       "short": "Project",
