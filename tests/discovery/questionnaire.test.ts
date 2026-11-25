@@ -16,6 +16,10 @@ import {
 } from '../../src/lib/discovery/contact-normalization';
 import { createDiscoveryQuestionnaireStateStore } from '../../src/lib/discovery/questionnaire-memory-state';
 import {
+  formatDiscoveryDateOnly,
+  parseDiscoveryDateOnly,
+} from '../../src/lib/discovery/date-only';
+import {
   DISCOVERY_QUESTIONNAIRE_VERSION,
   approvedBriefFieldIds,
   discoveryQuestionnaireFields,
@@ -433,6 +437,11 @@ test('locale copy includes refined Italian labels and safe CMS and SEO reference
   const [english, italian] = await Promise.all([messages('en'), messages('it')]);
   assert.equal(italian.fields.successCriteria.label, 'Obiettivi da raggiungere');
   assert.equal(italian.fields.availableMaterials.label, 'Risorse disponibili');
+  assert.equal(italian.fields.mainObjectives.label, 'Finalità del progetto');
+  assert.equal(
+    italian.fields.mainObjectives.help,
+    'Quali risultati desideri ottenere con il tuo progetto?',
+  );
 
   for (const copy of [english, italian]) {
     for (const key of ['existingSystems', 'specialRequirements']) {
@@ -441,6 +450,20 @@ test('locale copy includes refined Italian labels and safe CMS and SEO reference
       assert.match((help as Record<string, string>).referenceUrl, /^https:\/\/[a-z]{2}\.wikipedia\.org\/wiki\//u);
     }
   }
+});
+
+test('date-only helpers reject invalid dates without timezone serialization', () => {
+  assert.equal(formatDiscoveryDateOnly(new Date(2027, 0, 15, 12)), '2027-01-15');
+  assert.equal(parseDiscoveryDateOnly('2027-01-15')?.getDate(), 15);
+  assert.equal(parseDiscoveryDateOnly('2027-02-29'), null);
+  assert.equal(parseDiscoveryDateOnly('15/01/2027'), null);
+  assert.equal(parseDiscoveryDateOnly(''), null);
+
+  let answers = createDiscoveryQuestionnaireAnswers();
+  answers = updateDiscoveryQuestionnaireAnswer(answers, 'preferredStartDate', '2027-02-29');
+  assert.equal(validateDiscoveryQuestionnaireStep(6, answers).preferredStartDate, 'date');
+  answers = updateDiscoveryQuestionnaireAnswer(answers, 'preferredStartDate', '2027-02-28');
+  assert.equal(validateDiscoveryQuestionnaireStep(6, answers).preferredStartDate, undefined);
 });
 
 test('invitation-scoped memory state preserves answers, conditional data and progress', () => {
@@ -472,16 +495,35 @@ test('invitation-scoped memory state preserves answers, conditional data and pro
   assert.ok(store.read('invitation-a'));
   store.clear('invitation-a');
   assert.equal(store.read('invitation-a'), null);
+
+  store.save({
+    answers,
+    currentStep: 2,
+    highestStepReached: 2,
+    phoneCountry: 'IT',
+    phoneInput: '',
+    scopeId: 'invitation-c',
+  });
+  store.clear();
+  assert.equal(store.read('invitation-c'), null);
 });
 
 test('component preserves accessibility, responsive and no-persistence boundaries', async () => {
-  const [source, stateSource] = await Promise.all([
+  const [source, calendarSource, stateSource, entrySource] = await Promise.all([
     readFile(
       new URL('../../src/components/discovery/DiscoveryQuestionnaire.tsx', import.meta.url),
       'utf8',
     ),
     readFile(
+      new URL('../../src/components/discovery/DiscoveryDateInput.tsx', import.meta.url),
+      'utf8',
+    ),
+    readFile(
       new URL('../../src/components/discovery/DiscoveryQuestionnaireState.tsx', import.meta.url),
+      'utf8',
+    ),
+    readFile(
+      new URL('../../src/components/discovery/InvitationEntry.tsx', import.meta.url),
       'utf8',
     ),
   ]);
@@ -493,8 +535,8 @@ test('component preserves accessibility, responsive and no-persistence boundarie
   assert.match(source, /highestStepReached/u);
   assert.match(source, /disabled=\{!isAvailable\}/u);
   assert.match(source, /<ContextualInfo/u);
-  assert.match(source, /discovery-date-input/u);
-  assert.match(source, /showPicker/u);
+  assert.match(source, /<DiscoveryDateInput/u);
+  assert.match(source, /section\.id !== '03'/u);
   assert.match(source, /normalizeDiscoveryWebsiteUrl/u);
   assert.match(source, /InternationalPhoneInput/u);
   assert.match(source, /target='_blank'/u);
@@ -506,6 +548,14 @@ test('component preserves accessibility, responsive and no-persistence boundarie
   assert.match(source, /disabled\s*\n\s*aria-describedby='discovery-submission-unavailable'/u);
   assert.doesNotMatch(source, /fetch\(/u);
   assert.match(stateSource, /createDiscoveryQuestionnaireStateStore/u);
+  assert.match(stateSource, /if \(!isDiscoveryPath\(pathname\)\) store\.clear\(\)/u);
+  assert.match(entrySource, /questionnaireState\.clear\(\)/u);
   assert.doesNotMatch(stateSource, /localStorage|sessionStorage/u);
+  assert.match(calendarSource, /captionLayout='dropdown'/u);
+  assert.match(calendarSource, /weekStartsOn=\{1\}/u);
+  assert.match(calendarSource, /onMonthChange=\{setMonth\}/u);
+  assert.match(calendarSource, /role='dialog'/u);
+  assert.match(calendarSource, /requestAnimationFrame\(\(\) => inputRef\.current\?\.focus\(\)\)/u);
+  assert.doesNotMatch(calendarSource, /toISOString|localStorage|sessionStorage/u);
   assert.equal(source.match(/t\('stepProgress'/gu)?.length, 1);
 });

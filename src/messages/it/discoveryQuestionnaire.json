@@ -14,8 +14,14 @@
     "countryList": "Paesi e prefissi telefonici",
     "noResults": "Nessun Paese corrispondente"
   },
-  "datePicker": {
-    "open": "Apri il calendario per {field}"
+  "calendar": {
+    "open": "Apri il calendario per {field}",
+    "dialogLabel": "Scegli una data per {field}",
+    "formatPlaceholder": "AAAA-MM-GG",
+    "today": "Oggi",
+    "clear": "Cancella",
+    "chooseDate": "Scegli una data.",
+    "selected": "Selezionata: {date}"
   },
   "stepNavigationLabel": "Avanzamento del questionario",
   "stepsLabel": "Fasi del questionario",
@@ -112,8 +118,8 @@
       "placeholder": "Descrivi la soluzione"
     },
     "mainObjectives": {
-      "label": "Obiettivi principali",
-      "help": "Descrivere i risultati che il cliente desidera raggiungere."
+      "label": "Finalità del progetto",
+      "help": "Quali risultati desideri ottenere con il tuo progetto?"
     },
     "targetAudience": {
       "label": "Pubblico di riferimento",
@@ -332,6 +338,7 @@
   },
   "validation": {
     "required": "Questa informazione è obbligatoria.",
+    "date": "Inserisci una data valida nel formato AAAA-MM-GG.",
     "email": "Inserisci un indirizzo email valido.",
     "phone": "Inserisci un numero di telefono internazionale valido.",
     "url": "Inserisci un indirizzo web valido con http o https.",

@@ -14,8 +14,14 @@
     "countryList": "Countries and calling codes",
     "noResults": "No matching country found"
   },
-  "datePicker": {
-    "open": "Open date picker for {field}"
+  "calendar": {
+    "open": "Open calendar for {field}",
+    "dialogLabel": "Choose a date for {field}",
+    "formatPlaceholder": "YYYY-MM-DD",
+    "today": "Today",
+    "clear": "Clear",
+    "chooseDate": "Choose a date.",
+    "selected": "Selected: {date}"
   },
   "stepNavigationLabel": "Questionnaire progress",
   "stepsLabel": "Questionnaire steps",
@@ -332,6 +338,7 @@
   },
   "validation": {
     "required": "This information is required.",
+    "date": "Enter a valid date in YYYY-MM-DD format.",
     "email": "Enter a valid email address.",
     "phone": "Enter a valid international phone number.",
     "url": "Enter a valid web address using http or https.",

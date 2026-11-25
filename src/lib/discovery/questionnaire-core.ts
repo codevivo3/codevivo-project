@@ -8,6 +8,7 @@ import {
   normalizeDiscoveryPhoneNumber,
   normalizeDiscoveryWebsiteUrl,
 } from './contact-normalization';
+import { parseDiscoveryDateOnly } from './date-only';
 
 export type DiscoveryQuestionnaireAnswer = boolean | string | string[];
 export type DiscoveryQuestionnaireAnswers = Record<
@@ -16,6 +17,7 @@ export type DiscoveryQuestionnaireAnswers = Record<
 >;
 
 export type DiscoveryQuestionnaireError =
+  | 'date'
   | 'email'
   | 'minLength'
   | 'phone'
@@ -141,6 +143,11 @@ export function validateDiscoveryQuestionnaireStep(
     if (isEmptyAnswer(answer) || typeof answer !== 'string') continue;
     if (field.control === 'email' && !isValidEmail(answer.trim())) {
       errors[fieldId] = 'email';
+    } else if (
+      field.control === 'date' &&
+      parseDiscoveryDateOnly(answer) === null
+    ) {
+      errors[fieldId] = 'date';
     } else if (
       field.control === 'tel' &&
       normalizeDiscoveryPhoneNumber(answer, 'IT') === null

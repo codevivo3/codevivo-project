@@ -2,10 +2,11 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CalendarDays, ExternalLink, Info } from 'lucide-react';
+import { ExternalLink, Info } from 'lucide-react';
 import type { CountryCode } from 'libphonenumber-js/max';
 import Button from '@/components/ui/Button';
 import InternationalPhoneInput from './InternationalPhoneInput';
+import DiscoveryDateInput from './DiscoveryDateInput';
 import { useDiscoveryQuestionnaireStateStore } from './DiscoveryQuestionnaireState';
 import {
   createDiscoveryQuestionnaireAnswers,
@@ -110,62 +111,6 @@ function ContextualInfo({
           ) : null}
         </span>
       ) : null}
-    </span>
-  );
-}
-
-function DateInput({
-  describedBy,
-  id,
-  invalid,
-  label,
-  onChange,
-  value,
-}: {
-  describedBy?: string;
-  id: string;
-  invalid: boolean;
-  label: string;
-  onChange(value: string): void;
-  value: string;
-}) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
-  const openPicker = () => {
-    const input = inputRef.current;
-    if (!input) return;
-    input.focus();
-    if (typeof input.showPicker !== 'function') {
-      input.click();
-      return;
-    }
-    try {
-      input.showPicker();
-    } catch {
-      input.click();
-    }
-  };
-
-  return (
-    <span className='relative mt-2 block'>
-      <input
-        ref={inputRef}
-        id={id}
-        type='date'
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        aria-describedby={describedBy}
-        aria-invalid={invalid}
-        className={`${inputControlClassName} discovery-date-input pr-12`}
-      />
-      <button
-        type='button'
-        aria-label={label}
-        onClick={openPicker}
-        className='absolute right-1.5 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-primary hover:bg-primary/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-      >
-        <CalendarDays className='h-5 w-5' aria-hidden='true' />
-      </button>
     </span>
   );
 }
@@ -511,11 +456,11 @@ export default function DiscoveryQuestionnaire({
         />
       </span>
     ) : field.control === 'date' ? (
-      <DateInput
+      <DiscoveryDateInput
         describedBy={describedBy(field)}
         id={fieldId(field.id)}
         invalid={Boolean(errors[id])}
-        label={t('datePicker.open', { field: label })}
+        label={label}
         onChange={(nextValue) => setAnswer(id, nextValue)}
         value={value}
       />
@@ -650,6 +595,7 @@ export default function DiscoveryQuestionnaire({
         >
           <div className='border-b border-border/80 pb-5'>
             <h2
+              id='discovery-step-heading'
               ref={stepHeadingRef}
               tabIndex={-1}
               className='text-2xl font-semibold outline-none sm:text-3xl'
@@ -667,15 +613,20 @@ export default function DiscoveryQuestionnaire({
                 (field) => field.sectionId === section.id && field.source === 'approved-brief',
               ) as readonly DiscoveryQuestionnaireField[];
               return (
-                <section key={section.id} aria-labelledby={`section-${section.id}`}>
-                  <div className='mb-5'>
-                    <p className='font-mono-var text-[11px] uppercase tracking-[0.18em] text-primary'>
-                      {section.id}
-                    </p>
-                    <h3 id={`section-${section.id}`} className='mt-1 text-xl font-semibold'>
-                      {t(`sections.${section.id}`)}
-                    </h3>
-                  </div>
+                <section
+                  key={section.id}
+                  aria-labelledby={section.id === '03' ? 'discovery-step-heading' : `section-${section.id}`}
+                >
+                  {section.id !== '03' ? (
+                    <div className='mb-5'>
+                      <p className='font-mono-var text-[11px] uppercase tracking-[0.18em] text-primary'>
+                        {section.id}
+                      </p>
+                      <h3 id={`section-${section.id}`} className='mt-1 text-xl font-semibold'>
+                        {t(`sections.${section.id}`)}
+                      </h3>
+                    </div>
+                  ) : null}
                   <div className='grid min-w-0 gap-6 md:grid-cols-2'>
                     {sectionFields.map((field) => (
                       <div
@@ -754,12 +705,6 @@ export default function DiscoveryQuestionnaire({
           </div>
         </form>
       </div>
-      <style jsx global>{`
-        input.discovery-date-input::-webkit-calendar-picker-indicator {
-          pointer-events: none;
-          opacity: 0;
-        }
-      `}</style>
     </main>
   );
 }
