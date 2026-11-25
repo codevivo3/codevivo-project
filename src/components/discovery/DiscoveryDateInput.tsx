@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocale, useTranslations } from 'next-intl';
 import { CalendarDays } from 'lucide-react';
 import { DayPicker } from '@daypicker/react';
@@ -9,12 +10,24 @@ import { it } from '@daypicker/react/locale/it';
 import '@daypicker/react/style.css';
 import {
   discoveryToday,
+  formatDiscoveryDateDisplay,
   formatDiscoveryDateOnly,
+  parseDiscoveryDateDisplay,
   parseDiscoveryDateOnly,
 } from '@/lib/discovery/date-only';
 
 const inputClassName =
   'brand-border w-full rounded-lg border bg-surface/35 px-3 py-3 pr-12 text-sm text-fg outline-none transition-colors placeholder:text-fg/40 focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+
+const CALENDAR_GAP = 8;
+const VIEWPORT_MARGIN = 12;
+
+type CalendarPosition = {
+  left: number;
+  maxHeight: number;
+  placement: 'above' | 'below';
+  top: number;
+};
 
 export default function DiscoveryDateInput({
   describedBy,
@@ -35,13 +48,16 @@ export default function DiscoveryDateInput({
   const t = useTranslations('discoveryQuestionnaire.calendar');
   const dialogId = useId();
   const containerRef = useRef<HTMLSpanElement | null>(null);
+  const calendarRef = useRef<HTMLSpanElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const selected = useMemo(() => parseDiscoveryDateOnly(value) ?? undefined, [value]);
   const today = useMemo(() => discoveryToday(), []);
   const [open, setOpen] = useState(false);
   const [month, setMonth] = useState(selected ?? today);
+  const [position, setPosition] = useState<CalendarPosition | null>(null);
   const calendarLocale = locale === 'it' ? it : enGB;
+  const displayValue = selected ? formatDiscoveryDateDisplay(selected) : value;
 
   const range = useMemo(() => {
     const selectedYear = selected?.getFullYear() ?? today.getFullYear();
@@ -55,7 +71,13 @@ export default function DiscoveryDateInput({
     if (!open) return;
 
     const dismissOnPointerDown = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+      const target = event.target as Node;
+      if (
+        !containerRef.current?.contains(target) &&
+        !calendarRef.current?.contains(target)
+      ) {
+        setOpen(false);
+      }
     };
     const dismissOnEscape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
@@ -72,6 +94,52 @@ export default function DiscoveryDateInput({
     };
   }, [open]);
 
+  useLayoutEffect(() => {
+    if (!open) return;
+
+    const positionCalendar = () => {
+      const input = inputRef.current;
+      const calendar = calendarRef.current;
+      if (!input || !calendar) return;
+
+      const inputRect = input.getBoundingClientRect();
+      const calendarRect = calendar.getBoundingClientRect();
+      const availableBelow = window.innerHeight - inputRect.bottom - CALENDAR_GAP - VIEWPORT_MARGIN;
+      const availableAbove = inputRect.top - CALENDAR_GAP - VIEWPORT_MARGIN;
+      const placement =
+        availableBelow < calendar.scrollHeight && availableAbove > availableBelow
+          ? 'above'
+          : 'below';
+      const availableHeight = Math.max(
+        0,
+        placement === 'above' ? availableAbove : availableBelow,
+      );
+      const renderedHeight = Math.min(calendar.scrollHeight, availableHeight);
+      const left = Math.min(
+        Math.max(inputRect.left, VIEWPORT_MARGIN),
+        window.innerWidth - calendarRect.width - VIEWPORT_MARGIN,
+      );
+
+      setPosition({
+        left: Math.max(VIEWPORT_MARGIN, left),
+        maxHeight: availableHeight,
+        placement,
+        top:
+          placement === 'above'
+            ? Math.max(VIEWPORT_MARGIN, inputRect.top - CALENDAR_GAP - renderedHeight)
+            : inputRect.bottom + CALENDAR_GAP,
+      });
+    };
+
+    positionCalendar();
+    window.addEventListener('resize', positionCalendar);
+    window.addEventListener('scroll', positionCalendar, true);
+    return () => {
+      window.removeEventListener('resize', positionCalendar);
+      window.removeEventListener('scroll', positionCalendar, true);
+    };
+  }, [open]);
+
   const closeAfterValueChange = (nextValue: string) => {
     onChange(nextValue);
     setOpen(false);
@@ -80,43 +148,25 @@ export default function DiscoveryDateInput({
 
   const openCalendar = () => {
     setMonth(selected ?? today);
+    setPosition(null);
     setOpen(true);
   };
 
-  return (
-    <span ref={containerRef} className='relative mt-2 block'>
-      <input
-        ref={inputRef}
-        id={id}
-        type='text'
-        inputMode='numeric'
-        autoComplete='off'
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        aria-describedby={describedBy}
-        aria-invalid={invalid}
-        placeholder={t('formatPlaceholder')}
-        className={inputClassName}
-      />
-      <button
-        ref={triggerRef}
-        type='button'
-        aria-label={t('open', { field: label })}
-        aria-haspopup='dialog'
-        aria-expanded={open}
-        aria-controls={dialogId}
-        onClick={() => (open ? setOpen(false) : openCalendar())}
-        className='absolute right-1.5 top-[1.4rem] inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-primary hover:bg-primary/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
-      >
-        <CalendarDays className='h-5 w-5' aria-hidden='true' />
-      </button>
-
-      {open ? (
+  const calendar = open
+    ? createPortal(
         <span
+          ref={calendarRef}
           id={dialogId}
           role='dialog'
           aria-label={t('dialogLabel', { field: label })}
-          className='discovery-calendar surface-card fixed left-1/2 top-1/2 z-50 max-h-[calc(100svh-1.5rem)] w-[min(22rem,calc(100vw-1.5rem))] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border border-[var(--brand-gold)]/60 bg-[var(--panel-bg)] p-3 font-sans-var text-fg shadow-xl backdrop-blur-xl'
+          data-placement={position?.placement ?? 'below'}
+          style={{
+            left: position?.left ?? VIEWPORT_MARGIN,
+            maxHeight: position?.maxHeight,
+            top: position?.top ?? VIEWPORT_MARGIN,
+            visibility: position ? 'visible' : 'hidden',
+          }}
+          className='discovery-calendar surface-card fixed z-50 w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto rounded-lg border border-[var(--brand-gold)]/60 bg-[var(--panel-bg)] p-3 font-sans-var text-fg shadow-xl backdrop-blur-xl'
         >
           <DayPicker
             mode='single'
@@ -159,8 +209,45 @@ export default function DiscoveryDateInput({
               {t('clear')}
             </button>
           </span>
-        </span>
-      ) : null}
+        </span>,
+        document.body,
+      )
+    : null;
+
+  return (
+    <span ref={containerRef} className='relative mt-2 block'>
+      <input
+        ref={inputRef}
+        id={id}
+        type='text'
+        inputMode='numeric'
+        autoComplete='off'
+        value={displayValue}
+        maxLength={10}
+        onChange={(event) => {
+          const nextDisplayValue = event.target.value;
+          const nextDate = parseDiscoveryDateDisplay(nextDisplayValue);
+          onChange(nextDate ? formatDiscoveryDateOnly(nextDate) : nextDisplayValue);
+        }}
+        aria-describedby={describedBy}
+        aria-invalid={invalid}
+        placeholder={t('formatPlaceholder')}
+        className={inputClassName}
+      />
+      <button
+        ref={triggerRef}
+        type='button'
+        aria-label={t('open', { field: label })}
+        aria-haspopup='dialog'
+        aria-expanded={open}
+        aria-controls={dialogId}
+        onClick={() => (open ? setOpen(false) : openCalendar())}
+        className='absolute right-1.5 top-[1.4rem] inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-primary hover:bg-primary/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+      >
+        <CalendarDays className='h-5 w-5' aria-hidden='true' />
+      </button>
+
+      {calendar}
 
       <style jsx global>{`
         .discovery-calendar .rdp-root {

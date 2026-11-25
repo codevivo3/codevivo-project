@@ -17,7 +17,7 @@
   "calendar": {
     "open": "Open calendar for {field}",
     "dialogLabel": "Choose a date for {field}",
-    "formatPlaceholder": "YYYY-MM-DD",
+    "formatPlaceholder": "dd/mm/yyyy",
     "today": "Today",
     "clear": "Clear",
     "chooseDate": "Choose a date.",
@@ -338,7 +338,7 @@
   },
   "validation": {
     "required": "This information is required.",
-    "date": "Enter a valid date in YYYY-MM-DD format.",
+    "date": "Enter a valid date in dd/mm/yyyy format.",
     "email": "Enter a valid email address.",
     "phone": "Enter a valid international phone number.",
     "url": "Enter a valid web address using http or https.",

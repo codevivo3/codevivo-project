@@ -17,7 +17,7 @@
   "calendar": {
     "open": "Apri il calendario per {field}",
     "dialogLabel": "Scegli una data per {field}",
-    "formatPlaceholder": "AAAA-MM-GG",
+    "formatPlaceholder": "gg/mm/aaaa",
     "today": "Oggi",
     "clear": "Cancella",
     "chooseDate": "Scegli una data.",
@@ -338,7 +338,7 @@
   },
   "validation": {
     "required": "Questa informazione è obbligatoria.",
-    "date": "Inserisci una data valida nel formato AAAA-MM-GG.",
+    "date": "Inserisci una data valida nel formato gg/mm/aaaa.",
     "email": "Inserisci un indirizzo email valido.",
     "phone": "Inserisci un numero di telefono internazionale valido.",
     "url": "Inserisci un indirizzo web valido con http o https.",

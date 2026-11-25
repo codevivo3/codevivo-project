@@ -16,7 +16,9 @@ import {
 } from '../../src/lib/discovery/contact-normalization';
 import { createDiscoveryQuestionnaireStateStore } from '../../src/lib/discovery/questionnaire-memory-state';
 import {
+  formatDiscoveryDateDisplay,
   formatDiscoveryDateOnly,
+  parseDiscoveryDateDisplay,
   parseDiscoveryDateOnly,
 } from '../../src/lib/discovery/date-only';
 import {
@@ -165,6 +167,7 @@ async function messages(locale: 'en' | 'it') {
       'utf8',
     ),
   ) as {
+    calendar: { formatPlaceholder: string };
     contextualHelp: Record<string, string | Record<string, string>>;
     fields: Record<string, { help?: string; label: string; placeholder?: string }>;
     options: Record<string, Record<string, string>>;
@@ -442,6 +445,8 @@ test('locale copy includes refined Italian labels and safe CMS and SEO reference
     italian.fields.mainObjectives.help,
     'Quali risultati desideri ottenere con il tuo progetto?',
   );
+  assert.equal(english.calendar.formatPlaceholder, 'dd/mm/yyyy');
+  assert.equal(italian.calendar.formatPlaceholder, 'gg/mm/aaaa');
 
   for (const copy of [english, italian]) {
     for (const key of ['existingSystems', 'specialRequirements']) {
@@ -454,7 +459,15 @@ test('locale copy includes refined Italian labels and safe CMS and SEO reference
 
 test('date-only helpers reject invalid dates without timezone serialization', () => {
   assert.equal(formatDiscoveryDateOnly(new Date(2027, 0, 15, 12)), '2027-01-15');
+  assert.equal(formatDiscoveryDateDisplay(new Date(2026, 10, 25, 12)), '25/11/2026');
   assert.equal(parseDiscoveryDateOnly('2027-01-15')?.getDate(), 15);
+  assert.equal(parseDiscoveryDateDisplay('25/11/2026')?.getMonth(), 10);
+  assert.equal(
+    formatDiscoveryDateOnly(parseDiscoveryDateDisplay('25/11/2026')!),
+    '2026-11-25',
+  );
+  assert.equal(parseDiscoveryDateDisplay('29/02/2027'), null);
+  assert.equal(parseDiscoveryDateDisplay('2027-01-15'), null);
   assert.equal(parseDiscoveryDateOnly('2027-02-29'), null);
   assert.equal(parseDiscoveryDateOnly('15/01/2027'), null);
   assert.equal(parseDiscoveryDateOnly(''), null);
@@ -536,6 +549,7 @@ test('component preserves accessibility, responsive and no-persistence boundarie
   assert.match(source, /disabled=\{!isAvailable\}/u);
   assert.match(source, /<ContextualInfo/u);
   assert.match(source, /<DiscoveryDateInput/u);
+  assert.match(source, /formatDiscoveryDateDisplay/u);
   assert.match(source, /section\.id !== '03'/u);
   assert.match(source, /normalizeDiscoveryWebsiteUrl/u);
   assert.match(source, /InternationalPhoneInput/u);
@@ -556,6 +570,9 @@ test('component preserves accessibility, responsive and no-persistence boundarie
   assert.match(calendarSource, /onMonthChange=\{setMonth\}/u);
   assert.match(calendarSource, /role='dialog'/u);
   assert.match(calendarSource, /requestAnimationFrame\(\(\) => inputRef\.current\?\.focus\(\)\)/u);
+  assert.match(calendarSource, /createPortal/u);
+  assert.match(calendarSource, /availableBelow < calendar\.scrollHeight/u);
+  assert.match(calendarSource, /parseDiscoveryDateDisplay/u);
   assert.doesNotMatch(calendarSource, /toISOString|localStorage|sessionStorage/u);
   assert.equal(source.match(/t\('stepProgress'/gu)?.length, 1);
 });

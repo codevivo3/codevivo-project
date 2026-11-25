@@ -29,6 +29,7 @@ import {
   type DiscoveryQuestionnaireStep,
 } from '@/lib/discovery/questionnaire-schema';
 import { normalizeDiscoveryWebsiteUrl } from '@/lib/discovery/contact-normalization';
+import { formatDiscoveryDateDisplay, parseDiscoveryDateOnly } from '@/lib/discovery/date-only';
 
 const fieldLabelClassName =
   'font-mono-var text-[11px] font-medium uppercase tracking-[0.18em] text-fg/70';
@@ -500,6 +501,10 @@ export default function DiscoveryQuestionnaire({
     }
     if (typeof answer === 'boolean') return answer ? t('review.confirmed') : t('review.notProvided');
     if (!answer.trim()) return t('review.notProvided');
+    if (field.control === 'date') {
+      const date = parseDiscoveryDateOnly(answer);
+      return date ? formatDiscoveryDateDisplay(date) : answer;
+    }
     const option = field.options?.find((candidate) => candidate.id === answer);
     return option ? t(`options.${field.id}.${option.id}`) : answer;
   };
