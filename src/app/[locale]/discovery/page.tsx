@@ -14,10 +14,12 @@ export const metadata: Metadata = {
 
 export default async function DiscoveryPage() {
   let initialSessionEstablished = false;
+  let invitationId: string | undefined;
   let invitationEmail: string | undefined;
   try {
     const session = await requireDiscoverySession();
     initialSessionEstablished = true;
+    invitationId = session.invitationId;
     invitationEmail = session.invitationEmail;
   } catch {
     initialSessionEstablished = false;
@@ -27,6 +29,7 @@ export default async function DiscoveryPage() {
     <InvitationEntry
       initialSessionEstablished={initialSessionEstablished}
       initialPrefill={invitationEmail ? { email: invitationEmail } : undefined}
+      stateScopeId={invitationId}
     />
   );
 }

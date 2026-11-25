@@ -4,6 +4,10 @@ import {
   type DiscoveryQuestionnaireFieldId,
   type DiscoveryQuestionnaireStep,
 } from './questionnaire-schema';
+import {
+  normalizeDiscoveryPhoneNumber,
+  normalizeDiscoveryWebsiteUrl,
+} from './contact-normalization';
 
 export type DiscoveryQuestionnaireAnswer = boolean | string | string[];
 export type DiscoveryQuestionnaireAnswers = Record<
@@ -14,6 +18,7 @@ export type DiscoveryQuestionnaireAnswers = Record<
 export type DiscoveryQuestionnaireError =
   | 'email'
   | 'minLength'
+  | 'phone'
   | 'required'
   | 'url';
 
@@ -116,15 +121,6 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(value);
 }
 
-function isValidUrl(value: string): boolean {
-  try {
-    const url = new URL(value);
-    return url.protocol === 'http:' || url.protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
-
 export function validateDiscoveryQuestionnaireStep(
   step: DiscoveryQuestionnaireStep,
   answers: DiscoveryQuestionnaireAnswers,
@@ -145,7 +141,15 @@ export function validateDiscoveryQuestionnaireStep(
     if (isEmptyAnswer(answer) || typeof answer !== 'string') continue;
     if (field.control === 'email' && !isValidEmail(answer.trim())) {
       errors[fieldId] = 'email';
-    } else if (field.control === 'url' && !isValidUrl(answer.trim())) {
+    } else if (
+      field.control === 'tel' &&
+      normalizeDiscoveryPhoneNumber(answer, 'IT') === null
+    ) {
+      errors[fieldId] = 'phone';
+    } else if (
+      field.control === 'url' &&
+      normalizeDiscoveryWebsiteUrl(answer) === null
+    ) {
       errors[fieldId] = 'url';
     } else if (field.minLength && answer.trim().length < field.minLength) {
       errors[fieldId] = 'minLength';

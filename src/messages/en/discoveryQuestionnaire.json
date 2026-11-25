@@ -6,6 +6,17 @@
   "required": "Required",
   "optional": "Optional",
   "selectPlaceholder": "Select an option",
+  "phone": {
+    "countrySelector": "Choose country or calling code",
+    "placeholder": "Phone number",
+    "searchLabel": "Search countries and calling codes",
+    "searchPlaceholder": "Search country or +code",
+    "countryList": "Countries and calling codes",
+    "noResults": "No matching country found"
+  },
+  "datePicker": {
+    "open": "Open date picker for {field}"
+  },
   "stepNavigationLabel": "Questionnaire progress",
   "stepsLabel": "Questionnaire steps",
   "progressLabel": "Questionnaire completion progress",
@@ -75,7 +86,8 @@
     },
     "existingWebsite": {
       "label": "Existing Website",
-      "help": "URL, if applicable"
+      "help": "Enter a domain or full web address. HTTPS is added automatically when omitted.",
+      "placeholder": "example.com"
     },
     "industry": {
       "label": "Industry"
@@ -302,15 +314,27 @@
   },
   "contextualHelp": {
     "open": "More information about {term}",
-    "requestedFeatures": "Third-party integrations connect the project to services operated by another provider, such as booking, payment or customer-management tools.",
-    "domainAndHosting": "A domain name is the web address people use to find the site. Hosting is the service that keeps the website available online.",
-    "existingSystems": "A CMS is a content management system used to edit website content. List any CMS, database or external service the new project must work with.",
-    "specialRequirements": "Technical requirements may include accessibility, performance, security or SEO. SEO helps search engines understand and display website content."
+    "learnMore": "Learn more on Wikipedia",
+    "requestedFeatures": {
+      "description": "Third-party integrations connect the project to services operated by another provider, such as booking, payment or customer-management tools."
+    },
+    "domainAndHosting": {
+      "description": "A domain name is the web address people use to find the site. Hosting is the service that keeps the website available online."
+    },
+    "existingSystems": {
+      "description": "A CMS is a content management system used to edit website content. List any CMS, database or external service the new project must work with.",
+      "referenceUrl": "https://en.wikipedia.org/wiki/Content_management_system"
+    },
+    "specialRequirements": {
+      "description": "Technical requirements may include accessibility, performance, security or SEO. SEO helps search engines understand and display website content.",
+      "referenceUrl": "https://en.wikipedia.org/wiki/Search_engine_optimization"
+    }
   },
   "validation": {
     "required": "This information is required.",
     "email": "Enter a valid email address.",
-    "url": "Enter a complete http or https URL.",
+    "phone": "Enter a valid international phone number.",
+    "url": "Enter a valid web address using http or https.",
     "minLength": "Enter at least {count} characters."
   },
   "review": {

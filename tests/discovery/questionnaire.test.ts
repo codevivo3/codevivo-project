@@ -10,6 +10,12 @@ import {
   validateDiscoveryQuestionnaireStep,
 } from '../../src/lib/discovery/questionnaire-core';
 import {
+  normalizeDiscoveryPhoneNumber,
+  normalizeDiscoveryWebsiteUrl,
+  phoneAnswerFromInput,
+} from '../../src/lib/discovery/contact-normalization';
+import { createDiscoveryQuestionnaireStateStore } from '../../src/lib/discovery/questionnaire-memory-state';
+import {
   DISCOVERY_QUESTIONNAIRE_VERSION,
   approvedBriefFieldIds,
   discoveryQuestionnaireFields,
@@ -155,7 +161,7 @@ async function messages(locale: 'en' | 'it') {
       'utf8',
     ),
   ) as {
-    contextualHelp: Record<string, string>;
+    contextualHelp: Record<string, string | Record<string, string>>;
     fields: Record<string, { help?: string; label: string; placeholder?: string }>;
     options: Record<string, Record<string, string>>;
     sections: Record<string, string>;
@@ -393,11 +399,92 @@ test('answer updates retain values while navigating between step field sets', ()
   assert.equal(answers.projectName, 'Retained project');
 });
 
-test('component preserves accessibility, responsive and no-persistence boundaries', async () => {
-  const source = await readFile(
-    new URL('../../src/components/discovery/DiscoveryQuestionnaire.tsx', import.meta.url),
-    'utf8',
+test('phone input accepts national and pasted international numbers and normalizes to E.164', () => {
+  assert.equal(normalizeDiscoveryPhoneNumber('', 'IT'), '');
+  assert.equal(
+    normalizeDiscoveryPhoneNumber('02 366 18 300', 'IT'),
+    '+390236618300',
   );
+  assert.equal(
+    normalizeDiscoveryPhoneNumber('+44 20 7946 0958', 'IT'),
+    '+442079460958',
+  );
+  assert.equal(phoneAnswerFromInput('020 7946 0958', 'GB'), '+442079460958');
+  assert.equal(normalizeDiscoveryPhoneNumber('not-a-number', 'IT'), null);
+});
+
+test('website input adds https while preserving valid explicit URLs and components', () => {
+  assert.equal(normalizeDiscoveryWebsiteUrl(''), '');
+  assert.equal(normalizeDiscoveryWebsiteUrl(' example.com '), 'https://example.com');
+  assert.equal(
+    normalizeDiscoveryWebsiteUrl('example.com/path?q=1#section'),
+    'https://example.com/path?q=1#section',
+  );
+  assert.equal(
+    normalizeDiscoveryWebsiteUrl('http://example.com/path'),
+    'http://example.com/path',
+  );
+  assert.equal(normalizeDiscoveryWebsiteUrl('ftp://example.com'), null);
+  assert.equal(normalizeDiscoveryWebsiteUrl('https://https://example.com'), null);
+  assert.equal(normalizeDiscoveryWebsiteUrl('https://'), null);
+});
+
+test('locale copy includes refined Italian labels and safe CMS and SEO references', async () => {
+  const [english, italian] = await Promise.all([messages('en'), messages('it')]);
+  assert.equal(italian.fields.successCriteria.label, 'Obiettivi da raggiungere');
+  assert.equal(italian.fields.availableMaterials.label, 'Risorse disponibili');
+
+  for (const copy of [english, italian]) {
+    for (const key of ['existingSystems', 'specialRequirements']) {
+      const help = copy.contextualHelp[key];
+      assert.equal(typeof help, 'object');
+      assert.match((help as Record<string, string>).referenceUrl, /^https:\/\/[a-z]{2}\.wikipedia\.org\/wiki\//u);
+    }
+  }
+});
+
+test('invitation-scoped memory state preserves answers, conditional data and progress', () => {
+  const store = createDiscoveryQuestionnaireStateStore();
+  let answers = createDiscoveryQuestionnaireAnswers({ email: 'invited@example.invalid' });
+  answers = updateDiscoveryQuestionnaireAnswer(answers, 'email', 'edited@example.invalid');
+  answers = updateDiscoveryQuestionnaireAnswer(answers, 'targetAudience', ['other']);
+  answers = updateDiscoveryQuestionnaireAnswer(answers, 'targetAudienceOther', 'Founders');
+
+  store.save({
+    answers,
+    currentStep: 4,
+    highestStepReached: 5,
+    phoneCountry: 'GB',
+    phoneInput: '020 7946 0958',
+    scopeId: 'invitation-a',
+  });
+
+  assert.deepEqual(store.read('invitation-a'), {
+    answers,
+    currentStep: 4,
+    highestStepReached: 5,
+    phoneCountry: 'GB',
+    phoneInput: '020 7946 0958',
+    scopeId: 'invitation-a',
+  });
+  assert.equal(store.read('invitation-b'), null);
+  store.clear('invitation-b');
+  assert.ok(store.read('invitation-a'));
+  store.clear('invitation-a');
+  assert.equal(store.read('invitation-a'), null);
+});
+
+test('component preserves accessibility, responsive and no-persistence boundaries', async () => {
+  const [source, stateSource] = await Promise.all([
+    readFile(
+      new URL('../../src/components/discovery/DiscoveryQuestionnaire.tsx', import.meta.url),
+      'utf8',
+    ),
+    readFile(
+      new URL('../../src/components/discovery/DiscoveryQuestionnaireState.tsx', import.meta.url),
+      'utf8',
+    ),
+  ]);
   assert.match(source, /aria-describedby=/u);
   assert.match(source, /aria-invalid=/u);
   assert.match(source, /<fieldset/u);
@@ -407,10 +494,18 @@ test('component preserves accessibility, responsive and no-persistence boundarie
   assert.match(source, /disabled=\{!isAvailable\}/u);
   assert.match(source, /<ContextualInfo/u);
   assert.match(source, /discovery-date-input/u);
+  assert.match(source, /showPicker/u);
+  assert.match(source, /normalizeDiscoveryWebsiteUrl/u);
+  assert.match(source, /InternationalPhoneInput/u);
+  assert.match(source, /target='_blank'/u);
+  assert.match(source, /rel='noreferrer noopener'/u);
+  assert.match(source, /referrerPolicy='no-referrer'/u);
   assert.match(source, /sm:grid-cols-2/u);
   assert.match(source, /md:grid-cols-2/u);
   assert.match(source, /motion-reduce:transition-none/u);
   assert.match(source, /disabled\s*\n\s*aria-describedby='discovery-submission-unavailable'/u);
   assert.doesNotMatch(source, /fetch\(/u);
+  assert.match(stateSource, /createDiscoveryQuestionnaireStateStore/u);
+  assert.doesNotMatch(stateSource, /localStorage|sessionStorage/u);
   assert.equal(source.match(/t\('stepProgress'/gu)?.length, 1);
 });

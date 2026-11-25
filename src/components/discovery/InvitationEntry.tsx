@@ -3,6 +3,7 @@
 import { useLayoutEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DiscoveryQuestionnairePrefill } from '@/lib/discovery/questionnaire-core';
+import { useDiscoveryQuestionnaireStateStore } from './DiscoveryQuestionnaireState';
 import DiscoveryQuestionnaire from './DiscoveryQuestionnaire';
 
 type EntryState = 'loading' | 'unavailable' | 'expired' | 'established';
@@ -10,17 +11,22 @@ type EntryState = 'loading' | 'unavailable' | 'expired' | 'established';
 export default function InvitationEntry({
   initialSessionEstablished,
   initialPrefill,
+  stateScopeId,
 }: {
   initialSessionEstablished: boolean;
   initialPrefill?: DiscoveryQuestionnairePrefill;
+  stateScopeId?: string;
 }) {
   const t = useTranslations('discovery');
+  const questionnaireState = useDiscoveryQuestionnaireStateStore();
   const [state, setState] = useState<EntryState>(
     initialSessionEstablished ? 'established' : 'loading',
   );
 
   useLayoutEffect(() => {
     if (initialSessionEstablished) return;
+
+    questionnaireState.clear();
 
     const fragment = window.location.hash;
     const token = new URLSearchParams(fragment.slice(1)).get('token');
@@ -67,10 +73,16 @@ export default function InvitationEntry({
       });
 
     return () => controller.abort();
-  }, [initialSessionEstablished]);
+  }, [initialSessionEstablished, questionnaireState]);
 
-  if (state === 'established') {
-    return <DiscoveryQuestionnaire initialPrefill={initialPrefill} />;
+  if (state === 'established' && stateScopeId) {
+    return (
+      <DiscoveryQuestionnaire
+        key={stateScopeId}
+        initialPrefill={initialPrefill}
+        stateScopeId={stateScopeId}
+      />
+    );
   }
 
   return (

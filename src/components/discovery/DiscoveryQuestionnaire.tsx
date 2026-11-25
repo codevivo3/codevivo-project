@@ -2,8 +2,11 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CalendarDays, Info } from 'lucide-react';
+import { CalendarDays, ExternalLink, Info } from 'lucide-react';
+import type { CountryCode } from 'libphonenumber-js/max';
 import Button from '@/components/ui/Button';
+import InternationalPhoneInput from './InternationalPhoneInput';
+import { useDiscoveryQuestionnaireStateStore } from './DiscoveryQuestionnaireState';
 import {
   createDiscoveryQuestionnaireAnswers,
   getDiscoveryQuestionnaireStepFields,
@@ -24,20 +27,27 @@ import {
   type DiscoveryQuestionnaireFieldId,
   type DiscoveryQuestionnaireStep,
 } from '@/lib/discovery/questionnaire-schema';
+import { normalizeDiscoveryWebsiteUrl } from '@/lib/discovery/contact-normalization';
 
 const fieldLabelClassName =
   'font-mono-var text-[11px] font-medium uppercase tracking-[0.18em] text-fg/70';
 const inputClassName =
   'brand-border mt-2 w-full rounded-lg border bg-surface/35 px-3 py-3 text-sm text-fg outline-none transition-colors placeholder:text-fg/40 focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
+const inputControlClassName =
+  'brand-border w-full rounded-lg border bg-surface/35 px-3 py-3 text-sm text-fg outline-none transition-colors placeholder:text-fg/40 focus-visible:border-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary';
 const choiceClassName =
   'flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-border/80 bg-surface/25 px-3 py-2.5 text-sm leading-relaxed text-fg transition-colors hover:border-primary/60 focus-within:border-primary';
 
 function ContextualInfo({
   content,
+  href,
   label,
+  linkLabel,
 }: {
   content: string;
+  href?: string;
   label: string;
+  linkLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const popoverId = useId();
@@ -81,12 +91,81 @@ function ContextualInfo({
       {open ? (
         <span
           id={popoverId}
-          role='tooltip'
+          role='dialog'
+          aria-label={label}
           className='surface-card fixed inset-x-6 bottom-6 z-30 rounded-lg bg-surface px-3 py-2 font-sans-var text-xs font-normal normal-case leading-relaxed tracking-normal text-fg shadow-lg sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:mt-2 sm:w-[min(18rem,calc(100vw-3rem))]'
         >
-          {content}
+          <span className='block'>{content}</span>
+          {href && linkLabel ? (
+            <a
+              href={href}
+              target='_blank'
+              rel='noreferrer noopener'
+              referrerPolicy='no-referrer'
+              className='mt-2 inline-flex min-h-8 items-center gap-1 font-medium text-primary underline decoration-primary/50 underline-offset-2 hover:decoration-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+            >
+              {linkLabel}
+              <ExternalLink className='h-3.5 w-3.5' aria-hidden='true' />
+            </a>
+          ) : null}
         </span>
       ) : null}
+    </span>
+  );
+}
+
+function DateInput({
+  describedBy,
+  id,
+  invalid,
+  label,
+  onChange,
+  value,
+}: {
+  describedBy?: string;
+  id: string;
+  invalid: boolean;
+  label: string;
+  onChange(value: string): void;
+  value: string;
+}) {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const openPicker = () => {
+    const input = inputRef.current;
+    if (!input) return;
+    input.focus();
+    if (typeof input.showPicker !== 'function') {
+      input.click();
+      return;
+    }
+    try {
+      input.showPicker();
+    } catch {
+      input.click();
+    }
+  };
+
+  return (
+    <span className='relative mt-2 block'>
+      <input
+        ref={inputRef}
+        id={id}
+        type='date'
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        aria-describedby={describedBy}
+        aria-invalid={invalid}
+        className={`${inputControlClassName} discovery-date-input pr-12`}
+      />
+      <button
+        type='button'
+        aria-label={label}
+        onClick={openPicker}
+        className='absolute right-1.5 top-1/2 inline-flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg text-primary hover:bg-primary/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+      >
+        <CalendarDays className='h-5 w-5' aria-hidden='true' />
+      </button>
     </span>
   );
 }
@@ -105,16 +184,30 @@ function helpId(id: string) {
 
 export default function DiscoveryQuestionnaire({
   initialPrefill,
+  stateScopeId,
 }: {
   initialPrefill?: DiscoveryQuestionnairePrefill;
+  stateScopeId: string;
 }) {
   const t = useTranslations('discoveryQuestionnaire');
+  const questionnaireState = useDiscoveryQuestionnaireStateStore();
+  const restoredState = useRef(questionnaireState.read(stateScopeId));
   const [answers, setAnswers] = useState<DiscoveryQuestionnaireAnswers>(
-    () => createDiscoveryQuestionnaireAnswers(initialPrefill),
+    () => restoredState.current?.answers ?? createDiscoveryQuestionnaireAnswers(initialPrefill),
   );
-  const [currentStep, setCurrentStep] = useState<DiscoveryQuestionnaireStep>(1);
+  const [currentStep, setCurrentStep] = useState<DiscoveryQuestionnaireStep>(
+    () => restoredState.current?.currentStep ?? 1,
+  );
   const [highestStepReached, setHighestStepReached] =
-    useState<DiscoveryQuestionnaireStep>(1);
+    useState<DiscoveryQuestionnaireStep>(
+      () => restoredState.current?.highestStepReached ?? 1,
+    );
+  const [phoneCountry, setPhoneCountry] = useState<CountryCode>(
+    () => restoredState.current?.phoneCountry ?? 'IT',
+  );
+  const [phoneInput, setPhoneInput] = useState(
+    () => restoredState.current?.phoneInput ?? String(answers.phone ?? ''),
+  );
   const [errors, setErrors] = useState<DiscoveryQuestionnaireErrors>({});
   const stepHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const currentFields = useMemo(
@@ -128,6 +221,25 @@ export default function DiscoveryQuestionnaire({
   useEffect(() => {
     stepHeadingRef.current?.focus();
   }, [currentStep]);
+
+  useEffect(() => {
+    questionnaireState.save({
+      answers,
+      currentStep,
+      highestStepReached,
+      phoneCountry,
+      phoneInput,
+      scopeId: stateScopeId,
+    });
+  }, [
+    answers,
+    currentStep,
+    highestStepReached,
+    phoneCountry,
+    phoneInput,
+    questionnaireState,
+    stateScopeId,
+  ]);
 
   const navigateToStep = (step: DiscoveryQuestionnaireStep) => {
     if (step > highestStepReached) return;
@@ -196,7 +308,13 @@ export default function DiscoveryQuestionnaire({
     field.contextualHelp ? (
       <ContextualInfo
         label={t('contextualHelp.open', { term: label })}
-        content={t(`contextualHelp.${field.contextualHelp}`)}
+        content={t(`contextualHelp.${field.contextualHelp}.description`)}
+        href={
+          t.has(`contextualHelp.${field.contextualHelp}.referenceUrl`)
+            ? t(`contextualHelp.${field.contextualHelp}.referenceUrl`)
+            : undefined
+        }
+        linkLabel={t('contextualHelp.learnMore')}
       />
     ) : null;
 
@@ -356,19 +474,51 @@ export default function DiscoveryQuestionnaire({
 
     const input = field.control === 'textarea' ? (
       <textarea {...commonProps} rows={4} minLength={field.minLength} />
-    ) : field.control === 'date' ? (
-      <span className='relative block'>
+    ) : field.control === 'tel' ? (
+      <InternationalPhoneInput
+        country={phoneCountry}
+        value={phoneInput}
+        describedBy={describedBy(field)}
+        invalid={Boolean(errors[id])}
+        onChange={(nextInput, nextCountry, answerValue) => {
+          setPhoneInput(nextInput);
+          setPhoneCountry(nextCountry);
+          setAnswer(id, answerValue);
+        }}
+      />
+    ) : field.control === 'url' ? (
+      <span className='relative mt-2 block'>
+        {!/^https?:\/\//iu.test(value.trim()) ? (
+          <span
+            aria-hidden='true'
+            className='pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 font-mono-var text-sm text-fg/45'
+          >
+            https://
+          </span>
+        ) : null}
         <input
           {...commonProps}
-          type='date'
-          minLength={field.minLength}
-          className={`${inputClassName} discovery-date-input pr-11`}
-        />
-        <CalendarDays
-          className='pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--brand-blue)]'
-          aria-hidden='true'
+          type='text'
+          inputMode='url'
+          autoComplete='url'
+          className={`${inputControlClassName} ${
+            /^https?:\/\//iu.test(value.trim()) ? '' : 'pl-[4.8rem]'
+          }`}
+          onBlur={() => {
+            const normalized = normalizeDiscoveryWebsiteUrl(value);
+            if (normalized !== null) setAnswer(id, normalized);
+          }}
         />
       </span>
+    ) : field.control === 'date' ? (
+      <DateInput
+        describedBy={describedBy(field)}
+        id={fieldId(field.id)}
+        invalid={Boolean(errors[id])}
+        label={t('datePicker.open', { field: label })}
+        onChange={(nextValue) => setAnswer(id, nextValue)}
+        value={value}
+      />
     ) : (
       <input
         {...commonProps}
@@ -606,7 +756,7 @@ export default function DiscoveryQuestionnaire({
       </div>
       <style jsx global>{`
         input.discovery-date-input::-webkit-calendar-picker-indicator {
-          cursor: pointer;
+          pointer-events: none;
           opacity: 0;
         }
       `}</style>

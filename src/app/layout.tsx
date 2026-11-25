@@ -23,6 +23,7 @@ import './globals.css';
 import { getLocale } from 'next-intl/server';
 import ScrollToTop from '@/components/ui/ScrollToTop';
 import AnalyticsGate from '@/components/analytics/AnalyticsGate';
+import { DiscoveryQuestionnaireStateProvider } from '@/components/discovery/DiscoveryQuestionnaireState';
 
 const montserrat = Montserrat({
   variable: '--font-sans',
@@ -92,7 +93,9 @@ export default async function RootLayout({
         className={`${montserrat.variable} ${robotoMono.variable} antialiased`}
       >
         <ScrollToTop />
-        {children}
+        <DiscoveryQuestionnaireStateProvider>
+          {children}
+        </DiscoveryQuestionnaireStateProvider>
         <AnalyticsGate />
       </body>
     </html>

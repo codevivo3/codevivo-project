@@ -6,6 +6,17 @@
   "required": "Obbligatorio",
   "optional": "Facoltativo",
   "selectPlaceholder": "Seleziona un'opzione",
+  "phone": {
+    "countrySelector": "Scegli il Paese o il prefisso",
+    "placeholder": "Numero di telefono",
+    "searchLabel": "Cerca Paesi e prefissi",
+    "searchPlaceholder": "Cerca Paese o +prefisso",
+    "countryList": "Paesi e prefissi telefonici",
+    "noResults": "Nessun Paese corrispondente"
+  },
+  "datePicker": {
+    "open": "Apri il calendario per {field}"
+  },
   "stepNavigationLabel": "Avanzamento del questionario",
   "stepsLabel": "Fasi del questionario",
   "progressLabel": "Avanzamento della compilazione",
@@ -75,7 +86,8 @@
     },
     "existingWebsite": {
       "label": "Sito web attuale",
-      "help": "URL, se presente"
+      "help": "Inserisci un dominio o un indirizzo web completo. Se omesso, HTTPS viene aggiunto automaticamente.",
+      "placeholder": "esempio.it"
     },
     "industry": {
       "label": "Settore di attività"
@@ -120,7 +132,7 @@
       "placeholder": "Descrivi l'azione"
     },
     "successCriteria": {
-      "label": "Criteri di successo",
+      "label": "Obiettivi da raggiungere",
       "help": "Come verrà valutata l'efficacia del progetto?"
     },
     "plannedPagesOrSections": {
@@ -128,7 +140,7 @@
       "help": "Home, Chi siamo, Servizi, Contatti, ecc."
     },
     "availableMaterials": {
-      "label": "Materiali disponibili",
+      "label": "Risorse disponibili",
       "help": "Seleziona tutte le opzioni pertinenti."
     },
     "contentResponsibilities": {
@@ -302,15 +314,27 @@
   },
   "contextualHelp": {
     "open": "Maggiori informazioni su {term}",
-    "requestedFeatures": "Le integrazioni con servizi esterni collegano il progetto a strumenti gestiti da altri fornitori, ad esempio sistemi di prenotazione, pagamento o gestione clienti.",
-    "domainAndHosting": "Il dominio è l'indirizzo web utilizzato per trovare il sito. L'hosting è il servizio che mantiene il sito disponibile online.",
-    "existingSystems": "Un CMS è un sistema di gestione dei contenuti utilizzato per aggiornare un sito. Indica eventuali CMS, database o servizi esterni con cui il nuovo progetto dovrà funzionare.",
-    "specialRequirements": "I requisiti tecnici possono includere accessibilità, prestazioni, sicurezza o SEO. La SEO aiuta i motori di ricerca a comprendere e mostrare i contenuti del sito."
+    "learnMore": "Approfondisci su Wikipedia",
+    "requestedFeatures": {
+      "description": "Le integrazioni con servizi esterni collegano il progetto a strumenti gestiti da altri fornitori, ad esempio sistemi di prenotazione, pagamento o gestione clienti."
+    },
+    "domainAndHosting": {
+      "description": "Il dominio è l'indirizzo web utilizzato per trovare il sito. L'hosting è il servizio che mantiene il sito disponibile online."
+    },
+    "existingSystems": {
+      "description": "Un CMS è un sistema di gestione dei contenuti utilizzato per aggiornare un sito. Indica eventuali CMS, database o servizi esterni con cui il nuovo progetto dovrà funzionare.",
+      "referenceUrl": "https://it.wikipedia.org/wiki/Content_management_system"
+    },
+    "specialRequirements": {
+      "description": "I requisiti tecnici possono includere accessibilità, prestazioni, sicurezza o SEO. La SEO aiuta i motori di ricerca a comprendere e mostrare i contenuti del sito.",
+      "referenceUrl": "https://it.wikipedia.org/wiki/Ottimizzazione_per_i_motori_di_ricerca"
+    }
   },
   "validation": {
     "required": "Questa informazione è obbligatoria.",
     "email": "Inserisci un indirizzo email valido.",
-    "url": "Inserisci un URL completo http o https.",
+    "phone": "Inserisci un numero di telefono internazionale valido.",
+    "url": "Inserisci un indirizzo web valido con http o https.",
     "minLength": "Inserisci almeno {count} caratteri."
   },
   "review": {
