@@ -166,7 +166,7 @@ export default function DiscoveryDateInput({
             top: position?.top ?? VIEWPORT_MARGIN,
             visibility: position ? 'visible' : 'hidden',
           }}
-          className='discovery-calendar surface-card fixed z-50 w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto rounded-lg border border-[var(--brand-gold)]/60 bg-[var(--panel-bg)] p-3 font-sans-var text-fg shadow-xl backdrop-blur-xl'
+          className='discovery-calendar surface-card fixed z-40 w-[min(22rem,calc(100vw-1.5rem))] overflow-y-auto rounded-lg border border-[var(--brand-gold)]/60 bg-[var(--panel-bg)] p-3 font-sans-var text-fg shadow-xl backdrop-blur-xl'
         >
           <DayPicker
             mode='single'
@@ -188,7 +188,9 @@ export default function DiscoveryDateInput({
             footer={
               selected
                 ? t('selected', {
-                    date: new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(selected),
+                    date: new Intl.DateTimeFormat(locale, {
+                      dateStyle: 'long',
+                    }).format(selected),
                   })
                 : t('chooseDate')
             }
@@ -196,7 +198,9 @@ export default function DiscoveryDateInput({
           <span className='mt-2 flex items-center justify-between gap-2 border-t border-border/80 pt-3'>
             <button
               type='button'
-              onClick={() => closeAfterValueChange(formatDiscoveryDateOnly(today))}
+              onClick={() =>
+                closeAfterValueChange(formatDiscoveryDateOnly(today))
+              }
               className='min-h-10 rounded-lg px-3 text-sm font-medium text-primary transition-colors hover:bg-primary/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
             >
               {t('today')}
