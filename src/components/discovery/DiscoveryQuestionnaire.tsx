@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { ExternalLink, Info } from 'lucide-react';
 import type { CountryCode } from 'libphonenumber-js/max';
 import Button from '@/components/ui/Button';
 import InternationalPhoneInput from './InternationalPhoneInput';
 import DiscoveryDateInput from './DiscoveryDateInput';
+import DiscoverySaveStatus from './DiscoverySaveStatus';
+import { useDiscoveryDraftPersistence } from './useDiscoveryDraftPersistence';
 import { useDiscoveryQuestionnaireStateStore } from './DiscoveryQuestionnaireState';
 import {
   createDiscoveryQuestionnaireAnswers,
@@ -30,6 +32,7 @@ import {
 } from '@/lib/discovery/questionnaire-schema';
 import { normalizeDiscoveryWebsiteUrl } from '@/lib/discovery/contact-normalization';
 import { formatDiscoveryDateDisplay, parseDiscoveryDateOnly } from '@/lib/discovery/date-only';
+import type { DiscoveryQuestionnaireWorkingSnapshot } from '@/lib/discovery/draft-persistence-core';
 
 const fieldLabelClassName =
   'font-mono-var text-[11px] font-medium uppercase tracking-[0.18em] text-fg/70';
@@ -136,6 +139,8 @@ export default function DiscoveryQuestionnaire({
   stateScopeId: string;
 }) {
   const t = useTranslations('discoveryQuestionnaire');
+  const activeLocale = useLocale();
+  const locale = activeLocale === 'it' ? 'it' : 'en';
   const questionnaireState = useDiscoveryQuestionnaireStateStore();
   const restoredState = useRef(questionnaireState.read(stateScopeId));
   const [answers, setAnswers] = useState<DiscoveryQuestionnaireAnswers>(
@@ -155,6 +160,7 @@ export default function DiscoveryQuestionnaire({
     () => restoredState.current?.phoneInput ?? String(answers.phone ?? ''),
   );
   const [errors, setErrors] = useState<DiscoveryQuestionnaireErrors>({});
+  const [flushSignal, setFlushSignal] = useState(0);
   const stepHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const currentFields = useMemo(
     () => getDiscoveryQuestionnaireStepFields(currentStep, answers),
@@ -163,6 +169,32 @@ export default function DiscoveryQuestionnaire({
   const currentSections = discoveryQuestionnaireSections.filter(
     (section) => section.step === currentStep,
   );
+  const workingSnapshot = useMemo<DiscoveryQuestionnaireWorkingSnapshot>(() => ({
+    answers,
+    currentStep,
+    highestStepReached,
+    locale,
+    phoneCountry,
+    phoneInput,
+  }), [answers, currentStep, highestStepReached, locale, phoneCountry, phoneInput]);
+  const hydrateDraft = useCallback((snapshot: DiscoveryQuestionnaireWorkingSnapshot) => {
+    setAnswers(snapshot.answers);
+    setCurrentStep(snapshot.currentStep);
+    setHighestStepReached(snapshot.highestStepReached);
+    setPhoneCountry(snapshot.phoneCountry);
+    setPhoneInput(snapshot.phoneInput);
+    setErrors({});
+  }, []);
+  const persistence = useDiscoveryDraftPersistence({
+    flushSignal,
+    onHydrate: hydrateDraft,
+    scopeId: stateScopeId,
+    snapshot: workingSnapshot,
+  });
+  const editingEnabled =
+    persistence.state.ready &&
+    persistence.state.status !== 'conflict' &&
+    persistence.state.status !== 'unavailable';
 
   useEffect(() => {
     stepHeadingRef.current?.focus();
@@ -188,9 +220,10 @@ export default function DiscoveryQuestionnaire({
   ]);
 
   const navigateToStep = (step: DiscoveryQuestionnaireStep) => {
-    if (step > highestStepReached) return;
+    if (!editingEnabled || step > highestStepReached) return;
     setErrors({});
     setCurrentStep(step);
+    setFlushSignal((value) => value + 1);
   };
 
   const setAnswer = (
@@ -220,6 +253,7 @@ export default function DiscoveryQuestionnaire({
       const nextStep = (currentStep + 1) as DiscoveryQuestionnaireStep;
       setHighestStepReached((highest) => Math.max(highest, nextStep) as DiscoveryQuestionnaireStep);
       setCurrentStep(nextStep);
+      setFlushSignal((value) => value + 1);
     }
   };
 
@@ -560,7 +594,7 @@ export default function DiscoveryQuestionnaire({
           <ol className='mt-4 grid grid-cols-7 gap-1.5' aria-label={t('stepsLabel')}>
             {discoveryQuestionnaireSteps.map((step) => {
               const isCurrent = step.id === currentStep;
-              const isAvailable = step.id <= highestStepReached;
+              const isAvailable = editingEnabled && step.id <= highestStepReached;
               return (
                 <li key={step.id}>
                   <button
@@ -591,13 +625,25 @@ export default function DiscoveryQuestionnaire({
               );
             })}
           </ol>
+          {persistence.state.status !== 'disabled' ? (
+            <div className='mt-3'>
+              <DiscoverySaveStatus
+                status={persistence.state.status}
+                canRetry={persistence.state.canRetry}
+                onRetry={persistence.retry}
+                onResolveConflict={persistence.resolveConflict}
+              />
+            </div>
+          ) : null}
         </nav>
 
         <form
           className='glass-effect surface-card mt-6 rounded-xl bg-[var(--panel-bg)] p-4 sm:p-6 lg:p-8'
           onSubmit={(event) => event.preventDefault()}
           noValidate
+          aria-busy={persistence.state.status === 'initializing'}
         >
+          <fieldset disabled={!editingEnabled} className='contents'>
           <div className='border-b border-border/80 pb-5'>
             <h2
               id='discovery-step-heading'
@@ -708,6 +754,7 @@ export default function DiscoveryQuestionnaire({
               </Button>
             ) : null}
           </div>
+          </fieldset>
         </form>
       </div>
     </main>

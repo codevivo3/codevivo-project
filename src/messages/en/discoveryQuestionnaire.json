@@ -28,11 +28,16 @@
   "progressLabel": "Questionnaire completion progress",
   "stepProgress": "Step {current} of {total}",
   "saveStatus": {
+    "initializing": "Restoring your saved questionnaire…",
+    "unsaved": "Changes not yet saved",
     "saved": "All changes saved",
     "saving": "Saving changes…",
     "offline": "Connection lost — changes not saved",
     "error": "Unable to save",
-    "retry": "Retry"
+    "conflict": "A newer saved version is available. Your local changes have not been overwritten.",
+    "unavailable": "This questionnaire session is no longer available",
+    "retry": "Retry",
+    "discardAndReload": "Discard local changes and load saved version"
   },
   "steps": {
     "1": {

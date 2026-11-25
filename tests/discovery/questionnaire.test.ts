@@ -171,6 +171,7 @@ async function messages(locale: 'en' | 'it') {
     contextualHelp: Record<string, string | Record<string, string>>;
     fields: Record<string, { help?: string; label: string; placeholder?: string }>;
     options: Record<string, Record<string, string>>;
+    saveStatus: Record<string, string>;
     sections: Record<string, string>;
     steps: Record<string, { description: string; short: string; title: string }>;
   };
@@ -208,6 +209,7 @@ test('English and Italian fields, options, sections and steps stay in parity', a
   assert.deepEqual(Object.keys(english.options), Object.keys(italian.options));
   assert.deepEqual(Object.keys(english.sections), Object.keys(italian.sections));
   assert.deepEqual(Object.keys(english.steps), Object.keys(italian.steps));
+  assert.deepEqual(Object.keys(english.saveStatus), Object.keys(italian.saveStatus));
 
   for (const questionnaireField of discoveryQuestionnaireFields as readonly DiscoveryQuestionnaireField[]) {
     assert.ok(english.fields[questionnaireField.id]?.label);
@@ -562,7 +564,8 @@ test('component preserves accessibility, responsive and no-persistence boundarie
   assert.match(source, /disabled\s*\n\s*aria-describedby='discovery-submission-unavailable'/u);
   assert.doesNotMatch(source, /fetch\(/u);
   assert.match(stateSource, /createDiscoveryQuestionnaireStateStore/u);
-  assert.match(stateSource, /if \(!isDiscoveryPath\(pathname\)\) store\.clear\(\)/u);
+  assert.match(stateSource, /if \(isDiscoveryPath\(pathname\)\) return/u);
+  assert.match(stateSource, /value\.controllers\.clear\(\)/u);
   assert.match(entrySource, /questionnaireState\.clear\(\)/u);
   assert.doesNotMatch(stateSource, /localStorage|sessionStorage/u);
   assert.match(calendarSource, /captionLayout='dropdown'/u);

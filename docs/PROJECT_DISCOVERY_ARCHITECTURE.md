@@ -5,9 +5,12 @@
 Project Discovery V1 is an approved, invitation-only client questionnaire.
 
 Milestone 1 established and validated the database foundation on disposable
-Neon infrastructure. M2A adds invitation-token exchange, session authorization,
-route protection, and mocked local tests. Administration commands, questionnaire
-forms, live M2 integration tests, and notifications remain outside M2A.
+Neon infrastructure. M2A and M2B completed invitation-token exchange, session
+authorization, route protection, administrative invitation operations, and live
+security validation. Phase 2B.1 completed the secure draft persistence
+foundation. Phase 2B.2 connects that foundation to the questionnaire through
+restoration, autosave, retry, and explicit conflict handling. Passwordless
+questionnaire recovery remains Phase 2B.3.
 
 ## V1 Scope
 
@@ -85,8 +88,9 @@ are required. Company or organisation and project name are optional. Target
 audience, desired visitor actions, required languages, and visual style use
 structured multi-selection answers with explicit undecided choices where
 appropriate. This is a breaking answer-shape change from schema `1.0`, but no
-server-side questionnaire drafts exist yet, so no stored-answer migration is
-required. Phase 2 must create and validate drafts explicitly as schema `2.0`.
+server-side questionnaire drafts existed when schema `2.0` was approved, so no
+stored-answer migration was required. Phase 2B.1 now creates and validates every
+draft explicitly as schema `2.0`.
 
 An authenticated invitation may pre-fill its own email address. The value
 remains editable and is copied only into local questionnaire state. Invitation
@@ -134,6 +138,40 @@ this complete storage and authorization path exists.
   normalized final submission.
 - Final validation, immutable submission, reference generation, and outbox
   insertion occur atomically.
+
+Phase 2B.1 provides feature-gated authenticated draft initialization, reads, and
+revision-based updates. Phase 2B.2 owns the client lifecycle:
+
+1. read the authorized draft before enabling editing;
+2. initialize only after an explicit missing result;
+3. hydrate the last server-acknowledged answers, progress, and bounded editing
+   state;
+4. debounce normal changes while allowing only one mutation in flight;
+5. retain the immutable mutation identifier and payload after an ambiguous
+   failure;
+6. queue newer edits separately and advance revisions only after acknowledgement;
+7. stop automatic writes on authorization failure, submission, or conflict; and
+8. require an explicit discard action before replacing local work with a newer
+   conflicting server snapshot.
+
+Valid dates remain canonical ISO date-only values. Incomplete date and phone
+text is stored only in the bounded draft editing state. Questionnaire content is
+never stored in `localStorage`, `sessionStorage`, or IndexedDB.
+
+The save indicator reports only server-acknowledged state as saved. A tab close,
+browser close, device failure, or navigation before acknowledgement can still
+lose the latest in-memory changes; unload-time delivery is not treated as a
+recovery guarantee.
+
+Draft persistence remains disabled unless
+`DISCOVERY_DRAFT_PERSISTENCE_ENABLED=true`. Activation requires migration `0003`,
+the approved runtime role, isolated environment configuration, live API and
+browser validation, and a reviewed rollback plan. Production activation is a
+separate authorization.
+
+Phase 2B.3 is reserved for passwordless recovery requests, short-lived hashed
+tokens, safe redemption, session replacement, and recovery email delivery. It
+must not weaken invitation expiry or revocation.
 
 ### Notifications and Retention
 

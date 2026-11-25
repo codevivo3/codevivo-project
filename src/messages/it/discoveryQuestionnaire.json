@@ -28,11 +28,16 @@
   "progressLabel": "Avanzamento della compilazione",
   "stepProgress": "Fase {current} di {total}",
   "saveStatus": {
+    "initializing": "Ripristino del questionario salvato…",
+    "unsaved": "Modifiche non ancora salvate",
     "saved": "Tutte le modifiche salvate",
     "saving": "Salvataggio in corso…",
     "offline": "Connessione persa — modifiche non salvate",
     "error": "Salvataggio non riuscito",
-    "retry": "Riprova"
+    "conflict": "È disponibile una versione salvata più recente. Le modifiche locali non sono state sovrascritte.",
+    "unavailable": "Questa sessione del questionario non è più disponibile",
+    "retry": "Riprova",
+    "discardAndReload": "Scarta le modifiche locali e carica la versione salvata"
   },
   "steps": {
     "1": {

@@ -1,26 +1,35 @@
 import { createHash } from 'node:crypto';
-import { parseDiscoveryDateOnly } from './date-only';
-import { normalizeDiscoveryPhoneNumber } from './contact-normalization';
 import {
   createDiscoveryQuestionnaireAnswers,
-  type DiscoveryQuestionnaireAnswer,
   type DiscoveryQuestionnaireAnswers,
   type DiscoveryQuestionnairePrefill,
 } from './questionnaire-core';
 import {
   DISCOVERY_QUESTIONNAIRE_VERSION,
-  discoveryQuestionnaireFields,
-  type DiscoveryQuestionnaireField,
   type DiscoveryQuestionnaireStep,
 } from './questionnaire-schema';
+import {
+  discoveryDraftFieldsById as fieldsById,
+  getDiscoveryDraftStringLimit as stringLimit,
+  isDiscoveryDraftPlainObject as isPlainObject,
+  DiscoveryDraftValidationError,
+  validateDiscoveryDraftAnswers,
+  validateDiscoveryDraftEditingState,
+  type DiscoveryDraftEditingState,
+} from './draft-value-validation';
+
+export {
+  DiscoveryDraftValidationError,
+  validateDiscoveryDraftAnswers,
+  validateDiscoveryDraftEditingState,
+  type DiscoveryDraftEditingState,
+} from './draft-value-validation';
 
 export const DISCOVERY_DRAFT_MAX_PAYLOAD_BYTES = 128 * 1024;
 export const DISCOVERY_DRAFT_RETENTION_DAYS_DEFAULT = 30;
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-const EDITING_DATE_PATTERN = /^[0-9/]{0,10}$/u;
-const PHONE_COUNTRY_PATTERN = /^[A-Z]{2}$/u;
 const mutationKeys = new Set([
   'answers',
   'baseRevision',
@@ -31,25 +40,6 @@ const mutationKeys = new Set([
   'mutationId',
   'schemaVersion',
 ]);
-const editingStateKeys = new Set([
-  'desiredCompletionDate',
-  'expectedDate',
-  'phoneCountry',
-  'phoneInput',
-  'preferredStartDate',
-]);
-const fieldsById = new Map<string, DiscoveryQuestionnaireField>(
-  discoveryQuestionnaireFields.map((field) => [field.id, field]),
-);
-
-export type DiscoveryDraftEditingState = {
-  desiredCompletionDate?: string;
-  expectedDate?: string;
-  phoneCountry?: string;
-  phoneInput?: string;
-  preferredStartDate?: string;
-};
-
 export type DiscoveryDraftMutation = {
   answers: DiscoveryQuestionnaireAnswers;
   baseRevision: number;
@@ -78,138 +68,6 @@ export type DiscoveryDraftOutcome =
   | { outcome: 'available' | 'created' | 'replayed' | 'updated'; draft: DiscoveryDraftSnapshot }
   | { outcome: 'conflict'; draft: DiscoveryDraftSnapshot }
   | { outcome: 'missing' | 'mutation-conflict' | 'submitted' | 'unauthorized' };
-
-export class DiscoveryDraftValidationError extends Error {
-  constructor() {
-    super('Invalid discovery draft');
-    this.name = 'DiscoveryDraftValidationError';
-  }
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
-  const prototype = Object.getPrototypeOf(value);
-  return prototype === Object.prototype || prototype === null;
-}
-
-function stringLimit(field: DiscoveryQuestionnaireField): number {
-  if (field.control === 'textarea') return 5_000;
-  if (field.control === 'url') return 2_000;
-  if (field.control === 'email') return 200;
-  if (field.control === 'tel') return 32;
-  if (field.control === 'date') return 10;
-  return 500;
-}
-
-function validateAnswer(
-  field: DiscoveryQuestionnaireField,
-  value: unknown,
-): DiscoveryQuestionnaireAnswer {
-  if (field.control === 'workflow-confirmation') {
-    if (typeof value !== 'boolean') throw new DiscoveryDraftValidationError();
-    return value;
-  }
-
-  if (field.control === 'checkbox-group') {
-    if (!Array.isArray(value) || value.length > (field.options?.length ?? 0)) {
-      throw new DiscoveryDraftValidationError();
-    }
-    const allowed = new Set<string>(field.options?.map((option) => option.id));
-    const values = value.map((entry) => {
-      if (typeof entry !== 'string' || !allowed.has(entry)) {
-        throw new DiscoveryDraftValidationError();
-      }
-      return entry;
-    });
-    if (new Set(values).size !== values.length) {
-      throw new DiscoveryDraftValidationError();
-    }
-    if (
-      field.exclusiveOptionId &&
-      values.includes(field.exclusiveOptionId) &&
-      values.length !== 1
-    ) {
-      throw new DiscoveryDraftValidationError();
-    }
-    return values;
-  }
-
-  if (typeof value !== 'string' || value.length > stringLimit(field)) {
-    throw new DiscoveryDraftValidationError();
-  }
-  if (field.options && value && !field.options.some((option) => option.id === value)) {
-    throw new DiscoveryDraftValidationError();
-  }
-  if (field.control === 'date' && value && parseDiscoveryDateOnly(value) === null) {
-    throw new DiscoveryDraftValidationError();
-  }
-  if (
-    field.control === 'tel' &&
-    value &&
-    normalizeDiscoveryPhoneNumber(value, 'IT') !== value
-  ) {
-    throw new DiscoveryDraftValidationError();
-  }
-  return value;
-}
-
-export function validateDiscoveryDraftAnswers(
-  value: unknown,
-): DiscoveryQuestionnaireAnswers {
-  if (!isPlainObject(value)) throw new DiscoveryDraftValidationError();
-  const expectedIds = discoveryQuestionnaireFields.map((field) => field.id);
-  const suppliedIds = Object.keys(value);
-  if (
-    suppliedIds.length !== expectedIds.length ||
-    suppliedIds.some((fieldId) => !fieldsById.has(fieldId))
-  ) {
-    throw new DiscoveryDraftValidationError();
-  }
-
-  return Object.fromEntries(
-    discoveryQuestionnaireFields.map((field) => [
-      field.id,
-      validateAnswer(field, value[field.id]),
-    ]),
-  ) as DiscoveryQuestionnaireAnswers;
-}
-
-export function validateDiscoveryDraftEditingState(
-  value: unknown,
-): DiscoveryDraftEditingState {
-  if (value === undefined) return {};
-  if (!isPlainObject(value)) throw new DiscoveryDraftValidationError();
-  if (Object.keys(value).some((key) => !editingStateKeys.has(key))) {
-    throw new DiscoveryDraftValidationError();
-  }
-
-  const result: DiscoveryDraftEditingState = {};
-  for (const key of ['preferredStartDate', 'desiredCompletionDate', 'expectedDate'] as const) {
-    const entry = value[key];
-    if (entry !== undefined) {
-      if (typeof entry !== 'string' || !EDITING_DATE_PATTERN.test(entry)) {
-        throw new DiscoveryDraftValidationError();
-      }
-      result[key] = entry;
-    }
-  }
-  if (value.phoneInput !== undefined) {
-    if (typeof value.phoneInput !== 'string' || value.phoneInput.length > 100) {
-      throw new DiscoveryDraftValidationError();
-    }
-    result.phoneInput = value.phoneInput;
-  }
-  if (value.phoneCountry !== undefined) {
-    if (
-      typeof value.phoneCountry !== 'string' ||
-      !PHONE_COUNTRY_PATTERN.test(value.phoneCountry)
-    ) {
-      throw new DiscoveryDraftValidationError();
-    }
-    result.phoneCountry = value.phoneCountry;
-  }
-  return result;
-}
 
 function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;

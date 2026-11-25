@@ -20,9 +20,19 @@ import { CircleCheck, Loader, WifiOff, CircleAlert } from 'lucide-react';
    the callback used to retry a failed save.
    ================================================== */
 
-export type DiscoverySaveState = 'saved' | 'saving' | 'offline' | 'error';
+export type DiscoverySaveState =
+  | 'conflict'
+  | 'error'
+  | 'initializing'
+  | 'offline'
+  | 'saved'
+  | 'saving'
+  | 'unavailable'
+  | 'unsaved';
 
 type DiscoverySaveStatusProps = {
+  canRetry?: boolean;
+  onResolveConflict?: () => void;
   status: DiscoverySaveState;
   onRetry: () => void;
 };
@@ -34,10 +44,14 @@ type DiscoverySaveStatusProps = {
    ================================================== */
 
 const statusIcons = {
+  conflict: CircleAlert,
+  initializing: Loader,
   saved: CircleCheck,
   saving: Loader,
+  unsaved: CircleAlert,
   offline: WifiOff,
   error: CircleAlert,
+  unavailable: CircleAlert,
 };
 
 /* ==================================================
@@ -48,10 +62,14 @@ const statusIcons = {
    ================================================== */
 
 const statusColours = {
+  conflict: 'text-amber-400 [.light_&]:text-amber-800',
+  initializing: 'text-fg/60',
   saved: 'text-fg/60',
   saving: 'text-fg/60',
+  unsaved: 'text-fg/60',
   offline: 'text-amber-400 [.light_&]:text-amber-800',
   error: 'text-red-400 [.light_&]:text-red-700',
+  unavailable: 'text-red-400 [.light_&]:text-red-700',
 };
 
 /* ==================================================
@@ -62,6 +80,8 @@ const statusColours = {
    ================================================== */
 
 export default function DiscoverySaveStatus({
+  canRetry = false,
+  onResolveConflict,
   status,
   onRetry,
 }: DiscoverySaveStatusProps) {
@@ -105,7 +125,9 @@ export default function DiscoverySaveStatus({
         <Icon
           aria-hidden='true'
           className={`h-4 w-4 shrink-0 ${
-            status === 'saving' ? 'animate-spin motion-reduce:animate-none' : ''
+            status === 'saving' || status === 'initializing'
+              ? 'animate-spin motion-reduce:animate-none'
+              : ''
           }`}
         />
 
@@ -122,7 +144,7 @@ export default function DiscoverySaveStatus({
             Delegates the retry operation to the
             persistence controller. */}
 
-        {status === 'error' && (
+        {(status === 'error' || status === 'offline') && canRetry && (
           <button
             type='button'
             onClick={onRetry}
@@ -131,6 +153,15 @@ export default function DiscoverySaveStatus({
             {t('retry')}
           </button>
         )}
+        {status === 'conflict' && onResolveConflict ? (
+          <button
+            type='button'
+            onClick={onResolveConflict}
+            className='min-h-11 shrink-0 underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary'
+          >
+            {t('discardAndReload')}
+          </button>
+        ) : null}
       </div>
     </div>
   );
