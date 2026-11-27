@@ -363,10 +363,64 @@
     "confirmed": "Confermato"
   },
   "preliminaryNotice": "Il presente documento ha finalità di raccolta preliminare dei requisiti. Non costituisce un'offerta commerciale né un impegno contrattuale. L'ambito definitivo delle attività sarà stabilito nella proposta commerciale eventualmente approvata.",
-  "submissionUnavailable": {
-    "title": "L'invio non è ancora disponibile",
-    "description": "Le risposte rimangono attualmente soltanto in questa pagina e non sono state salvate né inviate a CodeVivo. Il salvataggio delle bozze e l'invio finale appartengono alla prossima fase di implementazione.",
-    "action": "Invio non disponibile"
+  "submission": {
+    "actions": {
+      "submit": "Invia il brief di progetto",
+      "submitting": "Invio in corso…",
+      "retry": "Verifica nuovamente l'invio",
+      "reload": "Ricarica la versione più recente"
+    },
+    "status": {
+      "idle": {
+        "title": "Pronto per l'invio finale",
+        "description": "Conferma la dichiarazione qui sopra, controlla le risposte e invia quando tutto è corretto."
+      },
+      "flushing": {
+        "title": "Salvataggio delle ultime modifiche",
+        "description": "Attendi mentre viene acquisita l'ultima revisione confermata della bozza."
+      },
+      "submitting": {
+        "title": "Invio del brief di progetto",
+        "description": "Mantieni aperta questa pagina fino alla conferma di CodeVivo."
+      },
+      "confirmed": {
+        "title": "Invio confermato",
+        "description": "Il brief di progetto è stato ricevuto."
+      },
+      "validation-error": {
+        "title": "Alcune informazioni richiedono attenzione",
+        "description": "Controlla il campo evidenziato prima di riprovare."
+      },
+      "revision-conflict": {
+        "title": "È disponibile una bozza più recente",
+        "description": "Ricarica l'ultima versione salvata prima di tentare nuovamente l'invio finale."
+      },
+      "idempotency-conflict": {
+        "title": "Questo tentativo di invio non può essere riutilizzato",
+        "description": "Ricarica lo stato autorevole prima di iniziare deliberatamente un nuovo tentativo."
+      },
+      "ambiguous": {
+        "title": "La conferma non è stata ricevuta",
+        "description": "L'invio potrebbe essere riuscito. Verificalo di nuovo usando lo stesso tentativo protetto."
+      },
+      "offline": {
+        "title": "Sembra che tu sia offline",
+        "description": "Riconnettiti prima di verificare nuovamente lo stesso tentativo di invio."
+      },
+      "unavailable": {
+        "title": "Questa sessione non è disponibile",
+        "description": "L'invio non può proseguire da questa sessione. Contatta CodeVivo se hai bisogno di assistenza."
+      }
+    },
+    "confirmation": {
+      "overline": "Project Discovery",
+      "title": "Brief di progetto inviato",
+      "description": "Grazie. CodeVivo ha ricevuto in modo sicuro il brief di progetto, che non può più essere modificato.",
+      "reference": "Riferimento invio",
+      "submittedAt": "Inviato",
+      "nextTitle": "Cosa succede ora",
+      "nextDescription": "CodeVivo esaminerà le informazioni e ti contatterà per chiarire eventuali punti aperti e concordare il passaggio successivo."
+    }
   },
   "navigation": {
     "previous": "Indietro",

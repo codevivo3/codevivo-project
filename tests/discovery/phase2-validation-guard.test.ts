@@ -8,6 +8,7 @@ import {
   PHASE2_ENDPOINT_ID,
   PHASE2_PARENT_BRANCH_ID,
   PHASE2_POOLED_HOST,
+  PHASE2_REGION_ID,
   verifyPhase2Target,
 } from '../../scripts/discovery-phase2-validation-core';
 
@@ -23,12 +24,13 @@ const metadata = {
     id: branchId,
     name: PHASE2_BRANCH_NAME,
     parent_id: PHASE2_PARENT_BRANCH_ID,
-    expires_at: '2026-11-26T09:25:00.000Z',
+    expires_at: '2026-11-28T14:57:33.000Z',
   }],
   endpoints: [{
     id: endpointId,
     branch_id: branchId,
     host: PHASE2_DIRECT_HOST,
+    region_id: PHASE2_REGION_ID,
     type: 'read_write',
   }],
 };
@@ -39,12 +41,12 @@ test('accepts only the exact disposable Phase 2 target', () => {
       authorization: PHASE2_AUTHORIZATION,
       connections,
       metadata,
-      now: new Date('2026-11-25T12:00:00.000Z'),
+      now: new Date('2026-11-27T12:00:00.000Z'),
     }),
     {
       branchId,
       endpointId,
-      expiresAt: '2026-11-26T09:25:00.000Z',
+      expiresAt: '2026-11-28T14:57:33.000Z',
     },
   );
 });
@@ -54,7 +56,7 @@ test('rejects missing authorization and every target mismatch', () => {
     authorization: PHASE2_AUTHORIZATION,
     connections,
     metadata,
-    now: new Date('2026-11-25T12:00:00.000Z'),
+    now: new Date('2026-11-27T12:00:00.000Z'),
   };
   assert.throws(() => verifyPhase2Target({ ...base, authorization: undefined }));
   assert.throws(() => verifyPhase2Target({
@@ -92,6 +94,13 @@ test('rejects missing authorization and every target mismatch', () => {
       endpoints: [{ ...metadata.endpoints[0], host: 'production.invalid' }],
     },
   }));
+  assert.throws(() => verifyPhase2Target({
+    ...base,
+    metadata: {
+      ...metadata,
+      endpoints: [{ ...metadata.endpoints[0], region_id: 'aws-us-east-1' }],
+    },
+  }));
 });
 
 test('rejects expired or nearly expired branches', () => {
@@ -99,6 +108,6 @@ test('rejects expired or nearly expired branches', () => {
     authorization: PHASE2_AUTHORIZATION,
     connections,
     metadata,
-    now: new Date('2026-11-26T08:00:00.000Z'),
+    now: new Date('2026-11-28T13:00:00.000Z'),
   }));
 });

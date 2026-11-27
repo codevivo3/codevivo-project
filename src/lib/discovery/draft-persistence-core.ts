@@ -5,7 +5,10 @@ import {
   validateDiscoveryDraftEditingState,
   type DiscoveryDraftEditingState,
 } from './draft-value-validation';
-import type { DiscoveryDraftSnapshot } from './draft-contract';
+import type {
+  DiscoveryDraftSnapshot,
+  DiscoverySubmissionConfirmation,
+} from './draft-contract';
 import type { DiscoveryQuestionnaireAnswers } from './questionnaire-core';
 import type { DiscoveryQuestionnaireStep } from './questionnaire-schema';
 
@@ -36,7 +39,8 @@ export type DiscoveryDraftMutationPayload = {
 };
 
 export type DiscoveryDraftTransportResult =
-  | { kind: 'disabled' | 'missing' | 'mutation-conflict' | 'submitted' | 'unauthorized' }
+  | { kind: 'disabled' | 'missing' | 'mutation-conflict' | 'unauthorized' }
+  | { kind: 'submitted'; submission: DiscoverySubmissionConfirmation }
   | { kind: 'draft'; outcome: 'available' | 'created' | 'replayed' | 'updated'; draft: DiscoveryDraftSnapshot }
   | { kind: 'conflict'; draft: DiscoveryDraftSnapshot }
   | { kind: 'invalid' | 'retryable' };
@@ -55,6 +59,7 @@ export type DiscoveryPersistenceStatus =
   | 'offline'
   | 'saved'
   | 'saving'
+  | 'submitted'
   | 'unavailable'
   | 'unsaved';
 
@@ -65,7 +70,12 @@ export type DiscoveryDraftPersistenceState = {
   hydrationVersion: number;
   ready: boolean;
   status: DiscoveryPersistenceStatus;
+  submission: DiscoverySubmissionConfirmation | null;
 };
+
+export type DiscoveryDraftFlushResult =
+  | { kind: 'acknowledged'; draft: DiscoveryDraftSnapshot }
+  | { kind: 'conflict' | 'offline' | 'retryable' | 'unavailable' };
 
 type PendingMutation = {
   payload: DiscoveryDraftMutationPayload;
@@ -160,6 +170,7 @@ export function createDiscoveryDraftPersistenceController(options: ControllerOpt
     hydrationVersion: 0,
     ready: false,
     status: 'initializing',
+    submission: null,
   };
   let acknowledged: DiscoveryDraftSnapshot | null = null;
   let working: DiscoveryQuestionnaireWorkingSnapshot | null = null;
@@ -171,6 +182,12 @@ export function createDiscoveryDraftPersistenceController(options: ControllerOpt
   let started = false;
   let stopped = false;
   let bootstrapPromise: Promise<void> | null = null;
+  const flushWaiters = new Set<(result: DiscoveryDraftFlushResult) => void>();
+
+  const settleFlushWaiters = (result: DiscoveryDraftFlushResult) => {
+    for (const resolve of flushWaiters) resolve(result);
+    flushWaiters.clear();
+  };
 
   const publish = (next: Partial<DiscoveryDraftPersistenceState>) => {
     state = { ...state, ...next };
@@ -196,6 +213,7 @@ export function createDiscoveryDraftPersistenceController(options: ControllerOpt
       hydrationVersion: state.hydrationVersion + 1,
       ready: true,
       status: 'saved',
+      submission: null,
     });
   };
 
@@ -213,7 +231,18 @@ export function createDiscoveryDraftPersistenceController(options: ControllerOpt
         publish({ canRetry: false, ready: true, status: 'disabled' });
         return;
       }
-      if (result.kind === 'unauthorized' || result.kind === 'submitted') {
+      if (result.kind === 'submitted') {
+        clearTimer();
+        pending = null;
+        publish({
+          canRetry: false,
+          ready: false,
+          status: 'submitted',
+          submission: result.submission,
+        });
+        return;
+      }
+      if (result.kind === 'unauthorized') {
         publish({ canRetry: false, ready: false, status: 'unavailable' });
         return;
       }
@@ -285,6 +314,9 @@ export function createDiscoveryDraftPersistenceController(options: ControllerOpt
           schedule(0);
         } else {
           publish({ canRetry: false, status: 'saved' });
+          if (acknowledged) {
+            settleFlushWaiters({ kind: 'acknowledged', draft: acknowledged });
+          }
         }
         return;
       }
@@ -295,12 +327,26 @@ export function createDiscoveryDraftPersistenceController(options: ControllerOpt
           conflict: result.draft,
           status: 'conflict',
         });
+        settleFlushWaiters({ kind: 'conflict' });
         return;
       }
-      if (result.kind === 'unauthorized' || result.kind === 'submitted') {
+      if (result.kind === 'submitted') {
+        inFlight = false;
+        pending = null;
+        publish({
+          canRetry: false,
+          ready: false,
+          status: 'submitted',
+          submission: result.submission,
+        });
+        settleFlushWaiters({ kind: 'unavailable' });
+        return;
+      }
+      if (result.kind === 'unauthorized') {
         inFlight = false;
         pending = null;
         publish({ canRetry: false, ready: false, status: 'unavailable' });
+        settleFlushWaiters({ kind: 'unavailable' });
         return;
       }
       inFlight = false;
@@ -310,11 +356,17 @@ export function createDiscoveryDraftPersistenceController(options: ControllerOpt
           ? 'error'
           : 'unavailable',
       });
+      settleFlushWaiters({
+        kind: result.kind === 'retryable' ? 'retryable' : 'unavailable',
+      });
     } catch {
       inFlight = false;
       publish({
         canRetry: true,
         status: options.isOnline?.() === false ? 'offline' : 'error',
+      });
+      settleFlushWaiters({
+        kind: options.isOnline?.() === false ? 'offline' : 'retryable',
       });
     }
   }
@@ -323,6 +375,7 @@ export function createDiscoveryDraftPersistenceController(options: ControllerOpt
     destroy() {
       stopped = true;
       clearTimer();
+      settleFlushWaiters({ kind: 'unavailable' });
       listeners.clear();
     },
     flush() {
@@ -330,6 +383,26 @@ export function createDiscoveryDraftPersistenceController(options: ControllerOpt
         clearTimer();
         void send();
       }
+    },
+    flushAndWait(): Promise<DiscoveryDraftFlushResult> {
+      if (state.status === 'conflict') return Promise.resolve({ kind: 'conflict' });
+      if (state.status === 'offline') return Promise.resolve({ kind: 'offline' });
+      if (
+        state.status === 'disabled' ||
+        state.status === 'submitted' ||
+        state.status === 'unavailable' ||
+        !acknowledged
+      ) {
+        return Promise.resolve({ kind: 'unavailable' });
+      }
+      if (!inFlight && !pending && workingKey === acknowledgedKey) {
+        return Promise.resolve({ kind: 'acknowledged', draft: acknowledged });
+      }
+      return new Promise((resolve) => {
+        flushWaiters.add(resolve);
+        clearTimer();
+        if (!inFlight) void send();
+      });
     },
     getState() {
       return state;
@@ -346,12 +419,26 @@ export function createDiscoveryDraftPersistenceController(options: ControllerOpt
       }
       void send();
     },
+    markSubmitted(submission: DiscoverySubmissionConfirmation) {
+      clearTimer();
+      pending = null;
+      inFlight = false;
+      publish({
+        canRetry: false,
+        conflict: null,
+        ready: false,
+        status: 'submitted',
+        submission,
+      });
+      settleFlushWaiters({ kind: 'unavailable' });
+    },
     setWorkingSnapshot(snapshot: DiscoveryQuestionnaireWorkingSnapshot, immediate = false) {
       working = snapshot;
       workingKey = workingSnapshotKey(snapshot);
       if (state.status === 'disabled' || state.status === 'initializing') return;
       if (
         state.status === 'conflict' ||
+        state.status === 'submitted' ||
         state.status === 'unavailable'
       ) {
         return;

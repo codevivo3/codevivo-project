@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ExternalLink, Info } from 'lucide-react';
+import { CheckCircle2, ExternalLink, Info } from 'lucide-react';
 import type { CountryCode } from 'libphonenumber-js/max';
 import Button from '@/components/ui/Button';
 import InternationalPhoneInput from './InternationalPhoneInput';
 import DiscoveryDateInput from './DiscoveryDateInput';
 import DiscoverySaveStatus from './DiscoverySaveStatus';
 import { useDiscoveryDraftPersistence } from './useDiscoveryDraftPersistence';
+import { useDiscoverySubmission } from './useDiscoverySubmission';
 import { useDiscoveryQuestionnaireStateStore } from './DiscoveryQuestionnaireState';
 import {
   createDiscoveryQuestionnaireAnswers,
@@ -16,6 +17,7 @@ import {
   isDiscoveryQuestionnaireFieldVisible,
   toggleDiscoveryQuestionnaireOption,
   updateDiscoveryQuestionnaireAnswer,
+  validateDiscoveryQuestionnaire,
   validateDiscoveryQuestionnaireStep,
   type DiscoveryQuestionnaireAnswers,
   type DiscoveryQuestionnaireErrors,
@@ -33,6 +35,7 @@ import {
 import { normalizeDiscoveryWebsiteUrl } from '@/lib/discovery/contact-normalization';
 import { formatDiscoveryDateDisplay, parseDiscoveryDateOnly } from '@/lib/discovery/date-only';
 import type { DiscoveryQuestionnaireWorkingSnapshot } from '@/lib/discovery/draft-persistence-core';
+import type { DiscoverySubmissionConfirmation } from '@/lib/discovery/draft-contract';
 
 const fieldLabelClassName =
   'font-mono-var text-[11px] font-medium uppercase tracking-[0.18em] text-fg/70';
@@ -131,6 +134,58 @@ function helpId(id: string) {
   return `${fieldId(id)}-help`;
 }
 
+function SubmissionConfirmation({
+  confirmation,
+  locale,
+}: {
+  confirmation: DiscoverySubmissionConfirmation;
+  locale: 'en' | 'it';
+}) {
+  const t = useTranslations('discoveryQuestionnaire.submission');
+  const submittedAt = new Intl.DateTimeFormat(locale === 'it' ? 'it-IT' : 'en-GB', {
+    dateStyle: 'long',
+    timeStyle: 'short',
+  }).format(confirmation.submittedAt);
+
+  return (
+    <main className='px-4 pb-16 pt-10 sm:px-6 sm:pt-14'>
+      <section
+        className='glass-effect surface-card mx-auto max-w-3xl rounded-xl bg-[var(--panel-bg)] p-6 text-center sm:p-10'
+        aria-labelledby='discovery-confirmation-title'
+      >
+        <CheckCircle2 className='mx-auto h-12 w-12 text-primary' aria-hidden='true' />
+        <p className='mt-5 font-mono-var text-xs uppercase tracking-[0.2em] text-primary'>
+          {t('confirmation.overline')}
+        </p>
+        <h1 id='discovery-confirmation-title' className='mt-3 text-3xl font-semibold sm:text-4xl'>
+          {t('confirmation.title')}
+        </h1>
+        <p className='mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-fg/70 sm:text-base'>
+          {t('confirmation.description')}
+        </p>
+        <dl className='mx-auto mt-7 grid max-w-xl gap-3 text-left sm:grid-cols-2'>
+          <div className='rounded-lg border border-border/70 bg-surface/25 p-4'>
+            <dt className={fieldLabelClassName}>{t('confirmation.reference')}</dt>
+            <dd className='mt-2 break-words font-mono-var text-sm text-fg'>
+              {confirmation.reference}
+            </dd>
+          </div>
+          <div className='rounded-lg border border-border/70 bg-surface/25 p-4'>
+            <dt className={fieldLabelClassName}>{t('confirmation.submittedAt')}</dt>
+            <dd className='mt-2 text-sm text-fg'>{submittedAt}</dd>
+          </div>
+        </dl>
+        <div className='mx-auto mt-6 max-w-2xl rounded-lg border border-primary/35 bg-primary/10 p-4 text-left'>
+          <p className='font-semibold'>{t('confirmation.nextTitle')}</p>
+          <p className='mt-1 text-sm leading-relaxed text-fg/70'>
+            {t('confirmation.nextDescription')}
+          </p>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 export default function DiscoveryQuestionnaire({
   initialPrefill,
   stateScopeId,
@@ -191,6 +246,15 @@ export default function DiscoveryQuestionnaire({
     scopeId: stateScopeId,
     snapshot: workingSnapshot,
   });
+  const submission = useDiscoverySubmission({
+    persistenceController: persistence,
+    scopeId: stateScopeId,
+  });
+  const submissionErrors = useMemo(
+    () => validateDiscoveryQuestionnaire(answers),
+    [answers],
+  );
+  const confirmation = submission.state.confirmation ?? persistence.state.submission;
   const editingEnabled =
     persistence.state.ready &&
     persistence.state.status !== 'conflict' &&
@@ -199,6 +263,18 @@ export default function DiscoveryQuestionnaire({
   useEffect(() => {
     stepHeadingRef.current?.focus();
   }, [currentStep]);
+
+  useEffect(() => {
+    if (submission.state.status !== 'validation-error') return;
+    setErrors(submission.state.errors);
+    const firstError = discoveryQuestionnaireFields.find(
+      (field) => submission.state.errors[field.id as DiscoveryQuestionnaireFieldId],
+    );
+    if (!firstError) return;
+    setHighestStepReached((highest) => Math.max(highest, firstError.step) as DiscoveryQuestionnaireStep);
+    setCurrentStep(firstError.step);
+    requestAnimationFrame(() => document.getElementById(fieldId(firstError.id))?.focus());
+  }, [submission.state.errors, submission.state.status]);
 
   useEffect(() => {
     questionnaireState.save({
@@ -262,6 +338,11 @@ export default function DiscoveryQuestionnaire({
     if (currentStep > 1) {
       navigateToStep((currentStep - 1) as DiscoveryQuestionnaireStep);
     }
+  };
+
+  const submitQuestionnaire = () => {
+    setErrors(submissionErrors);
+    void submission.submit({ clientErrors: submissionErrors, locale });
   };
 
   const hasFieldHelp = (field: DiscoveryQuestionnaireField) =>
@@ -553,6 +634,24 @@ export default function DiscoveryQuestionnaire({
     (highestStepReached / discoveryQuestionnaireSteps.length) * 100,
   );
 
+  if (confirmation) {
+    return <SubmissionConfirmation confirmation={confirmation} locale={locale} />;
+  }
+
+  const submissionBusy =
+    submission.state.status === 'flushing' ||
+    submission.state.status === 'submitting';
+  const submissionBlocked =
+    Object.keys(submissionErrors).length > 0 ||
+    !editingEnabled ||
+    persistence.state.status === 'saving' ||
+    persistence.state.status === 'offline' ||
+    persistence.state.status === 'error' ||
+    persistence.state.status === 'disabled' ||
+    (submission.state.status !== 'idle' &&
+      submission.state.status !== 'validation-error') ||
+    submissionBusy;
+
   return (
     <main className='px-4 pb-16 pt-6 sm:px-6 sm:pt-10'>
       <div className='mx-auto w-full max-w-5xl'>
@@ -625,7 +724,8 @@ export default function DiscoveryQuestionnaire({
               );
             })}
           </ol>
-          {persistence.state.status !== 'disabled' ? (
+          {persistence.state.status !== 'disabled' &&
+          persistence.state.status !== 'submitted' ? (
             <div className='mt-3'>
               <DiscoverySaveStatus
                 status={persistence.state.status}
@@ -721,20 +821,49 @@ export default function DiscoveryQuestionnaire({
                   <p className='text-sm leading-relaxed'>{t('preliminaryNotice')}</p>
                 </div>
                 <div className='mt-6'>{renderField(discoveryQuestionnaireFields.at(-1)!)}</div>
-                <div id='discovery-submission-unavailable' className='mt-5 rounded-lg border border-border bg-surface/30 p-4'>
-                  <p className='font-semibold'>{t('submissionUnavailable.title')}</p>
+                <div
+                  id='discovery-submission-status'
+                  role='status'
+                  aria-live='polite'
+                  className='mt-5 rounded-lg border border-border bg-surface/30 p-4'
+                >
+                  <p className='font-semibold'>
+                    {t(`submission.status.${submission.state.status}.title`)}
+                  </p>
                   <p className='mt-1 text-sm leading-relaxed text-fg/65'>
-                    {t('submissionUnavailable.description')}
+                    {t(`submission.status.${submission.state.status}.description`)}
                   </p>
                 </div>
-                <button
-                  type='button'
-                  disabled
-                  aria-describedby='discovery-submission-unavailable'
-                  className='mt-4 inline-flex min-h-11 w-full cursor-not-allowed items-center justify-center rounded-lg border border-border bg-surface/40 px-4 py-2 text-sm font-semibold text-fg/45 sm:w-auto'
-                >
-                  {t('submissionUnavailable.action')}
-                </button>
+                <div className='mt-4 flex flex-col gap-3 sm:flex-row'>
+                  <Button
+                    type='button'
+                    onClick={submitQuestionnaire}
+                    disabled={submissionBlocked}
+                    aria-describedby='discovery-submission-status'
+                    className='min-h-11 rounded-lg! disabled:cursor-not-allowed disabled:opacity-40'
+                  >
+                    {submissionBusy ? t('submission.actions.submitting') : t('submission.actions.submit')}
+                  </Button>
+                  {submission.state.status === 'ambiguous' || submission.state.status === 'offline' ? (
+                    <Button
+                      type='button'
+                      onClick={() => void submission.retry()}
+                      className='min-h-11 rounded-lg!'
+                    >
+                      {t('submission.actions.retry')}
+                    </Button>
+                  ) : null}
+                  {submission.state.status === 'revision-conflict' ||
+                  submission.state.status === 'idempotency-conflict' ? (
+                    <Button
+                      type='button'
+                      onClick={() => window.location.reload()}
+                      className='min-h-11 rounded-lg!'
+                    >
+                      {t('submission.actions.reload')}
+                    </Button>
+                  ) : null}
+                </div>
               </section>
             ) : null}
           </div>

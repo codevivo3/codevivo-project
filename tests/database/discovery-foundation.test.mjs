@@ -176,7 +176,9 @@ test('Project Discovery database behavior', { skip: skipReason }, async (t) => {
         SET
           state = 'submitted',
           submission_reference = ${`CV-TEST-${committedBriefId}`},
-          submitted_at = now()
+          submitted_at = now(),
+          submission_idempotency_id = ${randomUUID()},
+          submission_payload_hash = decode(${hashHex()}, 'hex')
         WHERE id = ${committedBriefId}
       `;
 

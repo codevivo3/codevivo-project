@@ -38,7 +38,11 @@ function draftBody(result: Extract<DiscoveryDraftOutcome, { draft: unknown }>) {
   };
 }
 
-function outcomeResponse(result: DiscoveryDraftOutcome, successStatus = 200): Response {
+function outcomeResponse(
+  result: DiscoveryDraftOutcome,
+  successStatus = 200,
+  submittedStatus = 409,
+): Response {
   if ('draft' in result) {
     return response(
       draftBody(result),
@@ -47,7 +51,16 @@ function outcomeResponse(result: DiscoveryDraftOutcome, successStatus = 200): Re
   }
   if (result.outcome === 'unauthorized') return response({ status: 'unavailable' }, 401);
   if (result.outcome === 'missing') return response({ status: 'missing' }, 404);
-  if (result.outcome === 'submitted') return response({ status: 'submitted' }, 409);
+  if (result.outcome === 'submitted') {
+    return response({
+      status: 'submitted',
+      submission: {
+        reference: result.submission.reference,
+        revision: result.submission.revision,
+        submittedAt: result.submission.submittedAt.toISOString(),
+      },
+    }, submittedStatus);
+  }
   return response({ status: 'mutation-conflict' }, 409);
 }
 
@@ -119,7 +132,7 @@ export async function handleDiscoveryDraftGet(
   }
   if (!sessionHash) return response({ status: 'unavailable' }, 401);
   try {
-    return outcomeResponse(await dependencies.repository.read({ sessionHash }));
+    return outcomeResponse(await dependencies.repository.read({ sessionHash }), 200, 200);
   } catch {
     return response({ status: 'unavailable' }, 503);
   }

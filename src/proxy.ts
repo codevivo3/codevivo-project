@@ -25,12 +25,36 @@ import { applyDiscoverySecurityHeaders } from '@/lib/discovery/security-headers'
 
 const intlMiddleware = createMiddleware(routing);
 
+function applyDiscoveryHeaders(response: NextResponse) {
+  applyDiscoverySecurityHeaders(response.headers);
+  return response;
+}
+
+function handleDiscoveryLocaleRoute(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname === '/en/discovery' || pathname.startsWith('/en/discovery/')) {
+    const canonicalUrl = request.nextUrl.clone();
+    canonicalUrl.pathname = pathname.slice('/en'.length);
+    return applyDiscoveryHeaders(NextResponse.redirect(canonicalUrl, 307));
+  }
+
+  if (pathname === '/discovery' || pathname.startsWith('/discovery/')) {
+    return applyDiscoveryHeaders(NextResponse.next());
+  }
+
+  return null;
+}
+
 export default function proxy(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith('/api/discovery/')) {
     const response = NextResponse.next();
     applyDiscoverySecurityHeaders(response.headers);
     return response;
   }
+
+  const discoveryLocaleResponse = handleDiscoveryLocaleRoute(request);
+  if (discoveryLocaleResponse) return discoveryLocaleResponse;
 
   const response = intlMiddleware(request);
   if (isDiscoveryPath(request.nextUrl.pathname)) {

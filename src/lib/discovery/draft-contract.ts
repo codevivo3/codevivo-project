@@ -64,10 +64,17 @@ export type DiscoveryDraftSnapshot = {
   updatedAt: Date;
 };
 
+export type DiscoverySubmissionConfirmation = {
+  reference: string;
+  revision: number;
+  submittedAt: Date;
+};
+
 export type DiscoveryDraftOutcome =
   | { outcome: 'available' | 'created' | 'replayed' | 'updated'; draft: DiscoveryDraftSnapshot }
   | { outcome: 'conflict'; draft: DiscoveryDraftSnapshot }
-  | { outcome: 'missing' | 'mutation-conflict' | 'submitted' | 'unauthorized' };
+  | { outcome: 'submitted'; submission: DiscoverySubmissionConfirmation }
+  | { outcome: 'missing' | 'mutation-conflict' | 'unauthorized' };
 
 function canonicalJson(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;

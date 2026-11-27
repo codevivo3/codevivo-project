@@ -98,6 +98,27 @@ test('GET is authorized and read-only', async () => {
   assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow, noarchive');
 });
 
+test('GET restores authoritative submitted confirmation without questionnaire contents', async () => {
+  const context = setup({
+    outcome: 'submitted',
+    submission: {
+      reference: 'CV-2026-TEST',
+      revision: 8,
+      submittedAt: new Date('2026-11-27T10:00:00.000Z'),
+    },
+  });
+  const response = await handleDiscoveryDraftGet(context.dependencies);
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), {
+    status: 'submitted',
+    submission: {
+      reference: 'CV-2026-TEST',
+      revision: 8,
+      submittedAt: '2026-11-27T10:00:00.000Z',
+    },
+  });
+});
+
 test('POST initializes once and PUT maps stale revisions to conflict', async () => {
   const created = setup({ outcome: 'created', draft: snapshot() });
   const createResponse = await handleDiscoveryDraftPost(

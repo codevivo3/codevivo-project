@@ -177,8 +177,10 @@ must not weaken invitation expiry or revocation.
 
 - Resend is reused for submission notifications.
 - Notification failure cannot roll back or duplicate a submission.
-- Failed outbox events are retried manually through the administrative CLI in
-  V1.
+- A dedicated authenticated worker claims bounded outbox batches, delivers the
+  internal notification, and persists retry or terminal failure state.
+- Delivery is at-least-once. Resend idempotency reduces duplicates but its
+  24-hour retention window is not an exactly-once guarantee.
 - Abandoned drafts default to 30 days of retention after expiry or revocation.
 - Submitted briefs provisionally default to 730 days after submission.
 - Both retention periods are environment-configurable and require approved
@@ -192,10 +194,13 @@ secret storage, or macOS Keychain as appropriate.
 
 Application runtime variables:
 
+- `DISCOVERY_ENABLED`
 - `DATABASE_URL`
 - `DISCOVERY_TOKEN_PEPPER`
 - `DISCOVERY_BASE_URL`
 - `DISCOVERY_NOTIFICATION_TO`
+- `DISCOVERY_OUTBOX_WORKER_ENABLED`
+- `DISCOVERY_OUTBOX_WORKER_SECRET`
 - `DISCOVERY_ABANDONED_RETENTION_DAYS`
 - `DISCOVERY_SUBMITTED_RETENTION_DAYS`
 - existing Resend and Upstash variables

@@ -15,6 +15,10 @@ const discoveryPersistenceSql = await readFile(
   'db/migrations/0003_discovery_persistence_foundation.sql',
   'utf8',
 );
+const discoverySubmissionSql = await readFile(
+  'db/migrations/0004_discovery_final_submission.sql',
+  'utf8',
+);
 
 test('database bootstrap defines the approved isolated roles', () => {
   for (const role of ['runtime', 'admin', 'migration']) {
@@ -152,5 +156,73 @@ test('Discovery persistence migration is additive and preserves role isolation',
   assert.match(
     discoveryPersistenceSql,
     /REVOKE UPDATE \(state, submission_reference, submitted_at\)[\s\S]*?codevivo_discovery_runtime/iu,
+  );
+});
+
+test('final submission migration uses one secured atomic permission boundary', () => {
+  assert.doesNotMatch(
+    discoverySubmissionSql,
+    /\b(?:DROP|TRUNCATE)\b|\bDELETE\s+FROM\b/iu,
+  );
+  assert.match(discoverySubmissionSql, /SECURITY DEFINER/iu);
+  assert.match(discoverySubmissionSql, /SET search_path = pg_catalog/iu);
+  assert.match(
+    discoverySubmissionSql,
+    /ALTER FUNCTION discovery\.submit_project_brief[\s\S]*?OWNER TO codevivo_discovery_migration/iu,
+  );
+  assert.match(
+    discoverySubmissionSql,
+    /REVOKE ALL ON FUNCTION discovery\.submit_project_brief[\s\S]*?FROM PUBLIC/iu,
+  );
+  assert.match(
+    discoverySubmissionSql,
+    /GRANT EXECUTE ON FUNCTION discovery\.submit_project_brief[\s\S]*?TO codevivo_discovery_runtime/iu,
+  );
+  assert.match(discoverySubmissionSql, /FOR UPDATE OF invitations/iu);
+  assert.match(discoverySubmissionSql, /FOR UPDATE OF briefs/iu);
+  assert.match(discoverySubmissionSql, /sessions\.invalidated_at IS NULL/iu);
+  assert.match(discoverySubmissionSql, /invitations\.revoked_at IS NULL/iu);
+  assert.match(discoverySubmissionSql, /sessions\.token_generation = invitations\.token_generation/iu);
+  assert.match(discoverySubmissionSql, /INSERT INTO discovery\.notification_outbox/iu);
+  assert.match(
+    discoverySubmissionSql,
+    /REVOKE INSERT ON discovery\.notification_outbox[\s\S]*?FROM codevivo_discovery_runtime/iu,
+  );
+  assert.match(
+    discoverySubmissionSql,
+    /CREATE FUNCTION discovery\.claim_notification_events[\s\S]*?FOR UPDATE SKIP LOCKED/iu,
+  );
+  assert.match(
+    discoverySubmissionSql,
+    /CREATE FUNCTION discovery\.mark_notification_delivered/iu,
+  );
+  assert.match(
+    discoverySubmissionSql,
+    /CREATE FUNCTION discovery\.mark_notification_failed/iu,
+  );
+  assert.match(
+    discoverySubmissionSql,
+    /REVOKE UPDATE \([\s\S]*?delivery_status[\s\S]*?FROM codevivo_discovery_runtime/iu,
+  );
+  assert.match(
+    discoverySubmissionSql,
+    /GRANT EXECUTE ON FUNCTION discovery\.claim_notification_events[\s\S]*?TO codevivo_discovery_runtime/iu,
+  );
+  const notificationDeliveryFunctions = discoverySubmissionSql.slice(
+    discoverySubmissionSql.indexOf(
+      'CREATE FUNCTION discovery.claim_notification_events',
+    ),
+  );
+  assert.doesNotMatch(
+    notificationDeliveryFunctions,
+    /UPDATE\s+discovery\.project_briefs/iu,
+  );
+  assert.match(
+    discoverySubmissionSql,
+    /delivery_status = 'sent' AND provider_message_id IS NOT NULL/iu,
+  );
+  assert.doesNotMatch(
+    discoverySubmissionSql,
+    /GRANT UPDATE[\s\S]*?submission_reference[\s\S]*?codevivo_discovery_runtime/iu,
   );
 });

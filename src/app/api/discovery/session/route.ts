@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { runDiscoveryOperation } from '@/lib/discovery/activation';
 import {
   generateSessionCredential,
   hashInvitationToken,
@@ -12,7 +13,8 @@ import { exchangeInvitationToken } from '@/lib/discovery/session-service';
 export const runtime = 'nodejs';
 
 export async function POST(request: NextRequest) {
-  return handleDiscoverySessionPost(request, {
+  return runDiscoveryOperation(process.env.DISCOVERY_ENABLED, () =>
+    handleDiscoverySessionPost(request, {
     exchange: (token) =>
       exchangeInvitationToken(token, {
         repository: discoverySessionRepository,
@@ -25,5 +27,6 @@ export async function POST(request: NextRequest) {
     now: () => new Date(),
     baseUrl: process.env.DISCOVERY_BASE_URL,
     environment: process.env.NODE_ENV,
-  });
+    }),
+  );
 }

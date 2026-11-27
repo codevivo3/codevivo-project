@@ -1,21 +1,22 @@
 export const PHASE2_PROJECT_ID = 'round-tree-42808727';
-export const PHASE2_BRANCH_NAME = 'discovery-phase2-validation';
-export const PHASE2_BRANCH_ID = 'br-dawn-glitter-bax62bzg';
+export const PHASE2_BRANCH_NAME = 'discovery-v1-release-test';
+export const PHASE2_BRANCH_ID = 'br-shiny-tree-baqubi81';
 export const PHASE2_PARENT_BRANCH_ID = 'br-winter-block-bagymuuk';
-export const PHASE2_ENDPOINT_ID = 'ep-winter-firefly-baddzj6i';
+export const PHASE2_ENDPOINT_ID = 'ep-muddy-bonus-ba79w5pc';
+export const PHASE2_REGION_ID = 'aws-eu-central-1';
 export const PHASE2_DIRECT_HOST =
-  'ep-winter-firefly-baddzj6i.c-8.eu-central-1.aws.neon.tech';
+  'ep-muddy-bonus-ba79w5pc.c-8.eu-central-1.aws.neon.tech';
 export const PHASE2_POOLED_HOST =
-  'ep-winter-firefly-baddzj6i-pooler.c-8.eu-central-1.aws.neon.tech';
+  'ep-muddy-bonus-ba79w5pc-pooler.c-8.eu-central-1.aws.neon.tech';
 export const PHASE2_DATABASE = 'neondb';
-export const PHASE2_AUTHORIZATION = 'discovery-phase2-validation';
+export const PHASE2_AUTHORIZATION = 'discovery-v1-release-test';
 export const PHASE2_MINIMUM_LIFETIME_MS = 2 * 60 * 60 * 1000;
 
 export const PHASE2_KEYCHAIN_SERVICES = {
   apiKey: 'codevivo.discovery.recovery.neon-api-key',
-  admin: 'codevivo.discovery.phase2.admin.database-url',
-  migration: 'codevivo.discovery.phase2.migration.database-url',
-  runtime: 'codevivo.discovery.phase2.runtime.database-url',
+  admin: 'codevivo.discovery.v1-release.admin.database-url',
+  migration: 'codevivo.discovery.v1-release.migration.database-url',
+  runtime: 'codevivo.discovery.v1-release.runtime.database-url',
 } as const;
 
 const ROLES = {
@@ -39,6 +40,7 @@ type NeonEndpoint = {
   id?: string;
   branch_id?: string;
   host?: string;
+  region_id?: string;
   type?: string;
 };
 
@@ -107,7 +109,8 @@ export function verifyPhase2Target(input: {
     (endpoint) =>
       endpoint.branch_id === branch.id &&
       endpoint.type === 'read_write' &&
-      endpoint.host === PHASE2_DIRECT_HOST,
+      endpoint.host === PHASE2_DIRECT_HOST &&
+      endpoint.region_id === PHASE2_REGION_ID,
   );
   if (endpoints.length !== 1 || endpoints[0].id !== PHASE2_ENDPOINT_ID) {
     throw new Error('Phase 2 validation guard: endpoint identity mismatch');

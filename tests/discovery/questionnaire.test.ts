@@ -360,7 +360,7 @@ test('authenticated prefill uses only invitation-owned email metadata', async ()
       'utf8',
     ),
     readFile(
-      new URL('../../src/app/[locale]/discovery/page.tsx', import.meta.url),
+      new URL('../../src/components/discovery/DiscoveryPage.tsx', import.meta.url),
       'utf8',
     ),
     readFile(
@@ -561,7 +561,10 @@ test('component preserves accessibility, responsive and no-persistence boundarie
   assert.match(source, /sm:grid-cols-2/u);
   assert.match(source, /md:grid-cols-2/u);
   assert.match(source, /motion-reduce:transition-none/u);
-  assert.match(source, /disabled\s*\n\s*aria-describedby='discovery-submission-unavailable'/u);
+  assert.match(source, /onClick=\{submitQuestionnaire\}/u);
+  assert.match(source, /disabled=\{submissionBlocked\}/u);
+  assert.match(source, /role='status'/u);
+  assert.match(source, /SubmissionConfirmation/u);
   assert.doesNotMatch(source, /fetch\(/u);
   assert.match(stateSource, /createDiscoveryQuestionnaireStateStore/u);
   assert.match(stateSource, /if \(isDiscoveryPath\(pathname\)\) return/u);

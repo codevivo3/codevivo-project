@@ -6,6 +6,10 @@ export const DISCOVERY_ADMIN_URL_SERVICE =
 export const DISCOVERY_RUNTIME_URL_SERVICE =
   'codevivo.discovery.runtime.database-url';
 export const DISCOVERY_PEPPER_SERVICE = 'codevivo.discovery.token-pepper';
+export const DISCOVERY_PRODUCTION_ADMIN_URL_SERVICE =
+  'codevivo.discovery.production.admin.database-url';
+export const DISCOVERY_PRODUCTION_PEPPER_SERVICE =
+  'codevivo.discovery.production.token-pepper';
 
 export type KeychainFailureCategory =
   | 'timeout'

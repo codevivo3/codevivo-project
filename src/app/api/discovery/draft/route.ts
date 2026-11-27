@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import { runDiscoveryOperation } from '@/lib/discovery/activation';
 import { getDiscoveryCookieName } from '@/lib/discovery/cookies';
 import { hashSessionCredential } from '@/lib/discovery/credentials';
 import {
@@ -33,13 +34,19 @@ function dependencies() {
 }
 
 export async function GET() {
-  return handleDiscoveryDraftGet(dependencies());
+  return runDiscoveryOperation(process.env.DISCOVERY_ENABLED, () =>
+    handleDiscoveryDraftGet(dependencies()),
+  );
 }
 
 export async function POST(request: Request) {
-  return handleDiscoveryDraftPost(request, dependencies());
+  return runDiscoveryOperation(process.env.DISCOVERY_ENABLED, () =>
+    handleDiscoveryDraftPost(request, dependencies()),
+  );
 }
 
 export async function PUT(request: Request) {
-  return handleDiscoveryDraftPut(request, dependencies());
+  return runDiscoveryOperation(process.env.DISCOVERY_ENABLED, () =>
+    handleDiscoveryDraftPut(request, dependencies()),
+  );
 }

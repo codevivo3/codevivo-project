@@ -11,8 +11,13 @@
    1. Imports
    ================================================== */
 
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CircleCheck, Loader, WifiOff, CircleAlert } from 'lucide-react';
+import {
+  createDiscoverySaveStatusPresentation,
+  type DiscoverySaveState,
+} from '@/lib/discovery/save-status-presentation';
 
 /* ==================================================
    2. Types and Component Props
@@ -20,15 +25,7 @@ import { CircleCheck, Loader, WifiOff, CircleAlert } from 'lucide-react';
    the callback used to retry a failed save.
    ================================================== */
 
-export type DiscoverySaveState =
-  | 'conflict'
-  | 'error'
-  | 'initializing'
-  | 'offline'
-  | 'saved'
-  | 'saving'
-  | 'unavailable'
-  | 'unsaved';
+export type { DiscoverySaveState } from '@/lib/discovery/save-status-presentation';
 
 type DiscoverySaveStatusProps = {
   canRetry?: boolean;
@@ -87,13 +84,27 @@ export default function DiscoverySaveStatus({
 }: DiscoverySaveStatusProps) {
   /* Localised status messages */
   const t = useTranslations('discoveryQuestionnaire.saveStatus');
+  const [presentation] = useState(() =>
+    createDiscoverySaveStatusPresentation({ initialStatus: status }),
+  );
+  const [presentedStatus, setPresentedStatus] = useState(status);
+
+  useEffect(() => presentation.setup(), [presentation]);
+  useEffect(() => presentation.subscribe(setPresentedStatus), [presentation]);
+  useEffect(() => {
+    presentation.setStatus(status);
+  }, [presentation, status]);
+
+  // Safety and editing states always take precedence in the same render. Only
+  // an acknowledged `saved` transition may be held behind the presentation timer.
+  const visibleStatus = status === 'saved' ? presentedStatus : status;
 
   /* Resolve the icon for the current persistence state */
-  const Icon = statusIcons[status];
+  const Icon = statusIcons[visibleStatus];
 
   return (
     <div
-      className={`grid min-h-11 items-center text-xs leading-relaxed ${statusColours[status]}`}
+      className={`grid min-h-11 items-center text-xs leading-relaxed ${statusColours[visibleStatus]}`}
     >
       {/* --------------------------------------------------
           Layout Stability
@@ -125,7 +136,7 @@ export default function DiscoverySaveStatus({
         <Icon
           aria-hidden='true'
           className={`h-4 w-4 shrink-0 ${
-            status === 'saving' || status === 'initializing'
+            visibleStatus === 'saving' || visibleStatus === 'initializing'
               ? 'animate-spin motion-reduce:animate-none'
               : ''
           }`}
@@ -136,7 +147,7 @@ export default function DiscoverySaveStatus({
             technologies without interrupting the user. */}
 
         <span role='status' aria-live='polite' aria-atomic='true'>
-          {t(status)}
+          {t(visibleStatus)}
         </span>
 
         {/* Retry action

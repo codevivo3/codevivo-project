@@ -193,3 +193,21 @@ test('successful update returns the mapped updated snapshot', async () => {
   assert.equal('draft' in result ? result.draft.briefId : '', updatedRow.brief_id);
   assert.equal('draft' in result ? result.draft.revision : -1, 1);
 });
+
+test('read returns authoritative submitted metadata for refresh restoration', async () => {
+  const captured: string[] = [];
+  const repository = createDiscoveryDraftRepository(() => fakeDatabase({
+    outcome: 'submitted',
+    revision: '6',
+    submission_reference: 'CV-2026-RESTORED',
+    submitted_at: '2026-11-27T10:00:00.000Z',
+  }, captured));
+  const result = await repository.read({ sessionHash: Buffer.alloc(32) });
+  assert.equal(result.outcome, 'submitted');
+  assert.equal(
+    result.outcome === 'submitted' ? result.submission.reference : '',
+    'CV-2026-RESTORED',
+  );
+  assert.match(captured[0], /submission_reference/u);
+  assert.match(captured[0], /submitted_at/u);
+});

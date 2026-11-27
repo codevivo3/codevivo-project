@@ -93,12 +93,14 @@ if (contactRole?.exists !== true) {
 const history = await migration`
   SELECT version, checksum FROM discovery.schema_migrations ORDER BY version
 `;
-for (const version of ['0001_project_discovery_foundation.sql', '0002_contact_database_foundation.sql']) {
+for (const version of [
+  '0001_project_discovery_foundation.sql',
+  '0002_contact_database_foundation.sql',
+  '0003_discovery_persistence_foundation.sql',
+]) {
   const expected = await expectedChecksum(`db/migrations/${version}`);
   const applied = history.find((row) => row.version === version);
-  const isAllowedPendingPrerequisite =
-    version === '0002_contact_database_foundation.sql' && !applied;
-  if (!isAllowedPendingPrerequisite && (!applied || applied.checksum !== expected)) {
+  if (!applied || applied.checksum !== expected) {
     const appliedPrefix = typeof applied?.checksum === 'string'
       ? applied.checksum.slice(0, 12)
       : 'missing';
@@ -107,18 +109,57 @@ for (const version of ['0001_project_discovery_foundation.sql', '0002_contact_da
       + `(applied=${appliedPrefix}, local=${expected.slice(0, 12)})`,
     );
   }
-  if (isAllowedPendingPrerequisite) {
-    console.log('PREREQUISITE_PENDING version=0002');
-  }
 }
-const expected0003 = await expectedChecksum(
-  'db/migrations/0003_discovery_persistence_foundation.sql',
+const expected0004 = await expectedChecksum(
+  'db/migrations/0004_discovery_final_submission.sql',
 );
-const applied0003 = history.find(
-  (row) => row.version === '0003_discovery_persistence_foundation.sql',
+const applied0004 = history.find(
+  (row) => row.version === '0004_discovery_final_submission.sql',
 );
-if (applied0003 && applied0003.checksum !== expected0003) {
-  throw new Error('Phase 2 validation guard: applied migration 0003 checksum mismatch');
+if (applied0004 && applied0004.checksum !== expected0004) {
+  throw new Error('Phase 2 validation guard: applied migration 0004 checksum mismatch');
+}
+
+const [submittedBriefs] = await admin`
+  SELECT count(*)::int AS count
+  FROM discovery.project_briefs
+  WHERE state = 'submitted'
+`;
+if (!applied0004 && submittedBriefs?.count !== 0) {
+  throw new Error(
+    'Phase 2 validation guard: migration 0004 is blocked by existing submitted briefs',
+  );
+}
+
+const [preflightPermissions] = await migration`
+  SELECT
+    has_column_privilege(
+      'codevivo_discovery_runtime', 'discovery.project_briefs', 'state', 'UPDATE'
+    ) AS state_update,
+    has_table_privilege(
+      'codevivo_discovery_runtime', 'discovery.notification_outbox', 'INSERT'
+    ) AS outbox_insert,
+    has_column_privilege(
+      'codevivo_discovery_runtime', 'discovery.notification_outbox',
+      'delivery_status', 'UPDATE'
+    ) AS outbox_delivery_update,
+    EXISTS (
+      SELECT 1 FROM pg_trigger
+      WHERE tgname = 'project_briefs_submission_immutable'
+        AND NOT tgisinternal
+    ) AS submitted_immutable,
+    EXISTS (
+      SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'discovery'
+        AND table_name = 'notification_outbox'
+        AND column_name = 'provider_message_id'
+    ) AS provider_message_column
+`;
+if (
+  preflightPermissions?.state_update !== false
+  || preflightPermissions?.submitted_immutable !== true
+) {
+  throw new Error('Phase 2 validation guard: preflight permission boundary mismatch');
 }
 
 console.log(
@@ -126,7 +167,7 @@ console.log(
 );
 if (command === 'preflight') {
   console.log(
-    `PREFLIGHT_OK migration_0002=${history.some((row) => row.version === '0002_contact_database_foundation.sql') ? 'applied' : 'pending'} migration_0003=${applied0003 ? 'applied' : 'pending'}`,
+    `PREFLIGHT_OK migrations_0001_0003=verified migration_0004=${applied0004 ? 'applied' : 'pending'} submitted_briefs=${submittedBriefs.count} outbox_insert=${preflightPermissions.outbox_insert} outbox_delivery_update=${preflightPermissions.outbox_delivery_update} provider_message_column=${preflightPermissions.provider_message_column}`,
   );
   return;
 }
@@ -138,6 +179,7 @@ const childEnvironment = {
   DISCOVERY_MIGRATION_DATABASE_URL: connections.migration,
   DISCOVERY_DB_TEST_ALLOW: '1',
   DISCOVERY_DRAFT_LIVE_ALLOW: PHASE2_AUTHORIZATION,
+  DISCOVERY_SUBMISSION_LIVE_ALLOW: PHASE2_AUTHORIZATION,
   DISCOVERY_DRAFT_PERSISTENCE_ENABLED: 'false',
 };
 run('migration', ['npm', 'run', 'db:migrate'], childEnvironment);
@@ -146,19 +188,25 @@ const postHistory = await migration`
   SELECT version, checksum FROM discovery.schema_migrations
   WHERE version IN (
     '0002_contact_database_foundation.sql',
-    '0003_discovery_persistence_foundation.sql'
+    '0003_discovery_persistence_foundation.sql',
+    '0004_discovery_final_submission.sql'
   )
 `;
 const expected0002 = await expectedChecksum(
   'db/migrations/0002_contact_database_foundation.sql',
 );
+const expected0003 = await expectedChecksum(
+  'db/migrations/0003_discovery_persistence_foundation.sql',
+);
 if (
   postHistory.find((row) => row.version === '0002_contact_database_foundation.sql')
     ?.checksum !== expected0002 ||
   postHistory.find((row) => row.version === '0003_discovery_persistence_foundation.sql')
-    ?.checksum !== expected0003
+    ?.checksum !== expected0003 ||
+  postHistory.find((row) => row.version === '0004_discovery_final_submission.sql')
+    ?.checksum !== expected0004
 ) {
-  throw new Error('Phase 2 validation guard: migration 0003 verification failed');
+  throw new Error('Phase 2 validation guard: migration verification failed');
 }
 
 const [verification] = await migration`
@@ -182,7 +230,19 @@ const [verification] = await migration`
       AS contact_usage,
     has_table_privilege(
       'codevivo_discovery_runtime', 'discovery.invitation_inquiry_links', 'SELECT'
-    ) AS provenance_select
+    ) AS provenance_select,
+    has_table_privilege(
+      'codevivo_discovery_runtime', 'discovery.notification_outbox', 'INSERT'
+    ) AS outbox_insert,
+    has_column_privilege(
+      'codevivo_discovery_runtime', 'discovery.notification_outbox',
+      'delivery_status', 'UPDATE'
+    ) AS outbox_delivery_update,
+    has_function_privilege(
+      'codevivo_discovery_runtime',
+      'discovery.claim_notification_events(integer,timestamp with time zone,integer)',
+      'EXECUTE'
+    ) AS outbox_claim_execute
 `;
 if (
   verification?.mutation_hash_constraint !== true ||
@@ -190,16 +250,24 @@ if (
   verification?.state_update !== false ||
   verification?.submission_update !== false ||
   verification?.contact_usage !== false ||
-  verification?.provenance_select !== false
+  verification?.provenance_select !== false ||
+  verification?.outbox_insert !== false ||
+  verification?.outbox_delivery_update !== false ||
+  verification?.outbox_claim_execute !== true
 ) {
   throw new Error('Phase 2 validation guard: post-migration permissions mismatch');
 }
-console.log('MIGRATION_OK version=0003 permissions=verified');
+console.log('MIGRATION_OK versions=0003,0004 permissions=verified');
 
 run('database foundation tests', ['npm', 'run', 'test:db'], childEnvironment);
 run(
   'draft persistence tests',
   ['npm', 'run', 'test:discovery:drafts:live'],
+  childEnvironment,
+);
+run(
+  'submission and notification tests',
+  ['npm', 'run', 'test:discovery:submission:live'],
   childEnvironment,
 );
 console.log('PHASE2_LIVE_VALIDATION_OK');

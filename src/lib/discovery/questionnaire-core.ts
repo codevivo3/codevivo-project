@@ -166,6 +166,22 @@ export function validateDiscoveryQuestionnaireStep(
   return errors;
 }
 
+export function validateDiscoveryQuestionnaire(
+  answers: DiscoveryQuestionnaireAnswers,
+): DiscoveryQuestionnaireErrors {
+  const errors: DiscoveryQuestionnaireErrors = {};
+  for (let step = 1; step <= 7; step += 1) {
+    Object.assign(
+      errors,
+      validateDiscoveryQuestionnaireStep(
+        step as DiscoveryQuestionnaireStep,
+        answers,
+      ),
+    );
+  }
+  return errors;
+}
+
 export function getDiscoveryQuestionnaireStepFields(
   step: DiscoveryQuestionnaireStep,
   answers: DiscoveryQuestionnaireAnswers,

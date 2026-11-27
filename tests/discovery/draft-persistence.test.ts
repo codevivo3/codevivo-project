@@ -360,3 +360,14 @@ test('client integration does not use persistent browser storage', async () => {
   ]);
   assert.doesNotMatch(sources.join('\n'), /localStorage|sessionStorage|indexedDB/iu);
 });
+
+test('default browser timers remain receiver-safe wrappers', async () => {
+  const source = await readFile(
+    new URL('../../src/lib/discovery/draft-persistence-core.ts', import.meta.url),
+    'utf8',
+  );
+  assert.match(source, /clear: \(handle\) => clearTimeout\(handle\)/u);
+  assert.match(source, /set: \(callback, delay\) => setTimeout\(callback, delay\)/u);
+  assert.doesNotMatch(source, /clear: clearTimeout/u);
+  assert.doesNotMatch(source, /set: setTimeout/u);
+});

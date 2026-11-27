@@ -12,6 +12,7 @@ import {
   validateDiscoveryDraftEditingState,
 } from '@/lib/discovery/draft-value-validation';
 import type { DiscoveryDraftSnapshot } from '@/lib/discovery/draft-contract';
+import type { DiscoverySubmissionConfirmation } from '@/lib/discovery/draft-contract';
 import type { DiscoveryQuestionnaireStep } from '@/lib/discovery/questionnaire-schema';
 import { useDiscoveryDraftPersistenceController } from './DiscoveryQuestionnaireState';
 
@@ -55,6 +56,25 @@ function parseDraft(value: unknown): DiscoveryDraftSnapshot | null {
   }
 }
 
+function parseSubmission(value: unknown): DiscoverySubmissionConfirmation | null {
+  if (!isRecord(value)) return null;
+  const submittedAt = new Date(String(value.submittedAt ?? ''));
+  if (
+    typeof value.reference !== 'string' ||
+    value.reference.length === 0 ||
+    !Number.isSafeInteger(value.revision) ||
+    (value.revision as number) < 0 ||
+    Number.isNaN(submittedAt.getTime())
+  ) {
+    return null;
+  }
+  return {
+    reference: value.reference,
+    revision: value.revision as number,
+    submittedAt,
+  };
+}
+
 async function parseResponse(response: Response): Promise<DiscoveryDraftTransportResult> {
   let body: Record<string, unknown> = {};
   try {
@@ -67,7 +87,14 @@ async function parseResponse(response: Response): Promise<DiscoveryDraftTranspor
   if (response.status === 503 && body.status === 'disabled') return { kind: 'disabled' };
   if (response.status === 404 && body.status === 'missing') return { kind: 'missing' };
   if (response.status === 401 || response.status === 403) return { kind: 'unauthorized' };
-  if (response.status === 409 && body.status === 'submitted') return { kind: 'submitted' };
+  const submission = parseSubmission(body.submission);
+  if (
+    (response.status === 200 || response.status === 409) &&
+    body.status === 'submitted' &&
+    submission
+  ) {
+    return { kind: 'submitted', submission };
+  }
   if (response.status === 409 && body.status === 'mutation-conflict') {
     return { kind: 'mutation-conflict' };
   }
@@ -172,6 +199,8 @@ export function useDiscoveryDraftPersistence(input: {
   }, [controller]);
 
   return {
+    flushAndWait: controller.flushAndWait,
+    markSubmitted: controller.markSubmitted,
     resolveConflict: controller.resolveConflict,
     retry: controller.retry,
     state,

@@ -28,6 +28,8 @@ type DraftRow = {
     | 'updated';
   revision: number | string | null;
   schema_version: string | null;
+  submission_reference?: string | null;
+  submitted_at?: Date | string | null;
   updated_at: Date | string | null;
 };
 
@@ -60,10 +62,22 @@ function mapRow(row: DraftRow | undefined): DiscoveryDraftOutcome {
   if (
     outcome === 'missing' ||
     outcome === 'mutation-conflict' ||
-    outcome === 'submitted' ||
     outcome === 'unauthorized'
   ) {
     return { outcome };
+  }
+  if (outcome === 'submitted') {
+    if (row.revision === null || !row.submission_reference || !row.submitted_at) {
+      return { outcome: 'unauthorized' };
+    }
+    return {
+      outcome,
+      submission: {
+        reference: row.submission_reference,
+        revision: Number(row.revision),
+        submittedAt: new Date(row.submitted_at),
+      },
+    };
   }
   if (
     !row.brief_id ||
@@ -167,6 +181,8 @@ export function createDiscoveryDraftRepository(
           selected.current_step,
           selected.highest_step_reached,
           selected.editing_state,
+          selected.submission_reference,
+          selected.submitted_at,
           selected.updated_at
         FROM (SELECT 1) AS singleton
         LEFT JOIN selected ON true
@@ -212,6 +228,7 @@ export function createDiscoveryDraftRepository(
           CASE
             WHEN NOT EXISTS (SELECT 1 FROM authorized) THEN 'unauthorized'
             WHEN NOT EXISTS (SELECT 1 FROM selected) THEN 'missing'
+            WHEN (SELECT state FROM selected) = 'submitted' THEN 'submitted'
             ELSE 'available'
           END AS outcome,
           selected.id AS brief_id,
@@ -222,6 +239,8 @@ export function createDiscoveryDraftRepository(
           selected.current_step,
           selected.highest_step_reached,
           selected.editing_state,
+          selected.submission_reference,
+          selected.submitted_at,
           selected.updated_at
         FROM (SELECT 1) AS singleton
         LEFT JOIN selected ON true
@@ -319,6 +338,8 @@ export function createDiscoveryDraftRepository(
             selected.editing_state,
             selected.updated_at,
             selected.state,
+            selected.submission_reference,
+            selected.submitted_at,
             selected.last_mutation_id,
             encode(selected.last_mutation_hash, 'hex') AS last_mutation_hash
           FROM (SELECT 1) AS singleton
@@ -333,7 +354,9 @@ export function createDiscoveryDraftRepository(
         return { outcome: 'unauthorized' };
       }
       if (!current.brief_id) return { outcome: 'missing' };
-      if (current.state === 'submitted') return { outcome: 'submitted' };
+      if (current.state === 'submitted') {
+        return mapRow({ ...current, outcome: 'submitted' });
+      }
       if (updated[0]) return mapRow({ ...updated[0], outcome: 'updated' });
       if (current.last_mutation_id === mutation.mutationId) {
         return mapRow({

@@ -1,12 +1,17 @@
 'use client';
 
-import { useLayoutEffect, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DiscoveryQuestionnairePrefill } from '@/lib/discovery/questionnaire-core';
+import {
+  consumeDiscoveryInvitationFragment,
+  createDiscoveryInvitationExchangeLifecycle,
+  type DiscoveryInvitationEntryState,
+} from '@/lib/discovery/invitation-entry-core';
 import { useDiscoveryQuestionnaireStateStore } from './DiscoveryQuestionnaireState';
 import DiscoveryQuestionnaire from './DiscoveryQuestionnaire';
 
-type EntryState = 'loading' | 'unavailable' | 'expired' | 'established';
+type EntryState = 'loading' | DiscoveryInvitationEntryState;
 
 export default function InvitationEntry({
   initialSessionEstablished,
@@ -22,57 +27,51 @@ export default function InvitationEntry({
   const [state, setState] = useState<EntryState>(
     initialSessionEstablished ? 'established' : 'loading',
   );
+  const exchangeLifecycle = useRef<ReturnType<
+    typeof createDiscoveryInvitationExchangeLifecycle
+  > | null>(null);
 
   useLayoutEffect(() => {
     if (initialSessionEstablished) return;
 
-    questionnaireState.clear();
-
-    const fragment = window.location.hash;
-    const token = new URLSearchParams(fragment.slice(1)).get('token');
-    window.history.replaceState(
-      null,
-      '',
-      `${window.location.pathname}${window.location.search}`,
-    );
-    const controller = new AbortController();
-
-    if (!token) {
-      queueMicrotask(() => {
-        if (!controller.signal.aborted) setState('unavailable');
+    if (!exchangeLifecycle.current) {
+      questionnaireState.clear();
+      const token = consumeDiscoveryInvitationFragment({
+        hash: window.location.hash,
+        pathname: window.location.pathname,
+        replaceState: (url) => window.history.replaceState(null, '', url),
+        search: window.location.search,
       });
-      return () => controller.abort();
+      exchangeLifecycle.current = createDiscoveryInvitationExchangeLifecycle({
+        token,
+        exchange: async (invitationToken, signal) => {
+          const response = await fetch('/api/discovery/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: invitationToken }),
+            cache: 'no-store',
+            credentials: 'same-origin',
+            signal,
+          });
+          const result = (await response.json()) as { status?: EntryState };
+          if (result.status === 'established' || result.status === 'expired') {
+            return result.status;
+          }
+          return 'unavailable';
+        },
+        onResult: (result) => {
+          if (result === 'established') {
+            window.location.replace(
+              `${window.location.pathname}${window.location.search}`,
+            );
+            return;
+          }
+          setState(result);
+        },
+      });
     }
 
-    void fetch('/api/discovery/session', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token }),
-      cache: 'no-store',
-      credentials: 'same-origin',
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        const result = (await response.json()) as { status?: EntryState };
-        if (result.status === 'established') {
-          window.location.replace(
-            `${window.location.pathname}${window.location.search}`,
-          );
-          return;
-        }
-        setState(
-          result.status === 'expired'
-            ? result.status
-            : 'unavailable',
-        );
-      })
-      .catch((error: unknown) => {
-        if (!(error instanceof DOMException && error.name === 'AbortError')) {
-          setState('unavailable');
-        }
-      });
-
-    return () => controller.abort();
+    return exchangeLifecycle.current.setup();
   }, [initialSessionEstablished, questionnaireState]);
 
   if (state === 'established' && stateScopeId) {

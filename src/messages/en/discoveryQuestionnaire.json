@@ -363,10 +363,64 @@
     "confirmed": "Confirmed"
   },
   "preliminaryNotice": "This document is intended solely for preliminary requirements gathering. It does not constitute a commercial offer or a binding contractual commitment. The final scope of work will be defined in the Commercial Proposal, if subsequently approved.",
-  "submissionUnavailable": {
-    "title": "Submission is not available yet",
-    "description": "Your answers currently remain only in this page and have not been saved or sent to CodeVivo. Server-side draft saving and final submission belong to the next implementation stage.",
-    "action": "Submission not available"
+  "submission": {
+    "actions": {
+      "submit": "Submit project brief",
+      "submitting": "Submitting…",
+      "retry": "Check submission again",
+      "reload": "Reload the latest version"
+    },
+    "status": {
+      "idle": {
+        "title": "Ready for final submission",
+        "description": "Confirm the statement above, review your answers and submit when everything is correct."
+      },
+      "flushing": {
+        "title": "Saving the latest changes",
+        "description": "Please wait while the latest acknowledged draft revision is secured."
+      },
+      "submitting": {
+        "title": "Submitting your project brief",
+        "description": "Keep this page open until CodeVivo confirms the submission."
+      },
+      "confirmed": {
+        "title": "Submission confirmed",
+        "description": "Your project brief has been received."
+      },
+      "validation-error": {
+        "title": "Some information needs attention",
+        "description": "Review the highlighted field before submitting again."
+      },
+      "revision-conflict": {
+        "title": "A newer draft is available",
+        "description": "Reload the latest saved version before attempting final submission again."
+      },
+      "idempotency-conflict": {
+        "title": "This submission attempt cannot be reused",
+        "description": "Reload the authoritative state before starting a deliberate new submission attempt."
+      },
+      "ambiguous": {
+        "title": "Confirmation was not received",
+        "description": "The submission may have completed. Check it again using the same protected submission attempt."
+      },
+      "offline": {
+        "title": "You appear to be offline",
+        "description": "Reconnect before checking the same submission attempt again."
+      },
+      "unavailable": {
+        "title": "This session is unavailable",
+        "description": "The submission cannot continue from this session. Contact CodeVivo if you need assistance."
+      }
+    },
+    "confirmation": {
+      "overline": "Project Discovery",
+      "title": "Project brief submitted",
+      "description": "Thank you. CodeVivo has securely received your project brief and it can no longer be edited.",
+      "reference": "Submission reference",
+      "submittedAt": "Submitted",
+      "nextTitle": "What happens next",
+      "nextDescription": "CodeVivo will review the information and contact you to clarify any open points and agree the next step."
+    }
   },
   "navigation": {
     "previous": "Previous",

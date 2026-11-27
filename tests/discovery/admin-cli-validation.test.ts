@@ -7,6 +7,11 @@ import {
   discoveryTokenPeppersMatch,
   prepareDiscoveryValidationInvitation,
   requireDiscoveryValidationOrigin,
+  connectDiscoveryAdministrationDatabase,
+  getDiscoveryAdministrationTarget,
+  parseDiscoveryAdministrationInvocation,
+  prepareDiscoveryAdministrationInvitation,
+  verifyDiscoveryAdministrationIdentity,
 } from '../../scripts/discovery-admin-validation';
 
 const VALID_DATABASE_URL =
@@ -116,5 +121,105 @@ test('pepper comparison returns only an equality result', () => {
   assert.equal(
     discoveryTokenPeppersMatch('validation-pepper', 'different-pepper'),
     false,
+  );
+});
+
+const productionConfiguration = {
+  DISCOVERY_PRODUCTION_ADMIN_HOST:
+    'ep-production-test.c-8.eu-central-1.aws.neon.tech',
+  DISCOVERY_PRODUCTION_DATABASE: 'neondb',
+  DISCOVERY_PRODUCTION_ORIGIN: 'https://codevivo.dev',
+};
+
+test('administration requires explicit validation or production selection', () => {
+  assert.deepEqual(
+    parseDiscoveryAdministrationInvocation([
+      '--environment',
+      'validation',
+      'inspect',
+    ]),
+    { command: 'inspect', environment: 'validation' },
+  );
+  for (const invocation of [
+    ['inspect'],
+    ['--environment', 'staging', 'inspect'],
+    ['--environment', 'production'],
+  ]) {
+    assert.throws(
+      () => parseDiscoveryAdministrationInvocation(invocation),
+      /explicit|Usage/iu,
+    );
+  }
+});
+
+test('production target must be explicitly and completely configured', () => {
+  assert.deepEqual(
+    getDiscoveryAdministrationTarget('production', productionConfiguration),
+    {
+      database: 'neondb',
+      environment: 'production',
+      host: productionConfiguration.DISCOVERY_PRODUCTION_ADMIN_HOST,
+      origin: 'https://codevivo.dev',
+      role: 'codevivo_discovery_admin',
+    },
+  );
+  for (const configuration of [
+    {},
+    { ...productionConfiguration, DISCOVERY_PRODUCTION_ADMIN_HOST: 'production.invalid' },
+    { ...productionConfiguration, DISCOVERY_PRODUCTION_ADMIN_HOST: 'ep-test-pooler.c-8.eu-central-1.aws.neon.tech' },
+    { ...productionConfiguration, DISCOVERY_PRODUCTION_ADMIN_HOST: DISCOVERY_VALIDATION_ADMIN_HOST },
+    { ...productionConfiguration, DISCOVERY_PRODUCTION_ORIGIN: 'https://preview.example' },
+  ]) {
+    assert.throws(
+      () => getDiscoveryAdministrationTarget(
+        'production',
+        configuration,
+      ),
+      /not safely configured/u,
+    );
+  }
+});
+
+test('selected environment mismatches fail before database client creation', () => {
+  const production = getDiscoveryAdministrationTarget(
+    'production',
+    productionConfiguration,
+  );
+  let connectionCount = 0;
+  assert.throws(
+    () => connectDiscoveryAdministrationDatabase(
+      VALID_DATABASE_URL,
+      production,
+      () => { connectionCount += 1; return {}; },
+    ),
+    /does not match the selected environment/u,
+  );
+  assert.equal(connectionCount, 0);
+
+  assert.throws(
+    () => prepareDiscoveryAdministrationInvitation({
+      baseUrl: DISCOVERY_VALIDATION_ORIGIN,
+      connectionString:
+        `postgresql://codevivo_discovery_admin:test-only@${production.host}/neondb`,
+      connect: () => { connectionCount += 1; return {}; },
+      target: production,
+    }),
+    /does not match the selected environment/u,
+  );
+  assert.equal(connectionCount, 0);
+});
+
+test('connected database identity is independently checked', async () => {
+  const validation = getDiscoveryAdministrationTarget('validation', {});
+  await verifyDiscoveryAdministrationIdentity(
+    (async () => [{ database: 'neondb', role: 'codevivo_discovery_admin' }]) as never,
+    validation,
+  );
+  await assert.rejects(
+    verifyDiscoveryAdministrationIdentity(
+      (async () => [{ database: 'neondb', role: 'unexpected_role' }]) as never,
+      validation,
+    ),
+    /connected database identity/u,
   );
 });

@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
-import { neon } from '@neondatabase/serverless';
+import { neon, type NeonQueryFunction } from '@neondatabase/serverless';
 import {
   generateDiscoveryCredential,
   hashDiscoveryCredential,
@@ -11,12 +11,20 @@ import {
 import {
   DISCOVERY_ADMIN_URL_SERVICE,
   DISCOVERY_PEPPER_SERVICE,
+  DISCOVERY_PRODUCTION_ADMIN_URL_SERVICE,
+  DISCOVERY_PRODUCTION_PEPPER_SERVICE,
   readKeychainSecret,
 } from './discovery-keychain';
 import {
-  connectDiscoveryValidationDatabase,
-  prepareDiscoveryValidationInvitation,
+  connectDiscoveryAdministrationDatabase,
+  getDiscoveryAdministrationTarget,
+  parseDiscoveryAdministrationInvocation,
+  prepareDiscoveryAdministrationInvitation,
+  verifyDiscoveryAdministrationIdentity,
+  type DiscoveryAdministrationEnvironment,
+  type DiscoveryAdministrationTarget,
 } from './discovery-admin-validation';
+import { retrieveSubmittedBrief } from './discovery-admin-retrieval';
 import {
   buildInvitationPrefill,
   invitationDisplayName,
@@ -27,18 +35,55 @@ import {
 } from './discovery-admin-core';
 
 const DEFAULT_VALIDITY_DAYS = 14;
-const command = process.argv[2];
 const prompt = createInterface({ input: stdin, output: stdout });
+let selectedEnvironment: DiscoveryAdministrationEnvironment | undefined;
+let command: string | undefined;
 
-function getAdministrationDatabase() {
-  const connectionString = readKeychainSecret(DISCOVERY_ADMIN_URL_SERVICE);
-  return connectDiscoveryValidationDatabase(connectionString, (validated) =>
-    neon(validated),
+function requireSelectedEnvironment(): DiscoveryAdministrationEnvironment {
+  if (!selectedEnvironment) throw new Error('Administration environment not selected');
+  return selectedEnvironment;
+}
+
+function keychainServices(environment: DiscoveryAdministrationEnvironment) {
+  return environment === 'production'
+    ? {
+        admin: DISCOVERY_PRODUCTION_ADMIN_URL_SERVICE,
+        pepper: DISCOVERY_PRODUCTION_PEPPER_SERVICE,
+      }
+    : {
+        admin: DISCOVERY_ADMIN_URL_SERVICE,
+        pepper: DISCOVERY_PEPPER_SERVICE,
+      };
+}
+
+async function getAdministrationContext(): Promise<{
+  sql: NeonQueryFunction<false, false>;
+  target: DiscoveryAdministrationTarget;
+}> {
+  const environment = requireSelectedEnvironment();
+  const target = getDiscoveryAdministrationTarget(environment);
+  const connectionString = readKeychainSecret(keychainServices(environment).admin);
+  const sql = connectDiscoveryAdministrationDatabase(
+    connectionString,
+    target,
+    (validated) => neon(validated),
   );
+  await verifyDiscoveryAdministrationIdentity(sql, target);
+  return { sql, target };
 }
 
 function getInvitationPepper(): string {
-  return validateDiscoveryPepper(readKeychainSecret(DISCOVERY_PEPPER_SERVICE));
+  const environment = requireSelectedEnvironment();
+  return validateDiscoveryPepper(
+    readKeychainSecret(keychainServices(environment).pepper),
+  );
+}
+
+async function confirmProductionAction(action: string): Promise<void> {
+  if (requireSelectedEnvironment() !== 'production') return;
+  const phrase = `PRODUCTION ${action}`;
+  const confirmation = (await prompt.question(`Type ${phrase} to confirm: `)).trim();
+  if (confirmation !== phrase) throw new Error('Production operation cancelled');
 }
 
 async function askRequired(label: string): Promise<string> {
@@ -63,11 +108,16 @@ async function copyInvitationLink(link: string): Promise<void> {
 }
 
 async function createInvitation() {
-  const { baseUrl, database: sql } = prepareDiscoveryValidationInvitation({
+  const environment = requireSelectedEnvironment();
+  const target = getDiscoveryAdministrationTarget(environment);
+  const { baseUrl, database: sql } = prepareDiscoveryAdministrationInvitation({
     baseUrl: process.env.DISCOVERY_BASE_URL,
-    connectionString: readKeychainSecret(DISCOVERY_ADMIN_URL_SERVICE),
+    connectionString: readKeychainSecret(keychainServices(environment).admin),
     connect: (validated) => neon(validated),
+    target,
   });
+  await verifyDiscoveryAdministrationIdentity(sql, target);
+  await confirmProductionAction('CREATE');
   const inquiryId = validateOptionalInquiryId(
     await prompt.question('Associated contact inquiry ID (optional): '),
   );
@@ -118,7 +168,6 @@ async function createInvitation() {
   if (locale !== 'en' && locale !== 'it') {
     throw new Error('Locale must be en or it');
   }
-
   const invitationId = randomUUID();
   const token = generateDiscoveryCredential();
   const tokenHash = hashDiscoveryCredential(
@@ -195,7 +244,7 @@ async function createInvitation() {
 
 async function inspectInvitation() {
   const invitationId = await askRequired('Invitation ID: ');
-  const sql = getAdministrationDatabase();
+  const { sql } = await getAdministrationContext();
   const rows = await sql`
     SELECT
       invitations.id,
@@ -232,15 +281,29 @@ async function inspectInvitation() {
   console.log(`Brief: ${invitation.brief_state ?? 'none'}`);
 }
 
+async function retrieveBrief() {
+  const reference = await askRequired('Submission reference: ');
+  const { sql } = await getAdministrationContext();
+  const brief = await retrieveSubmittedBrief(sql, reference);
+  console.log(JSON.stringify(brief, null, 2));
+}
+
 async function revokeInvitation() {
   const invitationId = await askRequired('Invitation ID: ');
   const reason = await askRequired('Revocation reason: ');
+  const { sql } = await getAdministrationContext();
   const confirmation = (
-    await prompt.question('Type REVOKE to confirm this irreversible action: ')
+    await prompt.question(
+      requireSelectedEnvironment() === 'production'
+        ? 'Type PRODUCTION REVOKE to confirm this irreversible action: '
+        : 'Type REVOKE to confirm this irreversible action: ',
+    )
   ).trim();
-  if (confirmation !== 'REVOKE') throw new Error('Revocation cancelled');
+  const expected = requireSelectedEnvironment() === 'production'
+    ? 'PRODUCTION REVOKE'
+    : 'REVOKE';
+  if (confirmation !== expected) throw new Error('Revocation cancelled');
 
-  const sql = getAdministrationDatabase();
   const rows = await sql`
     WITH revoked AS (
       UPDATE discovery.invitations
@@ -278,12 +341,19 @@ async function extendInvitation() {
   const days = validateInvitationExtensionDays(
     await askRequired('Additional validity days [1-365]: '),
   );
+  const { sql } = await getAdministrationContext();
   const confirmation = (
-    await prompt.question(`Type EXTEND ${days} to confirm: `)
+    await prompt.question(
+      requireSelectedEnvironment() === 'production'
+        ? `Type PRODUCTION EXTEND ${days} to confirm: `
+        : `Type EXTEND ${days} to confirm: `,
+    )
   ).trim();
-  if (confirmation !== `EXTEND ${days}`) throw new Error('Extension cancelled');
+  const expected = requireSelectedEnvironment() === 'production'
+    ? `PRODUCTION EXTEND ${days}`
+    : `EXTEND ${days}`;
+  if (confirmation !== expected) throw new Error('Extension cancelled');
 
-  const sql = getAdministrationDatabase();
   const rows = await sql`
     UPDATE discovery.invitations
     SET expires_at = expires_at + (${days}::text || ' days')::interval
@@ -301,12 +371,18 @@ async function extendInvitation() {
 
 async function main() {
   try {
+    const invocation = parseDiscoveryAdministrationInvocation(process.argv.slice(2));
+    command = invocation.command;
+    selectedEnvironment = invocation.environment;
     if (command === 'create') await createInvitation();
     else if (command === 'inspect') await inspectInvitation();
+    else if (command === 'retrieve') await retrieveBrief();
     else if (command === 'revoke') await revokeInvitation();
     else if (command === 'extend') await extendInvitation();
     else {
-      throw new Error('Usage: npm run discovery:admin -- <create|inspect|revoke|extend>');
+      throw new Error(
+        'Usage: npm run discovery:admin -- --environment <validation|production> <create|inspect|retrieve|revoke|extend>',
+      );
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Operation failed';

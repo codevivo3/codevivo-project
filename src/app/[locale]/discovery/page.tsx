@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import InvitationEntry from '@/components/discovery/InvitationEntry';
-import { requireDiscoverySession } from '@/lib/discovery/authorization';
+import DiscoveryPage from '@/components/discovery/DiscoveryPage';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -12,24 +11,4 @@ export const metadata: Metadata = {
   referrer: 'no-referrer',
 };
 
-export default async function DiscoveryPage() {
-  let initialSessionEstablished = false;
-  let invitationId: string | undefined;
-  let invitationEmail: string | undefined;
-  try {
-    const session = await requireDiscoverySession();
-    initialSessionEstablished = true;
-    invitationId = session.invitationId;
-    invitationEmail = session.invitationEmail;
-  } catch {
-    initialSessionEstablished = false;
-  }
-
-  return (
-    <InvitationEntry
-      initialSessionEstablished={initialSessionEstablished}
-      initialPrefill={invitationEmail ? { email: invitationEmail } : undefined}
-      stateScopeId={invitationId}
-    />
-  );
-}
+export default DiscoveryPage;
